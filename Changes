@@ -334,3 +334,10 @@
    * Updated dbinfo to support Berkeley DB 3.2 file format changes.
 
 
+1.76 15th January 2001
+
+   * Added instructions for using LD_PRELOAD to get Berkeley DB 2.x to work
+     with DB_File on Linux. Thanks to Norbert Bollow for sending details of
+     this approach.
+
+
