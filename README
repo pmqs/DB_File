@@ -1,8 +1,8 @@
                                      DB_File
 
-                                  Version 1.66
+                                  Version 1.67
 
-                                 6th March 1999  
+                                 6th June 1999  
 
  	Copyright (c) 1995-1999 Paul Marquess. All rights reserved. This
 	program is free software; you can redistribute it and/or modify
@@ -207,13 +207,11 @@ How to report a problem with DB_File.
 To help me help you, I need of the following information:
 
  1. The version of Perl and the operating system name and version you
-    are running. If you are running a newish version of Perl, the
-    output from running "perl -V" will tell me all I need to know. 
-    If your perl doesn't understand the -V flag, then not only do you
-    have quite an old version of Perl, you very likely have an old
-    version of DB_File.  You should consider upgrading. The problem you
-    have might already be fixed.
-
+    are running. The output from running "perl -V" will tell me all I need to
+    know.
+    If your perl does not understand the "-V" option is is too old. DB_File
+    needs Perl version 5.004 or better.
+    
  2. The version of DB_File you have. If you have successfully installed
     DB_File, this one-liner will tell you:
 
