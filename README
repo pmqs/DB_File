@@ -1,13 +1,21 @@
                                      DB_File
 
-                                  Version 1.71
+                                  Version 1.72
 
-                               7th September 1999  
+                               16th January 2000
 
- 	Copyright (c) 1995-1999 Paul Marquess. All rights reserved. This
+ 	Copyright (c) 1995-2000 Paul Marquess. All rights reserved. This
 	program is free software; you can redistribute it and/or modify
 	it under the same terms as Perl itself.
 
+
+IMPORTANT NOTICE 
+================
+
+If are using the locking technique described in older versions of
+DB_File, please read the section called "Locking: The Trouble with fd"
+in DB_File.pm immediately. The locking method has been found to be
+unsafe. You risk corrupting your data if you continue to use it.
 
 DESCRIPTION
 -----------
@@ -152,7 +160,7 @@ Solution: Setting the LIB & INCLUDE variables in config.in to point to the
           problem is to either delete or temporarily rename the copies
           of db.h and libdb.a that you don't want DB_File to use.
 
-Incompatable versions of db.h and libdb
+Incompatible versions of db.h and libdb
 ---------------------------------------
 
 BerkeleyDB seems to have built correctly, but you get an error like this
@@ -237,8 +245,8 @@ How to report a problem with DB_File.
 To help me help you, I need of the following information:
 
  1. The version of Perl and the operating system name and version you
-    are running. The output from running "perl -V" will tell me all I need to
-    know.
+    are running. The complete output from running "perl -V" will tell 
+    me all I need to know.
     If your perl does not understand the "-V" option is is too old. DB_File
     needs Perl version 5.004 or better.
     
