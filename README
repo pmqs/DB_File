@@ -1,8 +1,8 @@
                                      DB_File
 
-                                  Version 1.10
+                                  Version 1.12
 
-                                  11th Dec 1996
+                                  6th Feb 1997 
 
              Copyright (c) 1995/6 Paul Marquess. All rights reserved.
          This program is free software; you can redistribute it and/or
@@ -84,7 +84,7 @@ To help me help you, I need of the following information:
 
        perl -e 'use DB_File; print "DB_File ver $DB_File::VERSION\n"'
 
-    The most recent version of DB_File is 1.10.
+    The most recent version of DB_File is 1.12.
 
  3. the version of Berkeley DB you have installed. The most recent
     version is 1.85. Again, if you have an older version, think about

@@ -3,8 +3,8 @@
  DB_File.xs -- Perl 5 interface to Berkeley DB 
 
  written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
- last modified 14th Jan 1997
- version 1.10
+ last modified 12th Mar 1997
+ version 1.12
 
  All comments/suggestions/problems are welcome
 
@@ -37,6 +37,8 @@
 	1.09 -  Default mode for dbopen changed to 0666
 	1.10 -  Fixed fd method so that it still returns -1 for
 		in-memory files when db 1.86 is used.
+	1.11 -  No change to DB_File.xs
+	1.12 -  No change to DB_File.xs
 
 */
 
@@ -160,7 +162,7 @@ const DBT * key2 ;
     SPAGAIN ;
 
     if (count != 1)
-        croak ("DB_File btree_compare: expected 1 return value from %s, got %d\n", count) ;
+        croak ("DB_File btree_compare: expected 1 return value from compare sub, got %d\n", count) ;
 
     retval = POPi ;
 
@@ -207,7 +209,7 @@ const DBT * key2 ;
     SPAGAIN ;
 
     if (count != 1)
-        croak ("DB_File btree_prefix: expected 1 return value from %s, got %d\n", count) ;
+        croak ("DB_File btree_prefix: expected 1 return value from prefix sub, got %d\n", count) ;
  
     retval = POPi ;
  
@@ -244,7 +246,7 @@ size_t size ;
     SPAGAIN ;
 
     if (count != 1)
-        croak ("DB_File hash_cb: expected 1 return value from %s, got %d\n", count) ;
+        croak ("DB_File hash_cb: expected 1 return value from hash sub, got %d\n", count) ;
 
     retval = POPi ;
 
@@ -338,7 +340,7 @@ I32      value ;
 
 	/* check for attempt to write before start of array */
 	if (length + value + 1 <= 0)
-	    croak("Modification of non-creatable array value attempted, subscript %d", value) ;
+	    croak("Modification of non-creatable array value attempted, subscript %ld", (long)value) ;
 
 	value = length + value + 1 ;
     }

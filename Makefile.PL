@@ -26,6 +26,17 @@ WriteMakefile(
 	);
 
 
+sub MY::postamble {
+	'
+$(NAME).xs:	typemap
+	@$(TOUCH) $(NAME).xs
+
+Makefile.PL:	CONFIG
+	@echo "Makefile.PL out-of-date with respect to $?"
+	@$(TOUCH) Makefile.PL
+
+	' ;
+}
 
 sub ParseCONFIG
 {

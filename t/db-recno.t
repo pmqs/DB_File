@@ -27,8 +27,8 @@ sub ok
 
 sub bad_one
 {
-    print <<EOM unless $bad_ones++ ;
-# 
+    print STDERR <<EOM unless $bad_ones++ ;
+#
 # Some older versions of Berkeley DB will fail tests 51, 53 and 55.
 #
 # You can safely ignore the errors if you're never going to use the
@@ -51,13 +51,13 @@ umask(0);
 # Check the interface to RECNOINFO
 
 my $dbh = new DB_File::RECNOINFO ;
-ok(1, $dbh->{bval} == 0 ) ;
-ok(2, $dbh->{cachesize} == 0) ;
-ok(3, $dbh->{psize} == 0) ;
-ok(4, $dbh->{flags} == 0) ;
-ok(5, $dbh->{lorder} == 0);
-ok(6, $dbh->{reclen} == 0);
-ok(7, $dbh->{bfname} eq "");
+ok(1, ! defined $dbh->{bval}) ;
+ok(2, ! defined $dbh->{cachesize}) ;
+ok(3, ! defined $dbh->{psize}) ;
+ok(4, ! defined $dbh->{flags}) ;
+ok(5, ! defined $dbh->{lorder}) ;
+ok(6, ! defined $dbh->{reclen}) ;
+ok(7, ! defined $dbh->{bfname}) ;
 
 $dbh->{bval} = 3000 ;
 ok(8, $dbh->{bval} == 3000 );
@@ -93,7 +93,8 @@ my $X  ;
 my @h ;
 ok(17, $X = tie @h, 'DB_File', $Dfile, O_RDWR|O_CREAT, 0640, $DB_RECNO ) ;
 
-ok(18, ( (stat($Dfile))[2] & 0777) == ($^O eq 'os2' ? 0666 : 0640)) ;
+ok(18, ((stat($Dfile))[2] & 0777) == ($^O eq 'os2' ? 0666 : 0640)
+	|| $^O eq 'amigaos') ;
 
 #my $l = @h ;
 my $l = $X->length ;
