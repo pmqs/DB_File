@@ -1,0 +1,49 @@
+
+
+use DB_File;
+# use GDBM_File;
+use Fcntl ;
+
+$file = "/tmp/dbfile" ;
+unlink $file ;
+
+#$DB_HASH->{'bsize'} = 2 ** 16 ;
+$DB_HASH->{'bsize'} = 2 ** 16 ;
+$size = (1024 * 1024 * 2) ;
+
+
+#dbmopen(%db, "/tmp/dbfile", 0644);
+tie %db, DB_File, $file, O_CREAT|O_RDWR, 0644, $DB_HASH 
+    or die "Cannot tie to $file: $!\n" ;
+
+$lkey = 'x' x 1024;
+
+$db{'a'} = 'fred';			# 5 -> 4
+$db{'ab'} = 'fred' x 1024;		# 4 -> 4096
+$db{'abc'} = 'x' x $size ;	# 5 -> 1048576
+$db{$lkey} = 'x' x 1024;		# 1024 -> 1024
+
+#dbmclose(%db);
+untie %db ;
+print "Written\n" ;
+
+#dbmopen(%s, "/tmp/dbfile", undef);
+tie %s, DB_File, $file, O_RDWR, 0644, $DB_HASH 
+    or die "Cannot tie $file: $!\n" ;
+
+while (($k, $v) = each %s) {
+	local($l) = length($v);
+	local($kl) = length($k);
+	print "($kl) -> ($l)\n";
+}
+
+print "got directly\n" if length $s{'abc'} == $size ;
+#dbmclose(%s);
+untie %s ;
+
+print "Done\n" ;
+exit 0;
+
+__END__
+
+

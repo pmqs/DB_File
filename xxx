@@ -2,6 +2,7 @@
      use Fcntl ;
 print "t-ing\n" ;
      tie %a, DB_File, '/tmp/big.db', O_CREAT|O_RDWR, 0777, $DB_HASH or die "$!";
+     #tie %a, DB_File, '/tmp/big.db' or die "[$!]";
 print "t-ied\n" ;
      while (<>) {
      #while ($x = <STDIN>) {

@@ -1,0 +1,11 @@
+use DB_File ;
+use Fcntl ;
+
+$A = tie @a, DB_File, "fred", O_CREAT|O_RDWR, 0777, $DB_RECNO ;
+
+$a[0] = "hello" ;
+$A->push("hdhdhdh") ;
+$A->unshift ("ppppp") ;
+
+$A = '' ;
+untie @a ;

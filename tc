@@ -1,5 +1,8 @@
      use DB_File;
+	use Fcntl ;
      tie %a, 'DB_File', '/tmp/big.db' or die "$!";
+     #tie %a, 'DB_File', '/tmp/big.db', O_CREAT|O_RDWR, 0777, $DB_HASH or die "$!";
+     #tie %a, 'DB_File', '/tmp/big.db', O_CREAT|O_RDWR or die "$!";
      while (<>) {
  	$a{$_} = $_;
      } 

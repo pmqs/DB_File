@@ -1,0 +1,23 @@
+use DB_File;
+use Fcntl;
+
+$DB_HASH->{'bsize'} = 1000 ;
+tie (%myh, DB_File, 'sample.db', O_RDWR|O_CREAT, 0740, $DB_HASH);
+while ($file =<*>) {
+
+	next if $file eq 'sample.db' or !-T $file ;
+        open (TEMP, $file) or die "cannot open";
+
+        print "$file\n";
+
+        $content = ' ';
+        while (<TEMP>) {
+                $content .= $_
+        }
+        $myh{$file} = $content;
+        #$myh{$file} = "abc" ;
+        close TEMP;
+}
+
+untie %myh;
+

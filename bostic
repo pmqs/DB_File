@@ -1,0 +1,26 @@
+Keith,
+
+below I have included a short C program which I think illustrates a bug
+with DB 1.85. 
+
+Basically seq doesn't seem to like values >= 56K when you are using the
+hash format (btree seems to be ok). On my Sun the program below will
+print
+
+    using seq
+    3 => 20
+    4 => 55
+    EOF/Error, stat = -1, 22
+    
+    using get
+    5 => 57344
+    done
+    
+As you can see it has failed to retrieve the 56K record using seq, but
+can get it using get.
+
+Assuming this is actually a bug, what are the chances of a quick(ish) patch
+for this problem (given that I know you are working on a major upgrade
+to DB already)?
+
+Paul

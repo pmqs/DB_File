@@ -22,6 +22,7 @@
 	0.3 - Added some support for multiple btree compares
 	1.0 - Complete support for multiple callbacks added.
 	      Fixed a problem with pushing a value onto an empty list.
+	1.001 - 
 */
 
 #include "EXTERN.h"  
@@ -52,18 +53,18 @@ union INFO {
 
 /* #define TRACE  */
 
-#define db_DESTROY(db)                  (db->dbp->close)(db->dbp)
-#define db_DELETE(db, key, flags)       (db->dbp->del)(db->dbp, &key, flags)
-#define db_STORE(db, key, value, flags) (db->dbp->put)(db->dbp, &key, &value, flags)
-#define db_FETCH(db, key, flags)        (db->dbp->get)(db->dbp, &key, &value, flags)
+#define db_DESTROY(db)                  ((db->dbp)->close)(db->dbp)
+#define db_DELETE(db, key, flags)       ((db->dbp)->del)(db->dbp, &key, flags)
+#define db_STORE(db, key, value, flags) ((db->dbp)->put)(db->dbp, &key, &value, flags)
+#define db_FETCH(db, key, flags)        ((db->dbp)->get)(db->dbp, &key, &value, flags)
 
-#define db_close(db)			(db->dbp->close)(db->dbp)
-#define db_del(db, key, flags)          (db->dbp->del)(db->dbp, &key, flags)
-#define db_fd(db)                       (db->dbp->fd)(db->dbp) 
-#define db_put(db, key, value, flags)   (db->dbp->put)(db->dbp, &key, &value, flags)
-#define db_get(db, key, value, flags)   (db->dbp->get)(db->dbp, &key, &value, flags)
-#define db_seq(db, key, value, flags)   (db->dbp->seq)(db->dbp, &key, &value, flags)
-#define db_sync(db, flags)              (db->dbp->sync)(db->dbp, flags)
+#define db_close(db)			((db->dbp)->close)(db->dbp)
+#define db_del(db, key, flags)          ((db->dbp)->del)(db->dbp, &key, flags)
+#define db_fd(db)                       ((db->dbp)->fd)(db->dbp) 
+#define db_put(db, key, value, flags)   ((db->dbp)->put)(db->dbp, &key, &value, flags)
+#define db_get(db, key, value, flags)   ((db->dbp)->get)(db->dbp, &key, &value, flags)
+#define db_seq(db, key, value, flags)   ((db->dbp)->seq)(db->dbp, &key, &value, flags)
+#define db_sync(db, flags)              ((db->dbp)->sync)(db->dbp, flags)
 
 
 #define OutputValue(arg, name)  \
@@ -741,6 +742,8 @@ XS(XS_DB_File_db_TIEHASH)
 	        sv = ST(4) ;
 
 	    RETVAL = ParseOpenInfo(name, flags, mode, sv, "new") ;
+	    if (RETVAL->dbp == NULL)
+	        RETVAL = NULL ;
 	}
 	ST(0) = sv_newmortal();
 	sv_setref_pv(ST(0), "DB_File", (void*)RETVAL);
@@ -864,7 +867,7 @@ XS(XS_DB_File_db_FETCH)
 	    DBT		value  ;
 
 	    CurrentDB = db ;
-	    RETVAL = (db->dbp->get)(db->dbp, &key, &value, flags) ;
+	    RETVAL = ((db->dbp)->get)(db->dbp, &key, &value, flags) ;
 	    ST(0) = sv_newmortal();
 	    if (RETVAL == 0)
 	        sv_setpvn(ST(0), value.data, value.size);
@@ -940,13 +943,14 @@ XS(XS_DB_File_db_FIRSTKEY)
 	{
 	    DBTKEY		key ;
 	    DBT		value ;
+	    DB *	Db = db->dbp ;
 
 	    CurrentDB = db ;
-	    RETVAL = (db->dbp->seq)(db->dbp, &key, &value, R_FIRST) ;
+	    RETVAL = (Db->seq)(Db, &key, &value, R_FIRST) ;
 	    ST(0) = sv_newmortal();
 	    if (RETVAL == 0)
 	    {
-	        if (db->dbp->type != DB_RECNO)
+	        if (Db->type != DB_RECNO)
 	            sv_setpvn(ST(0), key.data, key.size);
 	        else
 	            sv_setiv(ST(0), (I32)*(I32*)key.data - 1);
@@ -987,13 +991,14 @@ XS(XS_DB_File_db_NEXTKEY)
 	};
 	{
 	    DBT		value ;
+	    DB *	Db = db->dbp ;
 
 	    CurrentDB = db ;
-	    RETVAL = (db->dbp->seq)(db->dbp, &key, &value, R_NEXT) ;
+	    RETVAL = (Db->seq)(Db, &key, &value, R_NEXT) ;
 	    ST(0) = sv_newmortal();
 	    if (RETVAL == 0)
 	    {
-	        if (db->dbp->type != DB_RECNO)
+	        if (Db->type != DB_RECNO)
 	            sv_setpvn(ST(0), key.data, key.size);
 	        else
 	            sv_setiv(ST(0), (I32)*(I32*)key.data - 1);
@@ -1023,6 +1028,7 @@ XS(XS_DB_File_unshift)
 	    DBT		value ;
 	    int		i ;
 	    int		One ;
+	    DB *	Db = db->dbp ;
 
 	    CurrentDB = db ;
 	    RETVAL = -1 ;
@@ -1033,7 +1039,7 @@ XS(XS_DB_File_unshift)
 	        One = 1 ;
 	        key.data = &One ;
 	        key.size = sizeof(int) ;
-	        RETVAL = (db->dbp->put)(db->dbp, &key, &value, R_IBEFORE) ;
+	        RETVAL = (Db->put)(Db, &key, &value, R_IBEFORE) ;
 	        if (RETVAL != 0)
 	            break;
 	    }
@@ -1062,15 +1068,16 @@ XS(XS_DB_File_pop)
 	{
 	    DBTKEY	key ;
 	    DBT		value ;
+	    DB *	Db = db->dbp ;
 
 	    CurrentDB = db ;
 	    /* First get the final value */
-	    RETVAL = (db->dbp->seq)(db->dbp, &key, &value, R_LAST) ;	
+	    RETVAL = (Db->seq)(Db, &key, &value, R_LAST) ;	
 	    ST(0) = sv_newmortal();
 	    /* Now delete it */
 	    if (RETVAL == 0)
 	    {
-	        RETVAL = (db->dbp->del)(db->dbp, &key, R_CURSOR) ;
+	        RETVAL = (Db->del)(Db, &key, R_CURSOR) ;
 	        if (RETVAL == 0)
 	            sv_setpvn(ST(0), value.data, value.size);
 	    }
@@ -1097,15 +1104,16 @@ XS(XS_DB_File_shift)
 	{
 	    DBTKEY	key ;
 	    DBT		value ;
+	    DB *	Db = db->dbp ;
 
 	    CurrentDB = db ;
 	    /* get the first value */
-	    RETVAL = (db->dbp->seq)(db->dbp, &key, &value, R_FIRST) ;	
+	    RETVAL = (Db->seq)(Db, &key, &value, R_FIRST) ;	
 	    ST(0) = sv_newmortal();
 	    /* Now delete it */
 	    if (RETVAL == 0)
 	    {
-	        RETVAL = (db->dbp->del)(db->dbp, &key, R_CURSOR) ;
+	        RETVAL = (Db->del)(Db, &key, R_CURSOR) ;
 	        if (RETVAL == 0)
 	            sv_setpvn(ST(0), value.data, value.size);
 	    }
@@ -1133,11 +1141,12 @@ XS(XS_DB_File_push)
 	    DBTKEY	key ;
 	    DBTKEY *	keyptr = &key ; 
 	    DBT		value ;
+	    DB *	Db = db->dbp ;
 	    int		i ;
 
 	    CurrentDB = db ;
 	    /* Set the Cursor to the Last element */
-	    RETVAL = (db->dbp->seq)(db->dbp, &key, &value, R_LAST) ;
+	    RETVAL = (Db->seq)(Db, &key, &value, R_LAST) ;
 	    if (RETVAL >= 0)
 	    {
 		if (RETVAL == 1)
@@ -1146,7 +1155,7 @@ XS(XS_DB_File_push)
 	        {
 	            value.data = SvPV(ST(i), na) ;
 	            value.size = na ;
-	            RETVAL = (db->dbp->put)(db->dbp, keyptr, &value, R_IAFTER) ;
+	            RETVAL = (Db->put)(Db, keyptr, &value, R_IAFTER) ;
 	            if (RETVAL != 0)
 	                break;
 	        }

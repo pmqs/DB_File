@@ -1,0 +1,266 @@
+*** DB_File.xs.orig	Sun Oct  8 11:11:38 1995
+--- DB_File.xs	Mon Nov 13 17:35:17 1995
+***************
+*** 14,19 ****
+--- 14,20 ----
+  	0.3 - Added some support for multiple btree compares
+  	1.0 - Complete support for multiple callbacks added.
+  	      Fixed a problem with pushing a value onto an empty list.
++ 	1.001 - 
+  */
+  
+  #include "EXTERN.h"  
+***************
+*** 44,61 ****
+  
+  /* #define TRACE  */
+  
+! #define db_DESTROY(db)                  (db->dbp->close)(db->dbp)
+! #define db_DELETE(db, key, flags)       (db->dbp->del)(db->dbp, &key, flags)
+! #define db_STORE(db, key, value, flags) (db->dbp->put)(db->dbp, &key, &value, flags)
+! #define db_FETCH(db, key, flags)        (db->dbp->get)(db->dbp, &key, &value, flags)
+! 
+! #define db_close(db)			(db->dbp->close)(db->dbp)
+! #define db_del(db, key, flags)          (db->dbp->del)(db->dbp, &key, flags)
+! #define db_fd(db)                       (db->dbp->fd)(db->dbp) 
+! #define db_put(db, key, value, flags)   (db->dbp->put)(db->dbp, &key, &value, flags)
+! #define db_get(db, key, value, flags)   (db->dbp->get)(db->dbp, &key, &value, flags)
+! #define db_seq(db, key, value, flags)   (db->dbp->seq)(db->dbp, &key, &value, flags)
+! #define db_sync(db, flags)              (db->dbp->sync)(db->dbp, flags)
+  
+  
+  #define OutputValue(arg, name)  \
+--- 45,62 ----
+  
+  /* #define TRACE  */
+  
+! #define db_DESTROY(db)                  ((db->dbp)->close)(db->dbp)
+! #define db_DELETE(db, key, flags)       ((db->dbp)->del)(db->dbp, &key, flags)
+! #define db_STORE(db, key, value, flags) ((db->dbp)->put)(db->dbp, &key, &value, flags)
+! #define db_FETCH(db, key, flags)        ((db->dbp)->get)(db->dbp, &key, &value, flags)
+! 
+! #define db_close(db)			((db->dbp)->close)(db->dbp)
+! #define db_del(db, key, flags)          ((db->dbp)->del)(db->dbp, &key, flags)
+! #define db_fd(db)                       ((db->dbp)->fd)(db->dbp) 
+! #define db_put(db, key, value, flags)   ((db->dbp)->put)(db->dbp, &key, &value, flags)
+! #define db_get(db, key, value, flags)   ((db->dbp)->get)(db->dbp, &key, &value, flags)
+! #define db_seq(db, key, value, flags)   ((db->dbp)->seq)(db->dbp, &key, &value, flags)
+! #define db_sync(db, flags)              ((db->dbp)->sync)(db->dbp, flags)
+  
+  
+  #define OutputValue(arg, name)  \
+***************
+*** 748,754 ****
+  	    DBT		value  ;
+  
+  	    CurrentDB = db ;
+! 	    RETVAL = (db->dbp->get)(db->dbp, &key, &value, flags) ;
+  	    ST(0) = sv_newmortal();
+  	    if (RETVAL == 0)
+  	        sv_setpvn(ST(0), value.data, value.size);
+--- 749,755 ----
+  	    DBT		value  ;
+  
+  	    CurrentDB = db ;
+! 	    RETVAL = ((db->dbp)->get)(db->dbp, &key, &value, flags) ;
+  	    ST(0) = sv_newmortal();
+  	    if (RETVAL == 0)
+  	        sv_setpvn(ST(0), value.data, value.size);
+***************
+*** 771,783 ****
+  	{
+  	    DBTKEY		key ;
+  	    DBT		value ;
+  
+  	    CurrentDB = db ;
+! 	    RETVAL = (db->dbp->seq)(db->dbp, &key, &value, R_FIRST) ;
+  	    ST(0) = sv_newmortal();
+  	    if (RETVAL == 0)
+  	    {
+! 	        if (db->dbp->type != DB_RECNO)
+  	            sv_setpvn(ST(0), key.data, key.size);
+  	        else
+  	            sv_setiv(ST(0), (I32)*(I32*)key.data - 1);
+--- 772,785 ----
+  	{
+  	    DBTKEY		key ;
+  	    DBT		value ;
++ 	    DB *	Db = db->dbp ;
+  
+  	    CurrentDB = db ;
+! 	    RETVAL = (Db->seq)(Db, &key, &value, R_FIRST) ;
+  	    ST(0) = sv_newmortal();
+  	    if (RETVAL == 0)
+  	    {
+! 	        if (Db->type != DB_RECNO)
+  	            sv_setpvn(ST(0), key.data, key.size);
+  	        else
+  	            sv_setiv(ST(0), (I32)*(I32*)key.data - 1);
+***************
+*** 791,803 ****
+  	CODE:
+  	{
+  	    DBT		value ;
+  
+  	    CurrentDB = db ;
+! 	    RETVAL = (db->dbp->seq)(db->dbp, &key, &value, R_NEXT) ;
+  	    ST(0) = sv_newmortal();
+  	    if (RETVAL == 0)
+  	    {
+! 	        if (db->dbp->type != DB_RECNO)
+  	            sv_setpvn(ST(0), key.data, key.size);
+  	        else
+  	            sv_setiv(ST(0), (I32)*(I32*)key.data - 1);
+--- 793,806 ----
+  	CODE:
+  	{
+  	    DBT		value ;
++ 	    DB *	Db = db->dbp ;
+  
+  	    CurrentDB = db ;
+! 	    RETVAL = (Db->seq)(Db, &key, &value, R_NEXT) ;
+  	    ST(0) = sv_newmortal();
+  	    if (RETVAL == 0)
+  	    {
+! 	        if (Db->type != DB_RECNO)
+  	            sv_setpvn(ST(0), key.data, key.size);
+  	        else
+  	            sv_setiv(ST(0), (I32)*(I32*)key.data - 1);
+***************
+*** 817,822 ****
+--- 820,826 ----
+  	    DBT		value ;
+  	    int		i ;
+  	    int		One ;
++ 	    DB *	Db = db->dbp ;
+  
+  	    CurrentDB = db ;
+  	    RETVAL = -1 ;
+***************
+*** 827,833 ****
+  	        One = 1 ;
+  	        key.data = &One ;
+  	        key.size = sizeof(int) ;
+! 	        RETVAL = (db->dbp->put)(db->dbp, &key, &value, R_IBEFORE) ;
+  	        if (RETVAL != 0)
+  	            break;
+  	    }
+--- 831,837 ----
+  	        One = 1 ;
+  	        key.data = &One ;
+  	        key.size = sizeof(int) ;
+! 	        RETVAL = (Db->put)(Db, &key, &value, R_IBEFORE) ;
+  	        if (RETVAL != 0)
+  	            break;
+  	    }
+***************
+*** 842,856 ****
+  	{
+  	    DBTKEY	key ;
+  	    DBT		value ;
+  
+  	    CurrentDB = db ;
+  	    /* First get the final value */
+! 	    RETVAL = (db->dbp->seq)(db->dbp, &key, &value, R_LAST) ;	
+  	    ST(0) = sv_newmortal();
+  	    /* Now delete it */
+  	    if (RETVAL == 0)
+  	    {
+! 	        RETVAL = (db->dbp->del)(db->dbp, &key, R_CURSOR) ;
+  	        if (RETVAL == 0)
+  	            sv_setpvn(ST(0), value.data, value.size);
+  	    }
+--- 846,861 ----
+  	{
+  	    DBTKEY	key ;
+  	    DBT		value ;
++ 	    DB *	Db = db->dbp ;
+  
+  	    CurrentDB = db ;
+  	    /* First get the final value */
+! 	    RETVAL = (Db->seq)(Db, &key, &value, R_LAST) ;	
+  	    ST(0) = sv_newmortal();
+  	    /* Now delete it */
+  	    if (RETVAL == 0)
+  	    {
+! 	        RETVAL = (Db->del)(Db, &key, R_CURSOR) ;
+  	        if (RETVAL == 0)
+  	            sv_setpvn(ST(0), value.data, value.size);
+  	    }
+***************
+*** 863,877 ****
+  	{
+  	    DBTKEY	key ;
+  	    DBT		value ;
+  
+  	    CurrentDB = db ;
+  	    /* get the first value */
+! 	    RETVAL = (db->dbp->seq)(db->dbp, &key, &value, R_FIRST) ;	
+  	    ST(0) = sv_newmortal();
+  	    /* Now delete it */
+  	    if (RETVAL == 0)
+  	    {
+! 	        RETVAL = (db->dbp->del)(db->dbp, &key, R_CURSOR) ;
+  	        if (RETVAL == 0)
+  	            sv_setpvn(ST(0), value.data, value.size);
+  	    }
+--- 868,883 ----
+  	{
+  	    DBTKEY	key ;
+  	    DBT		value ;
++ 	    DB *	Db = db->dbp ;
+  
+  	    CurrentDB = db ;
+  	    /* get the first value */
+! 	    RETVAL = (Db->seq)(Db, &key, &value, R_FIRST) ;	
+  	    ST(0) = sv_newmortal();
+  	    /* Now delete it */
+  	    if (RETVAL == 0)
+  	    {
+! 	        RETVAL = (Db->del)(Db, &key, R_CURSOR) ;
+  	        if (RETVAL == 0)
+  	            sv_setpvn(ST(0), value.data, value.size);
+  	    }
+***************
+*** 886,896 ****
+  	    DBTKEY	key ;
+  	    DBTKEY *	keyptr = &key ; 
+  	    DBT		value ;
+  	    int		i ;
+  
+  	    CurrentDB = db ;
+  	    /* Set the Cursor to the Last element */
+! 	    RETVAL = (db->dbp->seq)(db->dbp, &key, &value, R_LAST) ;
+  	    if (RETVAL >= 0)
+  	    {
+  		if (RETVAL == 1)
+--- 892,903 ----
+  	    DBTKEY	key ;
+  	    DBTKEY *	keyptr = &key ; 
+  	    DBT		value ;
++ 	    DB *	Db = db->dbp ;
+  	    int		i ;
+  
+  	    CurrentDB = db ;
+  	    /* Set the Cursor to the Last element */
+! 	    RETVAL = (Db->seq)(Db, &key, &value, R_LAST) ;
+  	    if (RETVAL >= 0)
+  	    {
+  		if (RETVAL == 1)
+***************
+*** 899,905 ****
+  	        {
+  	            value.data = SvPV(ST(i), na) ;
+  	            value.size = na ;
+! 	            RETVAL = (db->dbp->put)(db->dbp, keyptr, &value, R_IAFTER) ;
+  	            if (RETVAL != 0)
+  	                break;
+  	        }
+--- 906,912 ----
+  	        {
+  	            value.data = SvPV(ST(i), na) ;
+  	            value.size = na ;
+! 	            RETVAL = (Db->put)(Db, keyptr, &value, R_IAFTER) ;
+  	            if (RETVAL != 0)
+  	                break;
+  	        }

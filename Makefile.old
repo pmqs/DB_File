@@ -1,14 +1,16 @@
 # This Makefile is for the DB_File extension to perl.
 #
-# It was generated automatically by MakeMaker version 4.16 from the contents
+# It was generated automatically by MakeMaker version 5.00 from the contents
 # of Makefile.PL. Don't edit this file, edit Makefile.PL instead.
 #
-#	ANY CHANGES MADE HERE WILL BE LOST! 
+#	ANY CHANGES MADE HERE WILL BE LOST!
 #
-#   MakeMaker Parameters: 
-#	LIBS => [ '-L/usr/local/lib -ldb' ]
+#   MakeMaker Parameters:
+
+#	LIBS => ['-L/usr/local/lib -ldb']
 #	NAME => 'DB_File'
-#	VERSION => '1.1'
+#	VERSION => '1.001'
+#	macro => { CC=>'gcc' }
 
 # --- MakeMaker post_initialize section:
 
@@ -18,8 +20,8 @@
 # These definitions are from config.sh (via /usr/local/lib/perl5/sun4-sunos/Config.pm)
 CC = cc
 LIBC = /usr/lib/libc.so.1.8
-LDFLAGS = 
-LDDLFLAGS = -assert nodefinitions
+LDFLAGS =  -L/usr/local/lib
+LDDLFLAGS = -assert nodefinitions -L/usr/local/lib
 CCDLFLAGS =  
 CCCDLFLAGS = -pic
 RANLIB = /usr/bin/ranlib
@@ -32,15 +34,18 @@ DLSRC = dl_dlopen.xs
 
 NAME = DB_File
 DISTNAME = DB_File
-VERSION = 1.1
-VERSION_SYM = 1_1
+NAME_SYM = DB_File
+VERSION = 1.001
+VERSION_SYM = 1_001
+VERSION_MACRO = VERSION
+DEFINE_VERSION = -D$(VERSION_MACRO)=\"$(VERSION)\"
 
 # In which directory should we put this extension during 'make'?
 # This is typically ./blib.
 # (also see INST_LIBDIR and relationship to ROOTEXT)
 INST_LIB = ./blib
-INST_ARCHLIB = ./blib
-INST_EXE = ./blib
+INST_ARCHLIB = ./blib/sun4-sunos
+INST_EXE = ./blib/sun4-sunos
 
 # AFS users will want to set the installation directories for
 # the final 'make install' early without setting INST_LIB,
@@ -55,8 +60,11 @@ PERL_ARCHLIB = /usr/local/lib/perl5/sun4-sunos
 LIBPERL_A = libperl.a
 
 MAKEMAKER = $(PERL_LIB)/ExtUtils/MakeMaker.pm
-MM_VERSION = 4.16
-I_PERL_LIBS = -I$(PERL_ARCHLIB) -I$(PERL_LIB)
+MM_VERSION = 5.00
+
+OBJ_EXT = o
+LIB_EXT = a
+AR = ar
 
 # Perl header files (will eventually be under PERL_LIB)
 PERL_INC = /usr/local/lib/perl5/sun4-sunos/CORE
@@ -67,13 +75,15 @@ FULLPERL = /usr/local/bin/perl
 # FULLEXT = Pathname for extension directory (eg DBD/Oracle).
 # BASEEXT = Basename part of FULLEXT. May be just equal FULLEXT.
 # ROOTEXT = Directory part of FULLEXT with leading slash (eg /DBD)
+# DLBASE  = Basename part of dynamic library. May be just equal BASEEXT.
 FULLEXT = DB_File
 BASEEXT = DB_File
 ROOTEXT = 
+DLBASE  = $(BASEEXT)
 
 INC = 
 DEFINE = 
-OBJECT = $(BASEEXT).o
+OBJECT = $(BASEEXT).$(OBJ_EXT)
 LDFROM = $(OBJECT)
 LINKTYPE = dynamic
 
@@ -82,12 +92,25 @@ XS_FILES= DB_File.xs
 C_FILES = DB_File.c
 O_FILES = DB_File.o
 H_FILES = btree.h
+MANPODS = DB_File.pm \
+	perlcall.pod
 
-.SUFFIXES: .xs
+# Man installation stuff:
+INST_MAN1DIR	= ./blib/man/man1
+INSTALLMAN1DIR	= /usr/local/man/man1
+MAN1EXT	= 1
+
+INST_MAN3DIR	= ./blib/man/man3
+INSTALLMAN3DIR	= /usr/local/lib/perl5/man/man3
+MAN3EXT	= 3
+
+
+# work around a famous dec-osf make(1) feature(?):
+makemakerdflt: all
+
+.SUFFIXES: .xs .c .$(OBJ_EXT)
 
 .PRECIOUS: Makefile
-
-.NO_PARALLEL:
 
 .PHONY: all config static dynamic test linkext
 
@@ -104,9 +127,13 @@ INST_ARCHLIBDIR = $(INST_ARCHLIB)$(ROOTEXT)
 INST_AUTODIR      = $(INST_LIB)/auto/$(FULLEXT)
 INST_ARCHAUTODIR  = $(INST_ARCHLIB)/auto/$(FULLEXT)
 
-INST_STATIC  = $(INST_ARCHAUTODIR)/$(BASEEXT).a
-INST_DYNAMIC = $(INST_ARCHAUTODIR)/$(BASEEXT).$(DLEXT)
+INST_STATIC  = $(INST_ARCHAUTODIR)/$(BASEEXT).$(LIB_EXT)
+INST_DYNAMIC = $(INST_ARCHAUTODIR)/$(DLBASE).$(DLEXT)
 INST_BOOT    = $(INST_ARCHAUTODIR)/$(BASEEXT).bs
+
+EXPORT_LIST = 
+
+PERL_ARCHIVE = 
 
 INST_PM = $(INST_LIBDIR)/DB_File.pm \
 	$(INST_LIBDIR)/perlcall.pod
@@ -149,11 +176,11 @@ INST_PM = $(INST_LIBDIR)/DB_File.pm \
 EXTRALIBS  = -L/usr/local/lib
 LDLOADLIBS = -L/usr/local/lib -ldb
 BSLOADLIBS = 
-LD_RUN_PATH= /usr/local/lib
+LD_RUN_PATH= /usr/local/lib:-ldb
 
 
 # --- MakeMaker const_cccmd section:
-CCCMD = $(CC) -c -O
+CCCMD = $(CC) -c -I/usr/local/include -O $(DEFINE_VERSION)
 
 
 # --- MakeMaker tool_autosplit section:
@@ -180,12 +207,34 @@ MV = mv
 RM_F  = rm -f
 RM_RF = rm -rf
 CHMOD = chmod
+UMASK_NULL = umask 0
 
 # The following is a portable way to say mkdir -p
-MKPATH = $(PERL) -wle '$$"="/"; foreach $$p (@ARGV){ next if -d $$p; my(@p); foreach(split(/\//,$$p)){ push(@p,$$_); next if -d "@p/"; print "mkdir @p"; mkdir("@p",0777)||die $$! }} exit 0;'
+# To see which directories are created, change the if 0 to if 1
+MKPATH = $(PERL) -wle '$$"="/"; foreach $$p (@ARGV){' \
+-e 'next if -d $$p; my(@p); foreach(split(/\//,$$p)){' \
+-e 'push(@p,$$_); next if -d "@p/"; print "mkdir @p" if 0;' \
+-e 'mkdir("@p",0777)||die $$! } } exit 0;'
+
+
+# --- MakeMaker dist section:
+
+DISTVNAME = $(DISTNAME)-$(VERSION)
+TAR  = tar
+TARFLAGS = cvf
+COMPRESS = compress
+SUFFIX = Z
+SHAR = shar
+PREOP = @ true
+POSTOP = @ true
+CI = ci -u
+RCS_LABEL = rcs -Nv$(VERSION_SYM): -q
+DIST_CP = cp
+DIST_DEFAULT = tardist
 
 
 # --- MakeMaker macro section:
+CC = gcc
 
 
 # --- MakeMaker post_constants section:
@@ -193,25 +242,18 @@ MKPATH = $(PERL) -wle '$$"="/"; foreach $$p (@ARGV){ next if -d $$p; my(@p); for
 
 # --- MakeMaker pasthru section:
 
-PASTHRU1 = INST_LIB="$(INST_LIB)"\
-	INST_ARCHLIB="$(INST_ARCHLIB)"\
-	INST_EXE="$(INST_EXE)"\
-	INSTALLPRIVLIB="$(INSTALLPRIVLIB)"\
+PASTHRU = INSTALLPRIVLIB="$(INSTALLPRIVLIB)"\
 	INSTALLARCHLIB="$(INSTALLARCHLIB)"\
 	INSTALLBIN="$(INSTALLBIN)"\
-	LIBPERL_A="$(LIBPERL_A)"\
-	LINKTYPE="$(LINKTYPE)"
-
-PASTHRU2 = INSTALLPRIVLIB="$(INSTALLPRIVLIB)"\
-	INSTALLARCHLIB="$(INSTALLARCHLIB)"\
-	INSTALLBIN="$(INSTALLBIN)"\
+	INSTALLMAN1DIR="$(INSTALLMAN1DIR)"\
+	INSTALLMAN3DIR="$(INSTALLMAN3DIR)"\
 	LIBPERL_A="$(LIBPERL_A)"\
 	LINKTYPE="$(LINKTYPE)"
 
 
 # --- MakeMaker c_o section:
 
-.c.o:
+.c.$(OBJ_EXT):
 	$(CCCMD) $(CCCDLFLAGS) -I$(PERL_INC) $(DEFINE) $(INC) $*.c
 
 
@@ -223,37 +265,62 @@ PASTHRU2 = INSTALLPRIVLIB="$(INSTALLPRIVLIB)"\
 
 # --- MakeMaker xs_o section:
 
-.xs.o:
+.xs.$(OBJ_EXT):
 	$(PERL) -I$(PERL_ARCHLIB) -I$(PERL_LIB) $(XSUBPP) $(XSUBPPARGS) $*.xs >xstmp.c && mv xstmp.c $*.c
 	$(CCCMD) $(CCCDLFLAGS) -I$(PERL_INC) $(DEFINE) $(INC) $*.c
 
 
 # --- MakeMaker top_targets section:
 
-all ::	config linkext $(INST_PM)
+all ::	config $(INST_PM) subdirs linkext manifypods
+
+subdirs :: $(MYEXTLIB)
 
 
-config :: Makefile $(INST_LIBDIR)/.exists $(INST_ARCHAUTODIR)/.exists Version_check
+
+config :: Makefile $(INST_LIBDIR)/.exists
+
+config :: $(INST_ARCHAUTODIR)/.exists Version_check
+
+config :: $(INST_AUTODIR)/.exists
+
+config :: $(INST_MAN1DIR)/.exists
+
+config :: $(INST_MAN3DIR)/.exists
+
+$(INST_AUTODIR)/.exists :: $(PERL)
+	@ $(MKPATH) $(INST_AUTODIR)
+	@ $(TOUCH) $(INST_AUTODIR)/.exists
+	@-$(CHMOD) 755 $(INST_AUTODIR)
 
 $(INST_LIBDIR)/.exists :: $(PERL)
 	@ $(MKPATH) $(INST_LIBDIR)
 	@ $(TOUCH) $(INST_LIBDIR)/.exists
+	@-$(CHMOD) 755 $(INST_LIBDIR)
 
 $(INST_ARCHAUTODIR)/.exists :: $(PERL)
 	@ $(MKPATH) $(INST_ARCHAUTODIR)
 	@ $(TOUCH) $(INST_ARCHAUTODIR)/.exists
+	@-$(CHMOD) 755 $(INST_ARCHAUTODIR)
 
-$(INST_EXE)/.exists :: $(PERL)
-	@ $(MKPATH) $(INST_EXE)
-	@ $(TOUCH) $(INST_EXE)/.exists
+$(INST_MAN1DIR)/.exists :: $(PERL)
+	@ $(MKPATH) $(INST_MAN1DIR)
+	@ $(TOUCH) $(INST_MAN1DIR)/.exists
+	@-$(CHMOD) 755 $(INST_MAN1DIR)
+
+$(INST_MAN3DIR)/.exists :: $(PERL)
+	@ $(MKPATH) $(INST_MAN3DIR)
+	@ $(TOUCH) $(INST_MAN3DIR)/.exists
+	@-$(CHMOD) 755 $(INST_MAN3DIR)
 
 $(O_FILES): $(H_FILES)
 
 help:
-	$(PERL) -I$(PERL_LIB) -e 'use ExtUtils::MakeMaker "&help"; &help;'
+	perldoc ExtUtils::MakeMaker
 
 Version_check:
-	@$(PERL) -I$(PERL_LIB) -e 'use ExtUtils::MakeMaker qw($$Version &Version_check);' \
+	@$(PERL) -I$(PERL_ARCHLIB) -I$(PERL_LIB) \
+		-e 'use ExtUtils::MakeMaker qw($$Version &Version_check);' \
 		-e '&Version_check($(MM_VERSION))'
 
 
@@ -304,8 +371,8 @@ $(INST_BOOT): $(BOOTSTRAP)
 ARMAYBE = :
 OTHERLDFLAGS = 
 
-$(INST_DYNAMIC): $(OBJECT) $(MYEXTLIB) $(BOOTSTRAP) $(INST_ARCHAUTODIR)/.exists
-	LD_RUN_PATH="$(LD_RUN_PATH)" $(LD) -o $@ $(LDDLFLAGS) $(LDFROM) $(OTHERLDFLAGS) $(MYEXTLIB) $(LDLOADLIBS)
+$(INST_DYNAMIC): $(OBJECT) $(MYEXTLIB) $(BOOTSTRAP) $(INST_ARCHAUTODIR)/.exists $(EXPORT_LIST) $(PERL_ARCHIVE)
+	LD_RUN_PATH="$(LD_RUN_PATH)" $(LD) -o $@ $(LDDLFLAGS) $(LDFROM) $(OTHERLDFLAGS) $(MYEXTLIB) $(LDLOADLIBS) $(EXPORT_LIST) $(PERL_ARCHIVE)
 	$(CHMOD) 755 $@
 	@echo $@ >> $(INST_ARCHAUTODIR)/.packlist
 
@@ -321,21 +388,22 @@ static :: Makefile $(INST_STATIC) $(INST_PM)
 # --- MakeMaker static_lib section:
 
 $(INST_STATIC): $(OBJECT) $(MYEXTLIB) $(INST_ARCHAUTODIR)/.exists
-	ar cr $@ $(OBJECT) && $(RANLIB) $@
+	$(AR) cr $@ $(OBJECT) && $(RANLIB) $@
 	@echo "$(EXTRALIBS)" > $(INST_ARCHAUTODIR)/extralibs.ld
 	$(CHMOD) 755 $@
 	@echo $@ >> $(INST_ARCHAUTODIR)/.packlist
 
 
 # --- MakeMaker installpm section:
+inst_pm :: $(INST_PM)
+
 
 # installpm: DB_File.pm => $(INST_LIBDIR)/DB_File.pm, splitlib=$(INST_LIB)
 
 $(INST_LIBDIR)/DB_File.pm: DB_File.pm Makefile $(INST_LIBDIR)/.exists
 	@ rm -f $@
-	cp DB_File.pm $@
-	$(CHMOD) 644 $@
-	@echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	$(UMASK_NULL) && cp DB_File.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
 	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
 
 
@@ -343,11 +411,23 @@ $(INST_LIBDIR)/DB_File.pm: DB_File.pm Makefile $(INST_LIBDIR)/.exists
 
 $(INST_LIBDIR)/perlcall.pod: perlcall.pod Makefile $(INST_LIBDIR)/.exists
 	@ rm -f $@
-	cp perlcall.pod $@
-	$(CHMOD) 644 $@
-	@echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	$(UMASK_NULL) && cp perlcall.pod $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
 
 
+
+# --- MakeMaker manifypods section:
+POD2MAN = $(PERL) -we '%m=@ARGV;for (keys %m){' \
+-e 'next if -e $$m{$$_} && -M $$m{$$_} < -M "Makefile";' \
+-e 'print "Installing $$m{$$_}\n";' \
+-e 'system("pod2man $$_>$$m{$$_}")==0 or warn "Couldn\047t install $$m{$$_}\n";' \
+-e 'chmod 0644, $$m{$$_} or warn "chmod 644 $$m{$$_}: $$!\n";}'
+
+manifypods :
+	@$(POD2MAN) \	DB_File.pm \
+	$(INST_MAN3DIR)/DB_File.$(MAN3EXT) \
+	perlcall.pod \
+	$(INST_MAN3DIR)/perlcall.$(MAN3EXT)
 
 # --- MakeMaker processPL section:
 
@@ -365,7 +445,7 @@ $(INST_LIBDIR)/perlcall.pod: perlcall.pod Makefile $(INST_LIBDIR)/.exists
 # the Makefile here so a later make realclean still has a makefile to use.
 
 clean ::
-	-rm -rf *~ t/*~ *.o *.a mon.out core so_locations $(BOOTSTRAP) $(BASEEXT).bso $(BASEEXT).exp DB_File.c ./blib
+	-rm -rf DB_File.c ./blib Makeaperlfile $(INST_ARCHAUTODIR)/extralibs.all perlmain.c mon.out core so_locations *~ */*~ */*/*~ *.$(OBJ_EXT) *.$(LIB_EXT) perl.exe $(BOOTSTRAP) $(BASEEXT).bso $(BASEEXT).def $(BASEEXT).exp
 	-mv Makefile Makefile.old 2>/dev/null
 
 
@@ -379,63 +459,67 @@ realclean purge ::  clean
 	rm -rf Makefile Makefile.old
 
 
-# --- MakeMaker dist section:
-
-TAR  = tar
-TARFLAGS = cvf
-COMPRESS = compress
-SUFFIX = Z
-SHAR = shar
-PREOP = @ :
-POSTOP = @ :
-CI = ci -u
-RCS = rcs -Nv$(VERSION_SYM):
-DIST_DEFAULT = tardist
+# --- MakeMaker dist_basics section:
 
 distclean :: realclean distcheck
 
 distcheck :
-	$(PERL) -I$(PERL_LIB) -e 'use ExtUtils::Manifest "&fullcheck";' \
+	$(PERL) -I$(PERL_ARCHLIB) -I$(PERL_LIB) -e 'use ExtUtils::Manifest "&fullcheck";' \
 		-e 'fullcheck();'
 
 manifest :
-	$(PERL) -I$(PERL_LIB) -e 'use ExtUtils::Manifest "&mkmanifest";' \
+	$(PERL) -I$(PERL_ARCHLIB) -I$(PERL_LIB) -e 'use ExtUtils::Manifest "&mkmanifest";' \
 		-e 'mkmanifest();'
+
+
+# --- MakeMaker dist_core section:
 
 dist : $(DIST_DEFAULT)
 
-tardist : $(DISTNAME)-$(VERSION).tar.$(SUFFIX)
+tardist : $(DISTVNAME).tar.$(SUFFIX)
 
-$(DISTNAME)-$(VERSION).tar.$(SUFFIX) : distdir
+$(DISTVNAME).tar.$(SUFFIX) : distdir
 	$(PREOP)
-	$(TAR) $(TARFLAGS) $(DISTNAME)-$(VERSION).tar $(DISTNAME)-$(VERSION)
-	$(COMPRESS) $(DISTNAME)-$(VERSION).tar
-	$(RM_RF) $(DISTNAME)-$(VERSION)
+	$(TAR) $(TARFLAGS) $(DISTVNAME).tar $(DISTVNAME)
+	$(RM_RF) $(DISTVNAME)
+	$(COMPRESS) $(DISTVNAME).tar
 	$(POSTOP)
 
-uutardist : $(DISTNAME)-$(VERSION).tar.$(SUFFIX)
-	uuencode $(DISTNAME)-$(VERSION).tar.$(SUFFIX) \
-		$(DISTNAME)-$(VERSION).tar.$(SUFFIX) > \
-		$(DISTNAME)-$(VERSION).tar.$(SUFFIX).uu
+uutardist : $(DISTVNAME).tar.$(SUFFIX)
+	uuencode $(DISTVNAME).tar.$(SUFFIX) \
+		$(DISTVNAME).tar.$(SUFFIX) > \
+		$(DISTVNAME).tar.$(SUFFIX).uu
 
 shdist : distdir
 	$(PREOP)
-	$(SHAR) $(DISTNAME)-$(VERSION) > $(DISTNAME)-$(VERSION).shar
-	$(RM_RF) $(DISTNAME)-$(VERSION)
+	$(SHAR) $(DISTVNAME) > $(DISTVNAME).shar
+	$(RM_RF) $(DISTVNAME)
 	$(POSTOP)
 
-distdir :
-	$(RM_RF) $(DISTNAME)-$(VERSION)
-	$(PERL) -I$(PERL_LIB) -e 'use ExtUtils::Manifest "/mani/";' \
-		-e 'manicopy(maniread(),"$(DISTNAME)-$(VERSION)");'
 
+# --- MakeMaker dist_dir section:
+
+distdir :
+	$(RM_RF) $(DISTVNAME)
+	$(PERL) -I$(PERL_ARCHLIB) -I$(PERL_LIB) -e 'use ExtUtils::Manifest "/mani/";' \
+		-e 'manicopy(maniread(),"$(DISTVNAME)", "$(DIST_CP)");'
+
+
+# --- MakeMaker dist_test section:
+
+disttest : distdir
+	cd $(DISTVNAME) && $(PERL) -I$(PERL_ARCHLIB) -I$(PERL_LIB) Makefile.PL
+	cd $(DISTVNAME) && $(MAKE)
+	cd $(DISTVNAME) && $(MAKE) test
+
+
+# --- MakeMaker dist_ci section:
 
 ci :
-	$(PERL) -I$(PERL_LIB) -e 'use ExtUtils::Manifest "&maniread";' \
-		-e '@all = keys %{maniread()};' \
+	$(PERL) -I$(PERL_ARCHLIB) -I$(PERL_LIB) -e 'use ExtUtils::Manifest "&maniread";' \
+		-e '@all = keys %{ maniread() };' \
 		-e 'print("Executing $(CI) @all\n"); system("$(CI) @all");' \
-		-e 'print("Executing $(RCS) ...\n"); system("$(RCS) @all");'
-
+		-e 'print("Executing $(RCS_LABEL) ...\n"); system("$(RCS_LABEL) @all");'
 
 
 # --- MakeMaker install section:
@@ -443,19 +527,20 @@ ci :
 doc_install ::
 	@ echo Appending installation info to $(INSTALLARCHLIB)/perllocal.pod
 	@ $(PERL) -I$(INST_ARCHLIB) -I$(INST_LIB) -I$(PERL_ARCHLIB) -I$(PERL_LIB)  \
-		-e "use ExtUtils::MakeMaker; MM->writedoc('Module', '$(NAME)', \
+		-e "use ExtUtils::MakeMaker; MY->new({})->writedoc('Module', '$(NAME)', \
 		'LINKTYPE=$(LINKTYPE)', 'VERSION=$(VERSION)', \
 		'EXE_FILES=$(EXE_FILES)')" >> $(INSTALLARCHLIB)/perllocal.pod
 
 install :: pure_install doc_install
 
 pure_install ::
-	@$(PERL) -e 'foreach (@ARGV){die qq{You do not have permissions to install into $$_\n} unless -w $$_}' $(INSTALLPRIVLIB) $(INSTALLARCHLIB)
-	: perl5.000 and MM pre 3.8 autosplit into INST_ARCHLIB, we delete these old files here
-	rm -f $(INSTALLARCHLIB)/auto/$(FULLEXT)/*.al
-	rm -f $(INSTALLARCHLIB)/auto/$(FULLEXT)/*.ix
-	$(MAKE) INST_LIB=$(INSTALLPRIVLIB) INST_ARCHLIB=$(INSTALLARCHLIB) INST_EXE=$(INSTALLBIN)
-	@$(PERL) -i.bak -lne 'print unless $$seen{$$_}++' $(INSTALLARCHLIB)/auto/$(FULLEXT)/.packlist
+	@$(PERL) "-I$(PERL_ARCHLIB)" "-I$(PERL_LIB)" -e 'require File::Path;' \
+	-e '$$message = q[ You do not have permissions to install into];' \
+	-e 'File::Path::mkpath(@ARGV);' \
+	-e 'foreach (@ARGV){ die qq{ $$message $$_\n} unless -w $$_}' \
+	    $(INSTALLPRIVLIB) $(INSTALLARCHLIB)
+	$(MAKE) INST_LIB=$(INSTALLPRIVLIB) INST_ARCHLIB=$(INSTALLARCHLIB) INST_EXE=$(INSTALLBIN) INST_MAN1DIR=$(INSTALLMAN1DIR) INST_MAN3DIR=$(INSTALLMAN3DIR) all
+	@$(PERL) -i.bak -lne 'print unless $$seen{ $$_ }++' $(INSTALLARCHLIB)/auto/$(FULLEXT)/.packlist
 
 #### UNINSTALL IS STILL EXPERIMENTAL ####
 uninstall ::
@@ -499,7 +584,8 @@ Makefile :	Makefile.PL $(CONFIGDEP)
 	-@mv Makefile Makefile.old
 	-$(MAKE) -f Makefile.old clean >/dev/null 2>&1 || true
 	$(PERL) "-I$(PERL_ARCHLIB)" "-I$(PERL_LIB)" Makefile.PL 
-	@echo "Now you must rerun make."; false
+	@echo ">>> Your Makefile has been rebuilt. <<<"
+	@echo ">>> Please rerun the make command.  <<<"; false
 
 
 # --- MakeMaker staticmake section:
@@ -507,69 +593,34 @@ Makefile :	Makefile.PL $(CONFIGDEP)
 # --- MakeMaker makeaperl section ---
 MAP_TARGET    = perl
 FULLPERL      = /usr/local/bin/perl
-MAP_LINKCMD   = $(CC) 
-MAP_PERLINC   = -I./blib -I./blib -I/usr/local/lib/perl5/sun4-sunos -I/usr/local/lib/perl5
-MAP_STATIC    = ./blib/auto/DB_File/DB_File.a /home1/local/lib/perl5/sun4-sunos/auto/DynaLoader/DynaLoader.a
-MAP_PRELIBS   = -lgdbm -ldbm -ldb -ldl -lm -lc -lposix 
 
-MAP_LIBPERL = /usr/local/lib/perl5/sun4-sunos/CORE/libperl.a
-
-extralibs.ld: ./blib/auto/DB_File/extralibs.ld /home1/local/lib/perl5/sun4-sunos/auto/DynaLoader/extralibs.ld
-	@ rm -f $@
-	@ $(TOUCH) $@
-	cat ./blib/auto/DB_File/extralibs.ld >> $@
-	cat /home1/local/lib/perl5/sun4-sunos/auto/DynaLoader/extralibs.ld >> $@
-
-$(MAP_TARGET): ./perlmain.o $(MAP_LIBPERL) $(MAP_STATIC) extralibs.ld
-	$(MAP_LINKCMD) -o $@ ./perlmain.o $(MAP_LIBPERL) $(MAP_STATIC) `cat extralibs.ld` $(MAP_PRELIBS)
-	@ echo 'To install the new "$(MAP_TARGET)" binary, call'
-	@ echo '    make -f Makefile inst_perl MAP_TARGET=$(MAP_TARGET)'
-	@ echo 'To remove the intermediate files say'
-	@ echo '    make -f Makefile map_clean'
-
-./perlmain.o: ./perlmain.c
-	cd . && $(CC) -I/usr/local/lib/perl5/sun4-sunos/CORE -c -O perlmain.c
-
-./perlmain.c: Makefile
-	@ echo Writing $@
-	@ $(FULLPERL) $(MAP_PERLINC) -e 'use ExtUtils::Miniperl; \
-		writemain(grep s#.*/auto/##, qw|$(MAP_STATIC)|)' > $@.tmp && mv $@.tmp $@
-
-
-doc_inst_perl:
-	@ echo Appending installation info to $(INSTALLARCHLIB)/perllocal.pod
-	@ $(FULLPERL) -e 'use ExtUtils::MakeMaker; MM->writedoc("Perl binary",' \
-		-e '"$(MAP_TARGET)", "MAP_STATIC=$(MAP_STATIC)",' \
-		-e '"MAP_EXTRA=@ARGV", "MAP_LIBPERL=$(MAP_LIBPERL)")' \
-		-- `cat extralibs.ld` >> $(INSTALLARCHLIB)/perllocal.pod
-
-inst_perl: pure_inst_perl doc_inst_perl
-
-pure_inst_perl: $(MAP_TARGET)
-	cp $(MAP_TARGET) $(INSTALLBIN)/$(MAP_TARGET)
-
-clean :: map_clean
-
-map_clean :
-	rm -f ./perlmain.o ./perlmain.c $(MAP_TARGET) extralibs.ld
+$(MAP_TARGET) ::
+	$(MAKE) LINKTYPE=static all
+	$(PERL) Makefile.PL MAKEFILE=Makefile.aperl LINKTYPE=static MAKEAPERL=1 NORECURS=1
+	$(MAKE) -f Makefile.aperl $(MAP_TARGET)
 
 
 # --- MakeMaker test section:
 
 TEST_VERBOSE=0
-TEST_TYPE=test_dynamic
+TEST_TYPE=test_$(LINKTYPE)
 
 test :: $(TEST_TYPE)
 
 test_dynamic :: all
-	$(FULLPERL) -I$(INST_ARCHLIB) -I$(INST_LIB) -I$(PERL_ARCHLIB) -I$(PERL_LIB) -e 'use Test::Harness qw(&runtests $$verbose); $$verbose=$(TEST_VERBOSE); runtests @ARGV;' t/*.t
+	PERL_DL_NONLAZY=1 $(FULLPERL) -I$(INST_ARCHLIB) -I$(INST_LIB) -I$(PERL_ARCHLIB) -I$(PERL_LIB) -e 'use Test::Harness qw(&runtests $$verbose); $$verbose=$(TEST_VERBOSE); runtests @ARGV;' t/*.t
+
+test_ : test_dynamic
 
 test_static :: all $(MAP_TARGET)
-	./$(MAP_TARGET) -I$(INST_ARCHLIB) -I$(INST_LIB) -I$(PERL_ARCHLIB) -I$(PERL_LIB) -e 'use Test::Harness qw(&runtests $$verbose); $$verbose=$(TEST_VERBOSE); runtests @ARGV;' t/*.t
+	PERL_DL_NONLAZY=1 ./$(MAP_TARGET) -I$(INST_ARCHLIB) -I$(INST_LIB) -I$(PERL_ARCHLIB) -I$(PERL_LIB) -e 'use Test::Harness qw(&runtests $$verbose); $$verbose=$(TEST_VERBOSE); runtests @ARGV;' t/*.t
 
 
 
 # --- MakeMaker postamble section:
+
+
+# --- MakeMaker selfdocument section:
 
 
 # End.

@@ -9,7 +9,7 @@
 
 #	LIBS => ['-L/usr/local/lib -ldb']
 #	NAME => 'DB_File'
-#	VERSION => '1'
+#	VERSION => '1.001'
 
 # --- MakeMaker post_initialize section:
 
@@ -34,8 +34,8 @@ DLSRC = dl_dlopen.xs
 NAME = DB_File
 DISTNAME = DB_File
 NAME_SYM = DB_File
-VERSION = 1
-VERSION_SYM = 1
+VERSION = 1.001
+VERSION_SYM = 1_001
 VERSION_MACRO = VERSION
 DEFINE_VERSION = -D$(VERSION_MACRO)=\"$(VERSION)\"
 

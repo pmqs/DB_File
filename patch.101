@@ -1,0 +1,378 @@
+*** Makefile.PL.orig	Wed Nov  1 12:02:14 1995
+--- Makefile.PL	Tue Nov 14 14:19:38 1995
+***************
+*** 4,9 ****
+  	NAME 	=> 'DB_File',
+  	LIBS 	=> ["-L/usr/local/lib -ldb"],
+  	#INC	=> '-I/usr/local/include',
+! 	VERSION	=> 1.0,
+  	);
+  
+--- 4,9 ----
+  	NAME 	=> 'DB_File',
+  	LIBS 	=> ["-L/usr/local/lib -ldb"],
+  	#INC	=> '-I/usr/local/include',
+! 	VERSION	=> 1.01,
+  	);
+  
+*** DB_File.pm.orig	Mon Nov 13 17:20:31 1995
+--- DB_File.pm	Tue Nov 14 14:21:54 1995
+***************
+*** 1,8 ****
+  # DB_File.pm -- Perl 5 interface to Berkeley DB 
+  #
+  # written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
+! # last modified 7th October 1995
+! # version 1.0
+  
+  package DB_File::HASHINFO ;
+  use Carp;
+--- 1,8 ----
+  # DB_File.pm -- Perl 5 interface to Berkeley DB 
+  #
+  # written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
+! # last modified 14th November 1995
+! # version 1.01
+  
+  package DB_File::HASHINFO ;
+  use Carp;
+***************
+*** 170,176 ****
+  package DB_File ;
+  use Carp;
+  
+! $VERSION = 1.0 ;
+  
+  #typedef enum { DB_BTREE, DB_HASH, DB_RECNO } DBTYPE;
+  $DB_BTREE = TIEHASH DB_File::BTREEINFO ;
+--- 170,176 ----
+  package DB_File ;
+  use Carp;
+  
+! $VERSION = 1.01 ;
+  
+  #typedef enum { DB_BTREE, DB_HASH, DB_RECNO } DBTYPE;
+  $DB_BTREE = TIEHASH DB_File::BTREEINFO ;
+***************
+*** 555,560 ****
+--- 555,567 ----
+  
+  Using the I<push> method on an empty list didn't work properly. This
+  has been fixed.
++ 
++ =head2 1.01
++ 
++ Fixed a core dump problem with SunOS.
++ 
++ The return value from TIEHASH wasn't set to NULL when dbopen returned
++ an error.
+  
+  =head1 WARNINGS
+  
+*** DB_File.xs.orig	Sun Oct  8 11:11:38 1995
+--- DB_File.xs	Tue Nov 14 14:17:16 1995
+***************
+*** 3,19 ****
+   DB_File.xs -- Perl 5 interface to Berkeley DB 
+  
+   written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
+!  last modified 7th October 1995
+!  version 1.0
+  
+   All comments/suggestions/problems are welcome
+  
+   Changes:
+! 	0.1 - Initial Release
+! 	0.2 - No longer bombs out if dbopen returns an error.
+! 	0.3 - Added some support for multiple btree compares
+! 	1.0 - Complete support for multiple callbacks added.
+! 	      Fixed a problem with pushing a value onto an empty list.
+  */
+  
+  #include "EXTERN.h"  
+--- 3,22 ----
+   DB_File.xs -- Perl 5 interface to Berkeley DB 
+  
+   written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
+!  last modified 14th November 1995
+!  version 1.01
+  
+   All comments/suggestions/problems are welcome
+  
+   Changes:
+! 	0.1 - 	Initial Release
+! 	0.2 - 	No longer bombs out if dbopen returns an error.
+! 	0.3 - 	Added some support for multiple btree compares
+! 	1.0 - 	Complete support for multiple callbacks added.
+! 	      	Fixed a problem with pushing a value onto an empty list.
+! 	1.01 - 	Fixed a SunOS core dump problem.
+! 		The return value from TIEHASH wasn't set to NULL when
+! 		dbopen returned an error.
+  */
+  
+  #include "EXTERN.h"  
+***************
+*** 44,61 ****
+  
+  /* #define TRACE  */
+  
+! #define db_DESTROY(db)                  (db->dbp->close)(db->dbp)
+! #define db_DELETE(db, key, flags)       (db->dbp->del)(db->dbp, &key, flags)
+! #define db_STORE(db, key, value, flags) (db->dbp->put)(db->dbp, &key, &value, flags)
+! #define db_FETCH(db, key, flags)        (db->dbp->get)(db->dbp, &key, &value, flags)
+! 
+! #define db_close(db)			(db->dbp->close)(db->dbp)
+! #define db_del(db, key, flags)          (db->dbp->del)(db->dbp, &key, flags)
+! #define db_fd(db)                       (db->dbp->fd)(db->dbp) 
+! #define db_put(db, key, value, flags)   (db->dbp->put)(db->dbp, &key, &value, flags)
+! #define db_get(db, key, value, flags)   (db->dbp->get)(db->dbp, &key, &value, flags)
+! #define db_seq(db, key, value, flags)   (db->dbp->seq)(db->dbp, &key, &value, flags)
+! #define db_sync(db, flags)              (db->dbp->sync)(db->dbp, flags)
+  
+  
+  #define OutputValue(arg, name)  \
+--- 47,64 ----
+  
+  /* #define TRACE  */
+  
+! #define db_DESTROY(db)                  ((db->dbp)->close)(db->dbp)
+! #define db_DELETE(db, key, flags)       ((db->dbp)->del)(db->dbp, &key, flags)
+! #define db_STORE(db, key, value, flags) ((db->dbp)->put)(db->dbp, &key, &value, flags)
+! #define db_FETCH(db, key, flags)        ((db->dbp)->get)(db->dbp, &key, &value, flags)
+! 
+! #define db_close(db)			((db->dbp)->close)(db->dbp)
+! #define db_del(db, key, flags)          ((db->dbp)->del)(db->dbp, &key, flags)
+! #define db_fd(db)                       ((db->dbp)->fd)(db->dbp) 
+! #define db_put(db, key, value, flags)   ((db->dbp)->put)(db->dbp, &key, &value, flags)
+! #define db_get(db, key, value, flags)   ((db->dbp)->get)(db->dbp, &key, &value, flags)
+! #define db_seq(db, key, value, flags)   ((db->dbp)->seq)(db->dbp, &key, &value, flags)
+! #define db_sync(db, flags)              ((db->dbp)->sync)(db->dbp, flags)
+  
+  
+  #define OutputValue(arg, name)  \
+***************
+*** 708,713 ****
+--- 711,718 ----
+  	        sv = ST(4) ;
+  
+  	    RETVAL = ParseOpenInfo(name, flags, mode, sv, "new") ;
++ 	    if (RETVAL->dbp == NULL)
++ 	        RETVAL = NULL ;
+  	}
+  	OUTPUT:	
+  	    RETVAL
+***************
+*** 748,754 ****
+  	    DBT		value  ;
+  
+  	    CurrentDB = db ;
+! 	    RETVAL = (db->dbp->get)(db->dbp, &key, &value, flags) ;
+  	    ST(0) = sv_newmortal();
+  	    if (RETVAL == 0)
+  	        sv_setpvn(ST(0), value.data, value.size);
+--- 753,759 ----
+  	    DBT		value  ;
+  
+  	    CurrentDB = db ;
+! 	    RETVAL = ((db->dbp)->get)(db->dbp, &key, &value, flags) ;
+  	    ST(0) = sv_newmortal();
+  	    if (RETVAL == 0)
+  	        sv_setpvn(ST(0), value.data, value.size);
+***************
+*** 771,783 ****
+  	{
+  	    DBTKEY		key ;
+  	    DBT		value ;
+  
+  	    CurrentDB = db ;
+! 	    RETVAL = (db->dbp->seq)(db->dbp, &key, &value, R_FIRST) ;
+  	    ST(0) = sv_newmortal();
+  	    if (RETVAL == 0)
+  	    {
+! 	        if (db->dbp->type != DB_RECNO)
+  	            sv_setpvn(ST(0), key.data, key.size);
+  	        else
+  	            sv_setiv(ST(0), (I32)*(I32*)key.data - 1);
+--- 776,789 ----
+  	{
+  	    DBTKEY		key ;
+  	    DBT		value ;
++ 	    DB *	Db = db->dbp ;
+  
+  	    CurrentDB = db ;
+! 	    RETVAL = (Db->seq)(Db, &key, &value, R_FIRST) ;
+  	    ST(0) = sv_newmortal();
+  	    if (RETVAL == 0)
+  	    {
+! 	        if (Db->type != DB_RECNO)
+  	            sv_setpvn(ST(0), key.data, key.size);
+  	        else
+  	            sv_setiv(ST(0), (I32)*(I32*)key.data - 1);
+***************
+*** 791,803 ****
+  	CODE:
+  	{
+  	    DBT		value ;
+  
+  	    CurrentDB = db ;
+! 	    RETVAL = (db->dbp->seq)(db->dbp, &key, &value, R_NEXT) ;
+  	    ST(0) = sv_newmortal();
+  	    if (RETVAL == 0)
+  	    {
+! 	        if (db->dbp->type != DB_RECNO)
+  	            sv_setpvn(ST(0), key.data, key.size);
+  	        else
+  	            sv_setiv(ST(0), (I32)*(I32*)key.data - 1);
+--- 797,810 ----
+  	CODE:
+  	{
+  	    DBT		value ;
++ 	    DB *	Db = db->dbp ;
+  
+  	    CurrentDB = db ;
+! 	    RETVAL = (Db->seq)(Db, &key, &value, R_NEXT) ;
+  	    ST(0) = sv_newmortal();
+  	    if (RETVAL == 0)
+  	    {
+! 	        if (Db->type != DB_RECNO)
+  	            sv_setpvn(ST(0), key.data, key.size);
+  	        else
+  	            sv_setiv(ST(0), (I32)*(I32*)key.data - 1);
+***************
+*** 817,822 ****
+--- 824,830 ----
+  	    DBT		value ;
+  	    int		i ;
+  	    int		One ;
++ 	    DB *	Db = db->dbp ;
+  
+  	    CurrentDB = db ;
+  	    RETVAL = -1 ;
+***************
+*** 827,833 ****
+  	        One = 1 ;
+  	        key.data = &One ;
+  	        key.size = sizeof(int) ;
+! 	        RETVAL = (db->dbp->put)(db->dbp, &key, &value, R_IBEFORE) ;
+  	        if (RETVAL != 0)
+  	            break;
+  	    }
+--- 835,841 ----
+  	        One = 1 ;
+  	        key.data = &One ;
+  	        key.size = sizeof(int) ;
+! 	        RETVAL = (Db->put)(Db, &key, &value, R_IBEFORE) ;
+  	        if (RETVAL != 0)
+  	            break;
+  	    }
+***************
+*** 842,856 ****
+  	{
+  	    DBTKEY	key ;
+  	    DBT		value ;
+  
+  	    CurrentDB = db ;
+  	    /* First get the final value */
+! 	    RETVAL = (db->dbp->seq)(db->dbp, &key, &value, R_LAST) ;	
+  	    ST(0) = sv_newmortal();
+  	    /* Now delete it */
+  	    if (RETVAL == 0)
+  	    {
+! 	        RETVAL = (db->dbp->del)(db->dbp, &key, R_CURSOR) ;
+  	        if (RETVAL == 0)
+  	            sv_setpvn(ST(0), value.data, value.size);
+  	    }
+--- 850,865 ----
+  	{
+  	    DBTKEY	key ;
+  	    DBT		value ;
++ 	    DB *	Db = db->dbp ;
+  
+  	    CurrentDB = db ;
+  	    /* First get the final value */
+! 	    RETVAL = (Db->seq)(Db, &key, &value, R_LAST) ;	
+  	    ST(0) = sv_newmortal();
+  	    /* Now delete it */
+  	    if (RETVAL == 0)
+  	    {
+! 	        RETVAL = (Db->del)(Db, &key, R_CURSOR) ;
+  	        if (RETVAL == 0)
+  	            sv_setpvn(ST(0), value.data, value.size);
+  	    }
+***************
+*** 863,877 ****
+  	{
+  	    DBTKEY	key ;
+  	    DBT		value ;
+  
+  	    CurrentDB = db ;
+  	    /* get the first value */
+! 	    RETVAL = (db->dbp->seq)(db->dbp, &key, &value, R_FIRST) ;	
+  	    ST(0) = sv_newmortal();
+  	    /* Now delete it */
+  	    if (RETVAL == 0)
+  	    {
+! 	        RETVAL = (db->dbp->del)(db->dbp, &key, R_CURSOR) ;
+  	        if (RETVAL == 0)
+  	            sv_setpvn(ST(0), value.data, value.size);
+  	    }
+--- 872,887 ----
+  	{
+  	    DBTKEY	key ;
+  	    DBT		value ;
++ 	    DB *	Db = db->dbp ;
+  
+  	    CurrentDB = db ;
+  	    /* get the first value */
+! 	    RETVAL = (Db->seq)(Db, &key, &value, R_FIRST) ;	
+  	    ST(0) = sv_newmortal();
+  	    /* Now delete it */
+  	    if (RETVAL == 0)
+  	    {
+! 	        RETVAL = (Db->del)(Db, &key, R_CURSOR) ;
+  	        if (RETVAL == 0)
+  	            sv_setpvn(ST(0), value.data, value.size);
+  	    }
+***************
+*** 886,896 ****
+  	    DBTKEY	key ;
+  	    DBTKEY *	keyptr = &key ; 
+  	    DBT		value ;
+  	    int		i ;
+  
+  	    CurrentDB = db ;
+  	    /* Set the Cursor to the Last element */
+! 	    RETVAL = (db->dbp->seq)(db->dbp, &key, &value, R_LAST) ;
+  	    if (RETVAL >= 0)
+  	    {
+  		if (RETVAL == 1)
+--- 896,907 ----
+  	    DBTKEY	key ;
+  	    DBTKEY *	keyptr = &key ; 
+  	    DBT		value ;
++ 	    DB *	Db = db->dbp ;
+  	    int		i ;
+  
+  	    CurrentDB = db ;
+  	    /* Set the Cursor to the Last element */
+! 	    RETVAL = (Db->seq)(Db, &key, &value, R_LAST) ;
+  	    if (RETVAL >= 0)
+  	    {
+  		if (RETVAL == 1)
+***************
+*** 899,905 ****
+  	        {
+  	            value.data = SvPV(ST(i), na) ;
+  	            value.size = na ;
+! 	            RETVAL = (db->dbp->put)(db->dbp, keyptr, &value, R_IAFTER) ;
+  	            if (RETVAL != 0)
+  	                break;
+  	        }
+--- 910,916 ----
+  	        {
+  	            value.data = SvPV(ST(i), na) ;
+  	            value.size = na ;
+! 	            RETVAL = (Db->put)(Db, keyptr, &value, R_IAFTER) ;
+  	            if (RETVAL != 0)
+  	                break;
+  	        }

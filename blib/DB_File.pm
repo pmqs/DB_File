@@ -546,7 +546,7 @@ errors to be caught at run time. Thanks to Judith Grass
 
 Added prototype support for multiple btree compare callbacks.
 
-=head 1.0
+=head2 1.0
 
 B<DB_File> has been in use for over a year. To reflect that, the
 version number has been incremented to 1.0.
@@ -555,6 +555,10 @@ Added complete support for multiple concurrent callbacks.
 
 Using the I<push> method on an empty list didn't work properly. This
 has been fixed.
+
+=head2 1.001
+
+Fixed a core dump problem with SunOS.
 
 =head1 WARNINGS
 
