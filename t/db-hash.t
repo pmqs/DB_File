@@ -1,4 +1,4 @@
-#!./perl -w 
+#!./perl -w
 
 BEGIN {
     @INC = '../lib' if -d '../lib' ;
@@ -294,8 +294,8 @@ ok(47, $X = tie(%h, 'DB_File',undef, O_RDWR|O_CREAT, 0640, $DB_HASH ) );
 $status = $X->fd ;
 ok(48, $status == -1 );
 
-untie %h ;
 undef $X ;
+untie %h ;
 
 {
     # check ability to override the default hashing

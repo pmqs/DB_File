@@ -1,8 +1,8 @@
                                      DB_File
 
-                                  Version 1.04
+                                  Version 1.05
 
-                                  21st Oct 1996
+                                  10th Nov 1996
 
              Copyright (c) 1995/6 Paul Marquess. All rights reserved.
          This program is free software; you can redistribute it and/or
@@ -36,8 +36,9 @@ on your system:
       Berkeley DB is available at your nearest CPAN archive (see
       the section on CPAN in the perlmod manpage for a list) in
       src/misc/db.1.85.tar.gz, or via the host ftp.cs.berkeley.edu in
-      /ucb/4bsd/db.tar.gz.  It is not under the GPL.
- 
+      /ucb/4bsd/db.tar.gz.  Alternatively, check out the Berkeley DB
+      home page at http://www.bostic.com/db. It is not under the GPL.
+
       If you are running IRIX, then get Berkeley DB from
       http://reality.sgi.com/ariel. It has the patches necessary to
       compile properly on IRIX 5.3.
@@ -49,12 +50,11 @@ BUILDING THE MODULE
 Assuming you have met all the prerequisites, building the module should
 be relatively straightforward.
 
-The only things you might have to change for building the module are
-the names of the directories where the db library, libdb, is installed
-and the directory where db.h is stored. Edit Makefile.PL
-and change ZLIB_LIB and ZLIB_INCLUDE if necessary.
+The first step is to edit the file CONFIG to suit you local
+installation. Instructions are given in the file.
 
-The module can now be built using this sequence of commands:
+The module can now be built and tested using this sequence of
+commands:
 
     perl Makefile.PL
     make
@@ -63,33 +63,52 @@ The module can now be built using this sequence of commands:
 INSTALLATION
 ------------
 
-As DB_File is a 
-
     make install
 
 FEEDBACK
 --------
 
-I have tested Compress::Zlib on both SunOS 4.1.3 (Sun C compiler) and
-Solaris 2.3 (Sun C compiler again). If you are building the module on
-another architecture I would appreciate a note to tell me how you got
-on. Although I am particularly interested to hear about any problems
-you encounter when building the system, I would still like to hear from
-you even if you don't.
+How to report a problem with DB_File.
 
-Things I particularly would like to know
+To help me help you, I need of the following information:
 
-   * The Operating system name and version, e.g. SunOS 4.1.3
-   * Architecture, e.g. Solaris
-   * C compiler, e.g. gcc
-   * Where there any warnings/errors printed by the C compiler? If so
-     please send the exact output if possible.
+ 1. the version of Perl and the operating system name and version you
+    are running. If you are running a newish version of Perl, the
+    output from running "perl -V" will tell me all I need to know. 
+    If your perl doesn't understand the -V flag, then not only do you
+    have quite an old version of Perl, you very likely have an old
+    version of DB_File.  You should consider upgrading. The problem you
+    have might already be fixed.
+
+ 2. the version of DB_File you have. This one-liner will tell you:
+
+       perl -e 'use DB_File; print "DB_File ver $DB_File::VERSION\n"'
+
+    The most recent version of DB_File is 1.05.
+
+ 3. the version of Berkeley DB you have installed. The most recent
+    version is 1.85. Again, if you have an older version, think about
+    upgrading (the DB_File documentation tells you where to find it).
+
+ 4. now the difficult one. To *greatly* enhance the chances of me
+    being able to track down a bug, I need a small self-contained Perl
+    script that will illustrate the problem you are encountering, along
+    some idea of what you think is wrong. Post a log of what happens
+    when you run the script, in case I can't reproduce your problem on
+    my system. If possible, don't have the script dependent on an
+    existing 20Meg database. If your script can create the database
+    itself then that is preferred.
+
+    I realise that in some cases this is easier said than done, so if
+    you can only reproduce the problem in your existing script, then
+    you can post me that if you want. Just don't expect me to find your
+    problem in a hurry, or at all. :-)
 
 
 CHANGES
 -------
 
-See DB_File.pm
+See the HISTORY section in DB_File.pm
  
 Paul Marquess <pmarquess@bfsec.bt.co.uk>
 

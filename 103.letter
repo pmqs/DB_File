@@ -1,7 +1,0 @@
-Here is an update for DB_File. This is mostly a documentation patch.
-The main change in functionality is the automatic inclusion of Fcntl
-(if available).
-
-I haven't included the configure stuff this time.
-
-Paul

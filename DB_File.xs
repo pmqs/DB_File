@@ -3,8 +3,8 @@
  DB_File.xs -- Perl 5 interface to Berkeley DB 
 
  written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
- last modified 14th Oct 1996
- version 1.04
+ last modified 10th Nov 1996
+ version 1.05
 
  All comments/suggestions/problems are welcome
 
@@ -25,6 +25,8 @@
 	1.03 - 	Added EXISTS
 	1.04 -  fixed a couple of bugs in hash_cb. Patches supplied by
 		Dave Hammen, hammen@gothamcity.jsc.nasa.gov
+	1.05 -  Added logic to allow prefix & hash types to be specified via
+		Makefile.PL
 
 */
 
@@ -35,6 +37,20 @@
 #include <db.h>
 
 #include <fcntl.h> 
+
+#ifdef mDB_Prefix_t 
+#ifdef DB_Prefix_t
+#undef DB_Prefix_t
+#endif
+#define DB_Prefix_t	mDB_Prefix_t 
+#endif
+
+#ifdef mDB_Hash_t
+#ifdef DB_Hash_t
+#undef DB_Hash_t
+#endif
+#define DB_Hash_t	mDB_Hash_t
+#endif
 
 union INFO {
         HASHINFO 	hash ;
@@ -229,8 +245,6 @@ size_t size ;
 
 #ifdef TRACE
 
-#define TraceInfo(a)	a
-
 static void
 PrintHash(hash)
 HASHINFO * hash ;
@@ -275,7 +289,6 @@ BTREEINFO * btree ;
 
 #else
 
-#define TraceInfo(a)	
 #define PrintRecno(recno)
 #define PrintHash(hash)
 #define PrintBtree(btree)
@@ -750,7 +763,6 @@ db_DoTie_(dbtype, name=undef, flags=O_CREAT|O_RDWR, mode=0640, type=DB_HASH)
 	    char *	name = (char *) NULL ; 
 	    SV *	sv = (SV *) NULL ; 
 
-	    TraceInfo(warn("DB_File::DoTie_()\n"));
 	    if (items >= 2 && SvOK(ST(1))) 
 	        name = (char*) SvPV(ST(1), na) ; 
 
@@ -769,7 +781,6 @@ db_DESTROY(db)
 	DB_File		db
 	INIT:
 	  CurrentDB = db ;
-	  TraceInfo(("DB_File::DESTROY(%X)\n", db));
 	CLEANUP:
 	  if (db->hash)
 	    SvREFCNT_dec(db->hash) ;
@@ -778,7 +789,6 @@ db_DESTROY(db)
 	  if (db->prefix)
 	    SvREFCNT_dec(db->prefix) ;
 	  Safefree(db) ;
-	  TraceInfo(("DB_File::DESTROY done\n"));
 
 
 int

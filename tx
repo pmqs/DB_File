@@ -1,8 +1,0 @@
-using seq
-3 => 20
-4 => 55
-EOF/Error, stat = -1, 22
-
-using get
-5 => 57344
-done
