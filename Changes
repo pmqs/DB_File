@@ -215,3 +215,9 @@
 
    Added hints/dynixptx.pl.
    Fixed typemap -- 1.61 used PL_na instead of na
+
+1.63 19th December 1998
+
+   Fix to allow DB 2.6.x to build with DB_File
+   Documentation upadated to use push,pop etc in the RECNO example & to 
+   include the find_dup & del_dup methods.

@@ -2,9 +2,9 @@
 
  DB_File.xs -- Perl 5 interface to Berkeley DB 
 
- written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
- last modified 2nd December 1998
- version 1.62
+ written by Paul Marquess <Paul.Marquess@btinternet.com>
+ last modified 19th December 1998
+ version 1.63
 
  All comments/suggestions/problems are welcome
 
@@ -59,11 +59,14 @@
         1.61 -  added flagSet macro for DB 2.5.x
 		fixed typo in O_RDONLY test.
         1.62 -  No change to DB_File.xs
+        1.63 -  Fix to alllow DB 2.6.x to build.
 
 
 
 */
 
+
+#define PERL_POLLUTE
 #include "EXTERN.h"  
 #include "perl.h"
 #include "XSUB.h"
@@ -834,7 +837,12 @@ SV *   sv ;
 
         status = db_open(name, RETVAL->type, Flags, mode, NULL, openinfo, &RETVAL->dbp) ; 
         if (status == 0)
+#if DB_VERSION_MAJOR == 2 && DB_VERSION_MINOR < 6
             status = (RETVAL->dbp->cursor)(RETVAL->dbp, NULL, &RETVAL->cursor) ;
+#else
+            status = (RETVAL->dbp->cursor)(RETVAL->dbp, NULL, &RETVAL->cursor, 
+			0) ;
+#endif
 
         if (status)
 	    RETVAL->dbp = NULL ;
