@@ -41,7 +41,7 @@ sub bad_one
 EOM
 }
 
-print "1..66\n";
+print "1..56\n";
 
 my $Dfile = "recno.tmp";
 unlink $Dfile ;
@@ -93,7 +93,7 @@ my $X  ;
 my @h ;
 ok(17, $X = tie @h, 'DB_File', $Dfile, O_RDWR|O_CREAT, 0640, $DB_RECNO ) ;
 
-ok(18, ((stat($Dfile))[2] & 0777) == (($^O eq 'os2' || $^O eq 'MSWin32') ? 0666 : 0640)
+ok(18, ((stat($Dfile))[2] & 0777) == ($^O eq 'os2' ? 0666 : 0640)
 	|| $^O eq 'amigaos') ;
 
 #my $l = @h ;
@@ -198,17 +198,6 @@ untie(@h);
 
 unlink $Dfile;
 
-sub docat
-{
-    my $file = shift;
-    local $/ = undef;
-    open(CAT,$file) || die "Cannot open $file:$!";
-    my $result = <CAT>;
-    close(CAT);
-    return $result;
-}
-
-
 {
     # Check bval defaults to \n
 
@@ -219,7 +208,7 @@ sub docat
     $h[1] = "def" ;
     $h[3] = "ghi" ;
     untie @h ;
-    my $x = docat($Dfile) ;
+    my $x = `cat $Dfile` ;
     unlink $Dfile;
     ok(49, $x eq "abc\ndef\n\nghi\n") ;
 }
@@ -235,7 +224,7 @@ sub docat
     $h[1] = "def" ;
     $h[3] = "ghi" ;
     untie @h ;
-    my $x = docat($Dfile) ;
+    my $x = `cat $Dfile` ;
     unlink $Dfile;
     my $ok = ($x eq "abc-def--ghi-") ;
     bad_one() unless $ok ;
@@ -254,7 +243,7 @@ sub docat
     $h[1] = "def" ;
     $h[3] = "ghi" ;
     untie @h ;
-    my $x = docat($Dfile) ;
+    my $x = `cat $Dfile` ;
     unlink $Dfile;
     my $ok = ($x eq "abc  def       ghi  ") ;
     bad_one() unless $ok ;
@@ -274,7 +263,7 @@ sub docat
     $h[1] = "def" ;
     $h[3] = "ghi" ;
     untie @h ;
-    my $x = docat($Dfile) ;
+    my $x = `cat $Dfile` ;
     unlink $Dfile;
     my $ok = ($x eq "abc--def-------ghi--") ;
     bad_one() unless $ok ;
@@ -289,97 +278,6 @@ sub docat
     eval { tie %x, 'DB_File', $filename, O_RDWR|O_CREAT, 0640, $DB_RECNO ; } ;
     ok(56, $@ =~ /^DB_File can only tie an array to a DB_RECNO database/) ;
     unlink $filename ;
-}
-
-{
-   # sub-class test
-
-   package Another ;
-
-   use strict ;
-
-   open(FILE, ">SubDB.pm") or die "Cannot open SubDB.pm: $!\n" ;
-   print FILE <<'EOM' ;
-
-   package SubDB ;
-
-   use strict ;
-   use vars qw( @ISA @EXPORT) ;
-
-   require Exporter ;
-   use DB_File;
-   @ISA=qw(DB_File);
-   @EXPORT = @DB_File::EXPORT ;
-
-   sub STORE { 
-	my $self = shift ;
-        my $key = shift ;
-        my $value = shift ;
-        $self->SUPER::STORE($key, $value * 2) ;
-   }
-
-   sub FETCH { 
-	my $self = shift ;
-        my $key = shift ;
-        $self->SUPER::FETCH($key) - 1 ;
-   }
-
-   sub put { 
-	my $self = shift ;
-        my $key = shift ;
-        my $value = shift ;
-        $self->SUPER::put($key, $value * 3) ;
-   }
-
-   sub get { 
-	my $self = shift ;
-        $self->SUPER::get($_[0], $_[1]) ;
-	$_[1] -= 2 ;
-   }
-
-   sub A_new_method
-   {
-	my $self = shift ;
-        my $key = shift ;
-        my $value = $self->FETCH($key) ;
-	return "[[$value]]" ;
-   }
-
-   1 ;
-EOM
-
-    close FILE ;
-
-    BEGIN { push @INC, '.'; }   
-    eval 'use SubDB ; ';
-    main::ok(57, $@ eq "") ;
-    my @h ;
-    my $X ;
-    eval '
-	$X = tie(@h, "SubDB","recno.tmp", O_RDWR|O_CREAT, 0640, $DB_RECNO );
-	' ;
-
-    main::ok(58, $@ eq "") ;
-
-    my $ret = eval '$h[3] = 3 ; return $h[3] ' ;
-    main::ok(59, $@ eq "") ;
-    main::ok(60, $ret == 5) ;
-
-    my $value = 0;
-    $ret = eval '$X->put(1, 4) ; $X->get(1, $value) ; return $value' ;
-    main::ok(61, $@ eq "") ;
-    main::ok(62, $ret == 10) ;
-
-    $ret = eval ' R_NEXT eq main::R_NEXT ' ;
-    main::ok(63, $@ eq "" ) ;
-    main::ok(64, $ret == 1) ;
-
-    $ret = eval '$X->A_new_method(1) ' ;
-    main::ok(65, $@ eq "") ;
-    main::ok(66, $ret eq "[[11]]") ;
-
-    unlink "SubDB.pm", "recno.tmp" ;
-
 }
 
 exit ;

@@ -31,10 +31,13 @@ sub MY::postamble {
 $(NAME).xs:	typemap
 	@$(TOUCH) $(NAME).xs
 
-Makefile.PL:	config.in
+Makefile.PL:	CONFIG
+	@echo "Makefile.PL out-of-date with respect to $?"
+	@$(TOUCH) Makefile.PL
 
-' ;
+	' ;
 }
+
 
 sub ParseCONFIG
 {
@@ -44,7 +47,7 @@ sub ParseCONFIG
     my @Options = qw( INCLUDE LIB PREFIX HASH ) ;
     my %ValidOption = map {$_, 1} @Options ;
     my %Parsed = %ValidOption ;
-    my $CONFIG = 'config.in' ;
+    my $CONFIG = 'CONFIG' ;
 
     print "Parsing $CONFIG...\n" ;
 

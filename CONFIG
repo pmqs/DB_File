@@ -1,8 +1,8 @@
-# Filename:	config.in
+# Filename:	CONFIG
 #
 # written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
-# last modified 28th Nov 1996
-# version 1.14
+# last modified 7th May 1997
+# version 1.50
 
 # 1. Where is the file db.h?
 #
@@ -20,11 +20,10 @@ LIB	= /usr/local/lib
 
 # 3. What version of Berkely DB have you got?
 #
-#    This module does NOT support Berkeley DB 2.0 (or greater).
+#    If you have version 2.0 or greater, you can skip this question.
 #
-#    If you have a recent copy of Berkeley DB (1.78 or greater) you
-#    shouldn't have to change the definitions for PREFIX and HASH
-#    below.
+#    If you have Berkeley DB 1.78 or greater you shouldn't have to
+#    change the definitions for PREFIX and HASH below.
 #
 #    For older versions of Berkeley DB change both PREFIX and HASH to int.
 #    Version 1.71, 1.72 and 1.73 are known to need this change.
@@ -32,12 +31,11 @@ LIB	= /usr/local/lib
 #    If you don't know what version you have have a look in the file db.h. 
 #
 #    Search for the string "DB_VERSION_MAJOR". If it is present, you
-#    have Berkeley DB version 2 (or greater). This module does not support 
-#    it.
+#    have Berkeley DB version 2 (or greater).
 #
-#    First, find the definition of the BTREEINFO typedef. Check the
-#    return type from the prefix element. It should look like this in an
-#    older copy of db.h:
+#    If that didn't work, find the definition of the BTREEINFO typedef.
+#    Check the return type from the prefix element. It should look like
+#    this in an older copy of db.h:
 #
 #        int      (*prefix)      __P((const DBT *, const DBT *));  
 #
