@@ -2,7 +2,7 @@
 #
 # written by Paul Marquess (Paul.Marquess@btinternet.com)
 # last modified 6th March 1999
-# version 1.65
+# version 1.66
 #
 #     Copyright (c) 1995-9 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
@@ -145,7 +145,7 @@ use vars qw($VERSION @ISA @EXPORT $AUTOLOAD $DB_BTREE $DB_HASH $DB_RECNO $db_ver
 use Carp;
 
 
-$VERSION = "1.65" ;
+$VERSION = "1.66" ;
 
 #typedef enum { DB_BTREE, DB_HASH, DB_RECNO } DBTYPE;
 $DB_BTREE = new DB_File::BTREEINFO ;
@@ -1771,10 +1771,8 @@ F<modules/by-module/DB_File>.
 This version of B<DB_File> will work with either version 1.x or 2.x of
 Berkeley DB, but is limited to the functionality provided by version 1.
 
-The official web site for Berkeley DB is
-F<http://www.sleepycat.com/db>. The ftp equivalent is
-F<ftp.sleepycat.com:/pub>. Both versions 1 and 2 of Berkeley DB are
-available there.
+The official web site for Berkeley DB is F<http://www.sleepycat.com>.
+Both versions 1 and 2 of Berkeley DB are available there.
 
 Alternatively, Berkeley DB version 1 is available at your nearest CPAN
 archive in F<src/misc/db.1.85.tar.gz>.
@@ -1811,7 +1809,8 @@ Berkeley DB authors or the author of DB_File. See L<"AUTHOR"> for details.
 
 =head1 SEE ALSO
 
-L<perl(1)>, L<dbopen(3)>, L<hash(3)>, L<recno(3)>, L<btree(3)> 
+L<perl(1)>, L<dbopen(3)>, L<hash(3)>, L<recno(3)>, L<btree(3)>,
+L<dbmfilter>
 
 =head1 AUTHOR
 

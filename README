@@ -1,6 +1,6 @@
                                      DB_File
 
-                                  Version 1.65
+                                  Version 1.66
 
                                  6th March 1999  
 
@@ -37,7 +37,7 @@ your system:
 
     * Berkeley DB. 
 
-      The official web site for Berkeley DB is http://www.sleepycat.com/db. 
+      The official web site for Berkeley DB is http://www.sleepycat.com. 
       The latest version of Berkeley DB is always available there. It
       is recommended that you use the most recent version available at
       the Sleepycat site.
