@@ -1,7 +1,11 @@
 #! perl -w
+
 use strict ;
 use ExtUtils::MakeMaker 5.16 ;
 use Config ;
+
+die "DB_File needs Perl 5.004_05 or better. This is $]\n" 
+    if $] <= 5.00404; 
 
 my $VER_INFO ;
 my $LIB_DIR ;
@@ -48,22 +52,32 @@ WriteMakefile(
 	DEFINE		=> "$OS2 $VER_INFO $COMPAT185",
 	OBJECT		=> 'version$(OBJ_EXT) DB_File$(OBJ_EXT)',
 	OPTIMIZE	=> '-g',
-	'macro'		=> { INSTALLDIRS => 'perl' },
+	'macro'		=> { INSTALLDIRS => 'perl', my_files => "@files" },
         'dist'          => {COMPRESS=>'gzip', SUFFIX=>'gz',
-			    DIST_DEFAULT => 'MyDoubleCheck tardist'},    
+			    DIST_DEFAULT => 'MyDoubleCheck MyTrebleCheck tardist'},    
 	);
 
 
-sub MY::postamble {
-	'
+sub MY::postamble {<<'EOM' } ;
 
-MyDoubleCheck:	
+MyDoubleCheck:
 	@echo Checking config.in is setup for a release
 	@(grep "^LIB.*/usr/local/BerkeleyDB" config.in && 	\
 	grep "^INCLUDE.*/usr/local/BerkeleyDB" config.in &&	\
 	grep "^#DBNAME.*" config.in) >/dev/null ||		\
-	(echo config.in needs fixing ; exit 1)
+	    (echo config.in needs fixing ; exit 1)
 	@echo config.in is ok
+	@echo Checking DB_File.xs is ok for a release.
+	@(perl -ne ' exit 1 if /^\s*#\s*define\s+TRACE/ ; ' DB_File.xs || \
+	    (echo DB_File.xs needs fixing ; exit 1))
+	@echo DB_File.xs is ok
+
+MyTrebleCheck:
+	@echo Checking for $$^W in files: $(my_files)
+	@perl -ne '						\
+	    exit 1 if /^\s*local\s*\(\s*\$$\^W\s*\)/;' $(my_files) ||	\
+	  (echo found unexpected $$^W ; exit 1)
+	@echo All is ok.
 
 version$(OBJ_EXT):	version.c
 
@@ -72,8 +86,8 @@ $(NAME).xs:	typemap
 
 Makefile:	config.in
 
-' ;
-}
+EOM
+
 
 
 sub ParseCONFIG
