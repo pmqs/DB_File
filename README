@@ -1,8 +1,8 @@
                                      DB_File
 
-                                  Version 1.64
+                                  Version 1.65
 
-                                 21st Feb 1999  
+                                 6th March 1999  
 
  	Copyright (c) 1995-1999 Paul Marquess. All rights reserved. This
 	program is free software; you can redistribute it and/or modify
@@ -30,59 +30,124 @@ file DB_File.pm.
 PREREQUISITES
 -------------
 
-Before you can build DB_File you need to have the following installed
-on your system:
+Before you can build DB_File you must have the following installed on
+your system:
 
     * Perl 5.004 or greater.
 
     * Berkeley DB. 
 
-      For version 1 of Berkeley DB either 1.85 or 1.86 are best.
-      For version 2 of Berkeley DB you must have 2.3.4 or greater.
+      The official web site for Berkeley DB is http://www.sleepycat.com/db. 
+      The latest version of Berkeley DB is always available there. It
+      is recommended that you use the most recent version available at
+      the Sleepycat site.
 
-      The official web site for Berkeley DB is
-      http://www.sleepycat.com/db. Both versions 1 and 2 of Berkeley DB
-      are available there.
+      The one exception to this advice is where you want to use DB_File
+      to access database files created by a third-party application, like
+      Sendmail or Netscape. In these cases you must build DB_File with a
+      compatible version of Berkeley DB.
 
-      Alternatively, Berkeley DB version 1 is available at your nearest
-      CPAN archive (see the section on CPAN in the perlmod manpage for
-      a list) in src/misc/db.1.85.tar.gz
-
-      If you are running IRIX, then get Berkeley DB version 1 from
-      http://reality.sgi.com/ariel. It has the patches necessary to
-      compile properly on IRIX 5.3.
+      If you want to use Berkeley DB 2.x, you must have version 2.3.4
+      or greater.  For Berkeley DB 1.x, use either version 1.85 or 1.86.
 
 
 BUILDING THE MODULE
 -------------------
 
 Assuming you have met all the prerequisites, building the module should
-be relatively straightforward. If you are running either Solaris 2.5 or
-HP-UX 10 and want to use Berkeley DB version 2, read the Solaris Notes
-or HP-UX Notes sections below.
+be relatively straightforward. 
 
-The first step is to edit the file config.in to suit you local
-installation. Instructions are given in the file.
+Step 1 : If you are running either Solaris 2.5 or HP-UX 10 and want
+         to use Berkeley DB version 2, read either the Solaris Notes or
+         HP-UX Notes sections below.
 
-The module can now be built and tested using this sequence of
-commands:
+Step 2 : Edit the file config.in to suit you local installation. 
+         Instructions are given in the file.
 
-    perl Makefile.PL
-    make
-    make test
+Step 3 : Build and test the module using using this sequence of commands:
+
+             perl Makefile.PL
+             make
+             make test
 
 
   NOTE:
       If you have a very old version of Berkeley DB, three of the tests
-      in the recno test hasness may fail (tests 51, 53 and 55). You can
+      in the recno test harness may fail (tests 51, 53 and 55). You can
       safely ignore the errors if you're never going to use the broken
       functionality (recno databases with a modified bval).
       Otherwise you'll have to upgrade your DB library.
+
 
 INSTALLATION
 ------------
 
     make install
+
+
+TROUBLESHOOTING
+===============
+
+Here are some of the problems that people encounter when building DB_File.
+
+Missing db.h or libdb.a
+-----------------------
+
+If you get an error like this:
+
+  cc -c -I/usr/local/include -Dbool=char -DHAS_BOOL
+  -O2    -DVERSION=\"1.64\" -DXS_VERSION=\"1.64\" -fpic
+  -I/usr/local/lib/perl5/i586-linux/5.00404/CORE -DmDB_Prefix_t=size_t
+  -DmDB_Hash_t=u_int32_t DB_File.c 
+  DB_File.xs:101: db.h: No such file or directory
+
+or this:
+
+  LD_RUN_PATH="/lib" cc -o blib/arch/auto/DB_File/DB_File.so  -shared
+  -L/usr/local/lib DB_File.o    -L/usr/local/lib -ldb 
+  ld: cannot open -ldb: No such file or directory
+
+This symptom can imply:
+
+ 1. You don't have Berkeley DB installed on your system at all.
+    Solution: get & install Berkeley DB.
+
+ 2. You do have Berkeley DB installed, but it isn't in a standard place.
+    Solution: Edit config.in and set the LIB and INCLUDE variables to point
+              to the directories where libdb.a and db.h are installed.
+  
+
+Undefined symbol db_version
+---------------------------
+
+DB_File seems to have built correctly, but you get an error like this
+when you run the test harness:
+
+  $ make test
+  PERL_DL_NONLAZY=1 /usr/bin/perl5.00404 -I./blib/arch -I./blib/lib
+  -I/usr/local/lib/perl5/i586-linux/5.00404 -I/usr/local/lib/perl5 -e 'use
+  Test::Harness qw(&runtests $verbose); $verbose=0; runtests @ARGV;' t/*.t
+  t/db-btree..........Can't load './blib/arch/auto/DB_File/DB_File.so' for
+  module DB_File: ./blib/arch/auto/DB_File/DB_File.so: undefined symbol:
+  db_version at /usr/local/lib/perl5/i586-linux/5.00404/DynaLoader.pm
+  line 166.
+
+  at t/db-btree.t line 21
+  BEGIN failed--compilation aborted at t/db-btree.t line 21.
+  dubious Test returned status 2 (wstat 512, 0x200)
+
+This error usually happens when you have both version 1 and version
+2 of Berkeley DB installed on your system and DB_File attempts to
+build using the db.h for Berkeley DB version 2 and the version 1
+library. Unfortunately the two versions aren't compatible with each
+other. The undefined symbol error is actually caused because Berkeley
+DB version 1 doesn't have the symbol db_version.
+
+Solution: Setting the LIB & INCLUDE variables in config.in to point to the
+          correct directories can sometimes be enough to fix this
+          problem. If that doesn't work the easiest way to fix the
+          problem is to either delete or temporarily rename the copies
+          of db.h and libdb.a that you don't want DB_File to use.
 
 Solaris Notes
 -------------
@@ -122,11 +187,20 @@ following steps should do the trick:
 
         "libdb= libdb.a" to "libdb= libdb.sl".
 
+
   3: Build and install the Berkeley DB distribution as usual.
 
 
+IRIX NOTES
+----------
+
+If you are running IRIX, and want to use Berkeley DB version 1, you can
+get it from http://reality.sgi.com/ariel. It has the patches necessary
+to compile properly on IRIX 5.3.
+
+
 FEEDBACK
---------
+========
 
 How to report a problem with DB_File.
 
