@@ -3,8 +3,8 @@
  DB_File.xs -- Perl 5 interface to Berkeley DB 
 
  written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
- last modified 13th May 1998
- version 1.59
+ last modified 16th May 1998
+ version 1.60
 
  All comments/suggestions/problems are welcome
 
@@ -55,6 +55,7 @@
 		size is specified as 0, it does a strlen on the data.
 		This was ok for DB 1.x, but isn't for DB 2.x.
         1.59 -  No change to DB_File.xs
+        1.60 -  No change to DB_File.xs
 
 
 
@@ -357,8 +358,8 @@ const DBT * key2 ;
     ENTER ;
     SAVETMPS;
 
-    PUSHMARK(sp) ;
-    EXTEND(sp,2) ;
+    PUSHMARK(SP) ;
+    EXTEND(SP,2) ;
     PUSHs(sv_2mortal(newSVpv(data1,key1->size)));
     PUSHs(sv_2mortal(newSVpv(data2,key2->size)));
     PUTBACK ;
@@ -404,8 +405,8 @@ const DBT * key2 ;
     ENTER ;
     SAVETMPS;
 
-    PUSHMARK(sp) ;
-    EXTEND(sp,2) ;
+    PUSHMARK(SP) ;
+    EXTEND(SP,2) ;
     PUSHs(sv_2mortal(newSVpv(data1,key1->size)));
     PUSHs(sv_2mortal(newSVpv(data2,key2->size)));
     PUTBACK ;
@@ -442,7 +443,7 @@ size_t size ;
     ENTER ;
     SAVETMPS;
 
-    PUSHMARK(sp) ;
+    PUSHMARK(SP) ;
 
     XPUSHs(sv_2mortal(newSVpv((char*)data,size)));
     PUTBACK ;

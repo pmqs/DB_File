@@ -24,7 +24,17 @@ use strict ;
 use vars qw($dbh $Dfile $bad_ones $FA) ;
 
 # full tied array support started in Perl 5.004_57
-$FA = ($] >= 5.004_57) ;
+# Double check to see if it is available.
+
+{
+    sub try::TIEARRAY { bless [], "try" }
+    sub try::FETCHSIZE { $FA = 1 }
+    $FA = 0 ;
+    my @a ; 
+    tie @a, 'try' ;
+    my $a = @a ;
+}
+
 
 sub ok
 {

@@ -201,3 +201,6 @@
    Some tests needed changed to work with Berkeley DB 2.4.10
 
    Added dbinfo to the distribution.
+
+1.60
+   Changed the test to check for full tied array support
