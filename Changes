@@ -178,3 +178,9 @@
 
 1.56
    Documented the Solaris 2.5 mutex bug
+
+1.57
+   If Perl has been compiled with Threads support,the symbol op will be
+   defined. This clashes with a field name in db.h, so it needs to be
+   #undef'ed before db.h is included.
+

@@ -610,6 +610,8 @@ EOM
     main::ok(101, $@ eq "") ;
     main::ok(102, $ret eq "[[11]]") ;
 
+    undef $X;
+    untie(%h);
     unlink "SubDB.pm", "dbbtree.tmp" ;
 
 }

@@ -387,6 +387,8 @@ EOM
     main::ok(65, $@ eq "") ;
     main::ok(66, $ret eq "[[11]]") ;
 
+    undef $X;
+    untie(@h);
     unlink "SubDB.pm", "recno.tmp" ;
 
 }

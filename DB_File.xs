@@ -3,8 +3,8 @@
  DB_File.xs -- Perl 5 interface to Berkeley DB 
 
  written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
- last modified 20th Nov 1997
- version 1.56
+ last modified 20th Dec 1997
+ version 1.57
 
  All comments/suggestions/problems are welcome
 
@@ -50,6 +50,7 @@
 	1.54 -  Fixed bug in the fd method
         1.55 -  Fix for AIX from Jarkko Hietaniemi
         1.56 -  No change to DB_File.xs
+        1.57 -  added the #undef op to allow building with Threads support.
 
 
 
@@ -65,6 +66,12 @@
 
 #undef __attribute__
 
+/* If Perl has been compiled with Threads support,the symbol op will
+   be defined here. This clashes with a field name in db.h, so get rid of it.
+ */
+#ifdef op
+#undef op
+#endif
 #include <db.h>
 
 #include <fcntl.h> 
@@ -298,7 +305,7 @@ GetVersionInfo()
     (void)db_version(&Major, &Minor, &Patch) ;
 
     /* check that libdb is recent enough */
-    if (Minor ==  0 && Patch < 5)
+    if (Major == 2 && Minor ==  0 && Patch < 5)
 	croak("DB_File needs Berkeley DB 2.0.5 or greater, you have %d.%d.%d\n",
 		 Major, Minor, Patch) ;
  

@@ -416,6 +416,8 @@ EOM
     main::ok(61, $@ eq "") ;
     main::ok(62, $ret eq "[[11]]") ;
 
+    undef $X;
+    untie(%h);
     unlink "SubDB.pm", "dbhash.tmp" ;
 
 }
