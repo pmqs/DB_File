@@ -140,6 +140,12 @@
 
 1.16
 
+   A harmless looking tab was causing Makefile.PL to fail on AIX 3.2.5
+
+    Small fix for the AIX strict C compiler XLC which doesn't like
+    __attribute__ being defined via proto.h and redefined via db.h. Fix
+    courtesy of Jarkko Hietaniemi.
+
 1.50
 
     DB_File can now build with either DB 1.x or 2.x, but not both at
@@ -166,3 +172,6 @@
 
    Fixed a small bug in the test harness when run under win32
    The emulation of fd when useing DB 2.x was busted.
+
+1.55
+   Merged 1.16 changes.

@@ -1,19 +1,12 @@
                                      DB_File
 
-                                  Version 1.54
+                                  Version 1.55
 
-                                  19th Sept 1997 
+                                  20th Nov 1997 
 
 	Copyright (c) 1995/6/7 Paul Marquess. All rights reserved. This
 	program is free software; you can redistribute it and/or modify
 	it under the same terms as Perl itself.
-
-
-                                   WARNING
-        The support for Berkeley DB 2.0 in this release should be
-        considered as beta quality code. The support for Berkeley DB
-        1.x should be ok.
-
 
 
 DESCRIPTION
@@ -23,9 +16,9 @@ DB_File is a module which allows Perl programs to make use of the
 facilities provided by Berkeley DB version 1. (DB_File can be built
 version 2 of Berkeley DB, but it will only support the 1.x features),
 
-A future version of DB_File will support the new features available in
-Berkeley DB 2.x.
-
+If you want to make use of the new features available in Berkeley DB
+2.x, use the Perl module BerkeleyDB instead.
+ 
 Berkeley DB is a C library which provides a consistent interface to a
 number of database formats. DB_File provides an interface to all three
 of the database types (hash, btree and recno) currently supported by
@@ -146,4 +139,3 @@ CHANGES
 See the Changes file.
  
 Paul Marquess <pmarquess@bfsec.bt.co.uk>
-

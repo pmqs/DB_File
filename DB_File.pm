@@ -1,8 +1,8 @@
 # DB_File.pm -- Perl 5 interface to Berkeley DB 
 #
 # written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
-# last modified 19th Sept 1997
-# version 1.54
+# last modified 20th Nov 1997
+# version 1.55
 #
 #     Copyright (c) 1995, 1996, 1997 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
@@ -145,7 +145,7 @@ use vars qw($VERSION @ISA @EXPORT $AUTOLOAD $DB_BTREE $DB_HASH $DB_RECNO $db_ver
 use Carp;
 
 
-$VERSION = "1.54" ;
+$VERSION = "1.55" ;
 
 #typedef enum { DB_BTREE, DB_HASH, DB_RECNO } DBTYPE;
 $DB_BTREE = new DB_File::BTREEINFO ;
@@ -406,15 +406,20 @@ number.
 
 =head2 Using DB_File with Berkeley DB version 2
 
-Although DB_File is intended to be used with Berkeley DB version 1, it
-can also be used with version 2. In this case the interface is limited
-to the functionality provided by Berkeley DB 1.x. Anywhere the version
-2 interface differs, DB_File arranges for it to work like version 1.
-This feature allows DB_File scripts that were built with version 1 to
-be migrated to version 2 without any changes.
+Although B<DB_File> is intended to be used with Berkeley DB version 1,
+it can also be used with version 2. In this case the interface is
+limited to the functionality provided by Berkeley DB 1.x. Anywhere the
+version 2 interface differs, B<DB_File> arranges for it to work like
+version 1. This feature allows B<DB_File> scripts that were built with
+version 1 to be migrated to version 2 without any changes.
 
-A future version of B<DB_File> will support the new features available
-in Berkeley DB 2.x.
+If you want to make use of the new features available in Berkeley DB
+2.x, use the Perl module B<BerkeleyDB> instead.
+
+At the time of writing this document the B<BerkeleyDB> module is still
+alpha quality (the version number is < 1.0), and so unsuitable for use
+in any serious development work. Once its version number is >= 1.0, it
+is considered stable enough for real work.
 
 B<Note:> The database file format has changed in Berkeley DB version 2.
 If you cannot recreate your databases, you must dump any existing

@@ -3,8 +3,8 @@
  DB_File.xs -- Perl 5 interface to Berkeley DB 
 
  written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
- last modified 19th Sept 1997
- version 1.54
+ last modified 20th Nov 1997
+ version 1.55
 
  All comments/suggestions/problems are welcome
 
@@ -48,31 +48,23 @@
 		undefined value" warning with db_get and db_seq.
 	1.53 -  Added DB_RENUMBER to flags for recno.
 	1.54 -  Fixed bug in the fd method
+        1.55 -  Fix for AIX from Jarkko Hietaniemi
+
 
 
 */
-
-#ifndef WIN32
-#include <db.h>
-#endif
-
-/* 
- * db.h can define the ENTER macro, so get rid of it before loading
- * the Perl include files.
- *
- */
-
-#ifdef ENTER
-#undef ENTER
-#endif
 
 #include "EXTERN.h"  
 #include "perl.h"
 #include "XSUB.h"
 
-#ifdef WIN32
+/* Being the Berkeley DB we prefer the <sys/cdefs.h> (which will be
+ * shortly #included by the <db.h>) __attribute__ to the possibly
+ * already defined __attribute__, for example by GNUC or by Perl. */
+
+#undef __attribute__
+
 #include <db.h>
-#endif
 
 #include <fcntl.h> 
 
