@@ -10,7 +10,8 @@
 #    installed on your system.
 
 #INCLUDE	= /usr/local/include
-INCLUDE	= ./libraries/1.85
+#INCLUDE	= /usr/local/BerkeleyDB/include
+INCLUDE	= ./libraries/2.7.5
 
 # 2. Where is libdb?
 #
@@ -18,7 +19,8 @@ INCLUDE	= ./libraries/1.85
 #    installed on your system.
 
 #LIB	= /usr/local/lib
-LIB	= ./libraries/1.85
+#LIB	= /usr/local/BerkeleyDB/lib
+LIB	= ./libraries/2.7.5
 
 # 3. What version of Berkely DB have you got?
 #
