@@ -1,8 +1,8 @@
 # DB_File.pm -- Perl 5 interface to Berkeley DB 
 #
 # written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
-# last modified 7th May 1997
-# version 1.50
+# last modified 9th Sept 1997
+# version 1.53
 #
 #     Copyright (c) 1995, 1996, 1997 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
@@ -98,7 +98,6 @@ sub NotHere
     croak ref($self) . " does not define the method ${method}" ;
 }
 
-sub DESTROY  { undef %{$_[0]} }
 sub FIRSTKEY { my $self = shift ; $self->NotHere("FIRSTKEY") }
 sub NEXTKEY  { my $self = shift ; $self->NotHere("NEXTKEY") }
 sub CLEAR    { my $self = shift ; $self->NotHere("CLEAR") }
@@ -146,7 +145,7 @@ use vars qw($VERSION @ISA @EXPORT $AUTOLOAD $DB_BTREE $DB_HASH $DB_RECNO $db_ver
 use Carp;
 
 
-$VERSION = "1.50" ;
+$VERSION = "1.53" ;
 
 #typedef enum { DB_BTREE, DB_HASH, DB_RECNO } DBTYPE;
 $DB_BTREE = new DB_File::BTREEINFO ;
@@ -212,17 +211,25 @@ sub AUTOLOAD {
 }
 
 
-# import borrowed from IO::File
-#   exports Fcntl constants if available.
-sub import {
-    my $pkg = shift;
-    my $callpkg = caller;
-    Exporter::export $pkg, $callpkg, @_;
-    eval {
-        require Fcntl;
-        Exporter::export 'Fcntl', $callpkg, '/^O_/';
-    };
-}
+eval {
+    # Make all Fcntl O_XXX constants available for importing
+    require Fcntl;
+    my @O = grep /^O_/, @Fcntl::EXPORT;
+    Fcntl->import(@O);  # first we import what we want to export
+    push(@EXPORT, @O);
+};
+
+## import borrowed from IO::File
+##   exports Fcntl constants if available.
+#sub import {
+#    my $pkg = shift;
+#    my $callpkg = caller;
+#    Exporter::export $pkg, $callpkg, @_;
+#    eval {
+#        require Fcntl;
+#        Exporter::export 'Fcntl', $callpkg, '/^O_/';
+#    };
+#}
 
 bootstrap DB_File $VERSION;
 
@@ -1585,136 +1592,7 @@ of having a C<use strict> in all your scripts.
 
 =head1 HISTORY
 
-=over
-
-=item 0.1
-
-First Release.
-
-=item 0.2
-
-When B<DB_File> is opening a database file it no longer terminates the
-process if I<dbopen> returned an error. This allows file protection
-errors to be caught at run time. Thanks to Judith Grass
-E<lt>grass@cybercash.comE<gt> for spotting the bug.
-
-=item 0.3
-
-Added prototype support for multiple btree compare callbacks.
-
-=item 1.0
-
-B<DB_File> has been in use for over a year. To reflect that, the
-version number has been incremented to 1.0.
-
-Added complete support for multiple concurrent callbacks.
-
-Using the I<push> method on an empty list didn't work properly. This
-has been fixed.
-
-=item 1.01
-
-Fixed a core dump problem with SunOS.
-
-The return value from TIEHASH wasn't set to NULL when dbopen returned
-an error.
-
-=item 1.02
-
-Merged OS/2 specific code into DB_File.xs
-
-Removed some redundant code in DB_File.xs.
-
-Documentation update.
-
-Allow negative subscripts with RECNO interface.
-
-Changed the default flags from O_RDWR to O_CREAT|O_RDWR.
-
-The example code which showed how to lock a database needed a call to
-C<sync> added. Without it the resultant database file was empty.
-
-Added get_dup method.
-
-=item 1.03
-
-Documentation update.
-
-B<DB_File> now imports the constants (O_RDWR, O_CREAT etc.) from Fcntl
-automatically.
-
-The standard hash function C<exists> is now supported.
-
-Modified the behavior of get_dup. When it returns an associative
-array, the value is the count of the number of matching BTREE values.
-
-=item 1.04
-
-Minor documentation changes.
-
-Fixed a bug in hash_cb. Patches supplied by Dave Hammen,
-E<lt>hammen@gothamcity.jsc.nasa.govE<gt>.
-
-Fixed a bug with the constructors for DB_File::HASHINFO,
-DB_File::BTREEINFO and DB_File::RECNOINFO. Also tidied up the
-constructors to make them C<-w> clean.
-
-Reworked part of the test harness to be more locale friendly.
-
-=item 1.05
-
-Made all scripts in the documentation C<strict> and C<-w> clean.
-
-Added logic to F<DB_File.xs> to allow the module to be built after Perl
-is installed.
-
-=item 1.06
-
-Minor namespace cleanup: Localized C<PrintBtree>.
-
-=item 1.07
-
-Fixed bug with RECNO, where bval wasn't defaulting to "\n".
-
-=item 1.08
-
-Documented operation of bval.
-
-=item 1.09
-
-Minor bug fix in DB_File::HASHINFO, DB_File::RECNOINFO and
-DB_File::BTREEINFO.
-
-Changed default mode to 0666.
-
-=item 1.10
-
-Fixed fd method so that it still returns -1 for in-memory files when db
-1.86 is used.
-
-=item 1.11
-
-Documented the untie gotcha.
-
-=item 1.12
-
-Documented the incompatibility with version 2 of Berkeley DB.
-
-=item 1.13
-
-Minor changes to DB_FIle.xs and DB_File.pm
-
-=item 1.14
-
-Made it illegal to tie an associative array to a RECNO database and an
-ordinary array to a HASH or BTREE database.
-
-=item 1.50
-
-DB_File can now build with either DB 1.x or 2.x, but not both at the
-same time.
-
-=back
+Moved to the Changes file.
 
 =head1 BUGS
 

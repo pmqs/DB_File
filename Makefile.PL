@@ -6,6 +6,7 @@ use Config ;
 my $VER_INFO ;
 my $LIB_DIR ;
 my $INC_DIR ;
+my $libs = "-ldb" ;
 
 ParseCONFIG() ;
 
@@ -13,9 +14,12 @@ ParseCONFIG() ;
 my $OS2 = "" ;
 $OS2 = "-DOS2" if $Config{'osname'} eq 'os2' ;
 
+# Win32 is another special case.
+$libs = "-llibdb" if $Config{'osname'} eq 'MSWin32' ;
+
 WriteMakefile(
 	NAME 		=> 'DB_File',
-	LIBS 		=> ["-L${LIB_DIR} -ldb"],
+	LIBS 		=> ["-L${LIB_DIR} $libs"],
         MAN3PODS        => ' ',         # Pods will be built by installman.
 	INC		=> "-I$INC_DIR",
 	VERSION_FROM	=> 'DB_File.pm',
@@ -31,9 +35,7 @@ sub MY::postamble {
 $(NAME).xs:	typemap
 	@$(TOUCH) $(NAME).xs
 
-Makefile.PL:	CONFIG
-	@echo "Makefile.PL out-of-date with respect to $?"
-	@$(TOUCH) Makefile.PL
+Makefile:	config.in
 
 	' ;
 }
@@ -47,7 +49,7 @@ sub ParseCONFIG
     my @Options = qw( INCLUDE LIB PREFIX HASH ) ;
     my %ValidOption = map {$_, 1} @Options ;
     my %Parsed = %ValidOption ;
-    my $CONFIG = 'CONFIG' ;
+    my $CONFIG = 'config.in' ;
 
     print "Parsing $CONFIG...\n" ;
 

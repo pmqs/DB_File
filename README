@@ -1,8 +1,8 @@
                                      DB_File
 
-                                  Version 1.50
+                                  Version 1.53
 
-                                  7th May 1997 
+                                  9th Sept 1997 
 
 	Copyright (c) 1995/6/7 Paul Marquess. All rights reserved. This
 	program is free software; you can redistribute it and/or modify
@@ -67,7 +67,7 @@ BUILDING THE MODULE
 Assuming you have met all the prerequisites, building the module should
 be relatively straightforward.
 
-The first step is to edit the file CONFIG to suit you local
+The first step is to edit the file config.in to suit you local
 installation. Instructions are given in the file.
 
 The module can now be built and tested using this sequence of
@@ -143,7 +143,7 @@ To help me help you, I need of the following information:
 CHANGES
 -------
 
-See the HISTORY section in DB_File.pm
+See the Changes file.
  
 Paul Marquess <pmarquess@bfsec.bt.co.uk>
 

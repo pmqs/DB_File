@@ -3,8 +3,8 @@
  DB_File.xs -- Perl 5 interface to Berkeley DB 
 
  written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
- last modified 7th May 1997
- version 1.50
+ last modified 9th Sept 1997
+ version 1.53
 
  All comments/suggestions/problems are welcome
 
@@ -43,10 +43,17 @@
 	1.14 -	Made it illegal to tie an associative array to a RECNO
 		database and an ordinary array to a HASH or BTREE database.
 	1.50 -  Make work with both DB 1.x or DB 2.x
+	1.51 -  Fixed a bug in mapping 1.x O_RDONLY flag to 2.x DB_RDONLY equivalent
+	1.52 -  Patch from Gisle Aas <gisle@aas.no> to suppress "use of 
+		undefined value" warning with db_get and db_seq.
+	1.53 -  Added DB_RENUMBER to flags for recno.
+
 
 */
 
+#ifndef WIN32
 #include <db.h>
+#endif
 
 /* 
  * db.h can define the ENTER macro, so get rid of it before loading
@@ -62,6 +69,9 @@
 #include "perl.h"
 #include "XSUB.h"
 
+#ifdef WIN32
+#include <db.h>
+#endif
 
 #include <fcntl.h> 
 
@@ -753,6 +763,10 @@ SV *   sv ;
 		DB_flags(info->flags, DB_DELIMITER) ;
 	    }
 #endif
+
+#ifdef DB_RENUMBER
+	    info->flags |= DB_RENUMBER ;
+#endif
          
             PrintRecno(info) ;
         }
@@ -775,17 +789,25 @@ SV *   sv ;
         int		status ;
 
         /* Map 1.x flags to 2.x flags */
-        if (flags & O_CREAT)
+        if ((flags & O_CREAT) == O_CREAT)
             Flags |= DB_CREATE ;
 
-        if (flags & O_NONBLOCK)
+#ifdef O_NONBLOCK
+        if ((flags & O_NONBLOCK) == O_NONBLOCK)
             Flags |= DB_EXCL ;
+#endif
 
-        if (flags & O_RDONLY)
+#if O_RDONLY == 0
+        if (flags == O_RDONLY)
+#else
+        if (flags & O_RDONLY) == O_RDONLY)
+#endif
             Flags |= DB_RDONLY ;
 
-        if (flags & O_TRUNC)
+#ifdef O_NONBLOCK
+        if ((flags & O_TRUNC) == O_TRUNC)
             Flags |= DB_TRUNCATE ;
+#endif
 
         status = db_open(name, RETVAL->type, Flags, mode, NULL, openinfo, &RETVAL->dbp) ; 
         if (status == 0)
@@ -1381,10 +1403,11 @@ int
 db_get(db, key, value, flags=0)
 	DB_File		db
 	DBTKEY		key
-	DBT		value
+	DBT		value = NO_INIT
 	u_int		flags
 	CODE:
 	  CurrentDB = db ;
+	  DBT_flags(value) ; 
 	  RETVAL = db_get(db, key, value, flags) ;
 #ifdef DB_VERSION_MAJOR
 	  if (RETVAL > 0)
@@ -1455,10 +1478,11 @@ int
 db_seq(db, key, value, flags)
 	DB_File		db
 	DBTKEY		key 
-	DBT		value
+	DBT		value = NO_INIT
 	u_int		flags
 	CODE:
 	  CurrentDB = db ;
+	  DBT_flags(value) ; 
 	  RETVAL = db_seq(db, key, value, flags);
 #ifdef DB_VERSION_MAJOR
 	  if (RETVAL > 0)

@@ -1,8 +1,8 @@
 # typemap for Perl 5 interface to Berkeley 
 #
 # written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
-# last modified 7th May 1997
-# version 1.50
+# last modified 9th Sept 1997
+# version 1.53
 #
 #################################### DB SECTION
 #
@@ -37,3 +37,5 @@ T_dbtkeydatum
 	OutputKey($arg, $var)
 T_dbtdatum
 	OutputValue($arg, $var)
+T_PTROBJ
+        sv_setref_pv($arg, dbtype, (void*)$var);
