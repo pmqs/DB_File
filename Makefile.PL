@@ -93,8 +93,8 @@ sub ParseCONFIG
     die "The following keys are missing from $CONFIG file: [@missing]\n" 
         if @missing = keys %Parsed ;
 
-    $INC_DIR = $Info{'INCLUDE'} ;
-    $LIB_DIR = $Info{'LIB'} ;
+    $INC_DIR = $ENV{'DB_FILE_INCLUDE'} || $Info{'INCLUDE'} ;
+    $LIB_DIR = $ENV{'DB_FILE_LIB'} || $Info{'LIB'} ;
     $DB_NAME = $Info{'DBNAME'} if defined $Info{'DBNAME'} ;
     my $PREFIX  = $Info{'PREFIX'} ;
     my $HASH    = $Info{'HASH'} ;
