@@ -2,21 +2,23 @@
 #
 # written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
 # last modified 9th Sept 1997
-# version 1.53
+# version 1.54
 
 # 1. Where is the file db.h?
 #
 #    Change the path below to point to the directory where dh.h is
 #    installed on your system.
 
-INCLUDE	= /usr/local/include
+#INCLUDE	= /usr/local/include
+INCLUDE	= ./db_lib
 
 # 2. Where is libdb?
 #
 #    Change the path below to point to the directory where libdb is
 #    installed on your system.
 
-LIB	= /usr/local/lib
+#LIB	= /usr/local/lib
+LIB	= ./db_lib
 
 # 3. What version of Berkely DB have you got?
 #

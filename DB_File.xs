@@ -3,8 +3,8 @@
  DB_File.xs -- Perl 5 interface to Berkeley DB 
 
  written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
- last modified 9th Sept 1997
- version 1.53
+ last modified 19th Sept 1997
+ version 1.54
 
  All comments/suggestions/problems are welcome
 
@@ -47,6 +47,7 @@
 	1.52 -  Patch from Gisle Aas <gisle@aas.no> to suppress "use of 
 		undefined value" warning with db_get and db_seq.
 	1.53 -  Added DB_RENUMBER to flags for recno.
+	1.54 -  Fixed bug in the fd method
 
 
 */
@@ -1449,7 +1450,7 @@ db_fd(db)
 	  status = (db->in_memory
 		? -1 
 		: ((db->dbp)->fd)(db->dbp, &RETVAL) ) ;
-	  if (RETVAL > 0)
+	  if (status != 0)
 	    RETVAL = -1 ;
 #else
 	  RETVAL = (db->in_memory
