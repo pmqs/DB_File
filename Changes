@@ -184,3 +184,11 @@
    defined. This clashes with a field name in db.h, so it needs to be
    #undef'ed before db.h is included.
 
+1.58
+   Tied Array support was enhanced in Perl 5.004_57. DB_File now
+   supports PUSH,POP,SHIFT,UNSHIFT & STORESIZE.
+
+   Fixed a problem with the use of sv_setpvn. When the size is
+   specified as 0, it does a strlen on the data.  This was ok for DB
+   1.x, but isn't for DB 2.x.
+
