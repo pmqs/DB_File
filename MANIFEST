@@ -12,3 +12,4 @@ typemap
 t/db-btree.t
 t/db-hash.t
 t/db-recno.t
+version.c

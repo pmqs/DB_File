@@ -1,8 +1,8 @@
                                      DB_File
 
-                                  Version 1.70
+                                  Version 1.71
 
-                                 4th August 1999  
+                               7th September 1999  
 
  	Copyright (c) 1995-1999 Paul Marquess. All rights reserved. This
 	program is free software; you can redistribute it and/or modify
@@ -14,10 +14,11 @@ DESCRIPTION
 
 DB_File is a module which allows Perl programs to make use of the
 facilities provided by Berkeley DB version 1. (DB_File can be built
-version 2 of Berkeley DB, but it will only support the 1.x features),
+version 2 or 3 of Berkeley DB, but it will only support the 1.x
+features),
 
 If you want to make use of the new features available in Berkeley DB
-2.x, use the Perl module BerkeleyDB instead.
+2.x or 3.x, use the Perl module BerkeleyDB instead.
  
 Berkeley DB is a C library which provides a consistent interface to a
 number of database formats. DB_File provides an interface to all three
@@ -48,7 +49,8 @@ your system:
       compatible version of Berkeley DB.
 
       If you want to use Berkeley DB 2.x, you must have version 2.3.4
-      or greater.  For Berkeley DB 1.x, use either version 1.85 or 1.86.
+      or greater.  If you want to use Berkeley DB 3.x, any version will
+      do. For Berkeley DB 1.x, use either version 1.85 or 1.86.
 
 
 BUILDING THE MODULE
@@ -72,11 +74,12 @@ Step 3 : Build and test the module using using this sequence of commands:
 
 
   NOTE:
-      If you have a very old version of Berkeley DB, three of the tests
-      in the recno test harness may fail (tests 51, 53 and 55). You can
-      safely ignore the errors if you're never going to use the broken
-      functionality (recno databases with a modified bval).
-      Otherwise you'll have to upgrade your DB library.
+      If you have a very old version of Berkeley DB (i.e. pre 1.85),
+      three of the tests in the recno test harness may fail (tests 51,
+      53 and 55). You can safely ignore the errors if you're never
+      going to use the broken functionality (recno databases with a
+      modified bval).  Otherwise you'll have to upgrade your DB
+      library.
 
 
 INSTALLATION
@@ -148,6 +151,33 @@ Solution: Setting the LIB & INCLUDE variables in config.in to point to the
           problem. If that doesn't work the easiest way to fix the
           problem is to either delete or temporarily rename the copies
           of db.h and libdb.a that you don't want DB_File to use.
+
+Incompatable versions of db.h and libdb
+---------------------------------------
+
+BerkeleyDB seems to have built correctly, but you get an error like this
+when you run the test harness:
+
+  $ make test
+  PERL_DL_NONLAZY=1 /home/paul/perl/install/bin/perl5.00560 -Iblib/arch 
+  -Iblib/lib -I/home/paul/perl/install/5.005_60/lib/5.00560/i586-linux 
+  -I/home/paul/perl/install/5.005_60/lib/5.00560 -e 'use Test::Harness 
+  qw(&runtests $verbose); $verbose=0; runtests @ARGV;' t/*.t
+  t/db-btree..........
+  DB_File needs compatible versions of libdb & db.h
+          you have db.h version 2.3.7 and libdb version 2.7.5
+  BEGIN failed--compilation aborted at t/db-btree.t line 21.
+  ...	
+
+Another variation on the theme of having two versions of Berkeley DB on
+your system. 
+
+Solution: Setting the LIB & INCLUDE variables in config.in to point to the
+          correct directories can sometimes be enough to fix this
+          problem. If that doesn't work the easiest way to fix the
+          problem is to either delete or temporarily rename the copies
+          of db.h and libdb.a that you don't want BerkeleyDB to use.
+
 
 Solaris Notes
 -------------
