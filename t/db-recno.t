@@ -93,8 +93,8 @@ sub bad_one
 {
     print STDERR <<EOM unless $bad_ones++ ;
 #
-# Some older versions of Berkeley DB version 1 will fail tests 51,
-# 53 and 55.
+# Some older versions of Berkeley DB version 1 will fail tests 61,
+# 63 and 65.
 #
 # You can safely ignore the errors if you're never going to use the
 # broken functionality (recno databases with a modified bval). 
@@ -444,7 +444,7 @@ unlink $Dfile;
    1 ;
 EOM
 
-    close FILE ;
+    close FILE  or die "Could not close: $!";
 
     BEGIN { push @INC, '.'; } 
     eval 'use SubDB ; ';
@@ -454,6 +454,7 @@ EOM
     eval '
 	$X = tie(@h, "SubDB","recno.tmp", O_RDWR|O_CREAT, 0640, $DB_RECNO );
 	' ;
+    die "Could not tie: $!" unless $X;
 
     main::ok(68, $@ eq "") ;
 
