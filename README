@@ -1,8 +1,8 @@
                                      DB_File
 
-                                  Version 1.74
+                                  Version 1.75
 
-                              10th December 2000
+                              17th December 2000
 
  	Copyright (c) 1995-2000 Paul Marquess. All rights reserved. This
 	program is free software; you can redistribute it and/or modify
@@ -75,7 +75,7 @@ Step 1 : If you are running either Solaris 2.5 or HP-UX 10 and want
 Step 2 : Edit the file config.in to suit you local installation. 
          Instructions are given in the file.
 
-Step 3 : Build and test the module using using this sequence of commands:
+Step 3 : Build and test the module using this sequence of commands:
 
              perl Makefile.PL
              make
