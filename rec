@@ -1,0 +1,32 @@
+use DB_File;
+use Fcntl;
+
+$DB = tie(@h, DB_File, "TestFile", (O_CREAT | O_RDWR), 0640, $DB_RECNO);
+$Len = $DB->length;
+print "$Len\n";		# 0 - correct.
+$DB->push("a");
+$Len = $DB->length;
+print "$Len\n";		# 0 - should be 1
+print "$h[0]\n";	# Blank line - should be 'a'. 
+$h[0] = "b";
+$Len = $DB->length;
+print "$Len\n";		# 1 - correct
+print "$h[0]\n";	# b - correct
+$DB->push("a");
+$Len = $DB->length;
+print "$Len\n";		# 2 - correct
+print "$h[0]\n";	# b - correct
+print "$h[1]\n";	# a - correct
+$DB->pop;
+$DB->pop;
+$Len = $DB->length;
+print "$Len\n";		# 0 - correct
+$DB->push("a");
+$Len = $DB->length;
+print "$Len\n";		# 0 - should be 1
+print "$h[0]\n";	# Blank line - should be 'a'.
+undef $DB;
+untie($DB);
+exit;
+
+

@@ -1,0 +1,15 @@
+use POSIX;
+use DB_File;
+use Fcntl;
+
+$file = "./db" ;
+$X = tie (@h, DB_File, $file, O_RDWR, 0640, $DB_RECNO) 
+    or die "tie failed: $!\n";
+$index = 0;
+#foreach (0 .. $X->length) {
+#foreach (@h) {
+foreach (@h) {
+  print $_ ;
+}
+untie @h;
+

@@ -1,0 +1,17 @@
+sub GetValues
+{
+    croak "Usage: $db->GetValues($key)"
+	unless @_ == 2 ;
+
+    my ($ref, $key) = @_ ;
+    my ($origkey) = $key ;
+    my (@values, $value) ;
+
+    return ()
+        if $ref->seq($key, $value, R_CURSOR) != 0 or $key ne $origkey ;
+
+    push (@values, $value) 
+        while $ref->seq($key, $value, R_NEXT) == 0 and $key eq $origkey ;
+
+    @values ;
+}

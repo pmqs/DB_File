@@ -1,0 +1,7 @@
+     use DB_File;
+     tie %a, 'DB_File', '/tmp/big.db' or die "$!";
+     while (<>) {
+ 	$a{$_} = $_;
+     } 
+     untie %a;
+

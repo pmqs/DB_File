@@ -1,0 +1,112 @@
+#define MAX_CB		3
+#define NULL_HANDLE	-1
+typedef void (*FnMap)() ;
+
+struct MapStruct {
+    FnMap    Function ;
+    SV *     PerlSub ;
+    int      Handle ;
+  } ;
+
+static void  fn1() ;
+static void  fn2() ;
+static void  fn3() ;
+
+static struct MapStruct Map [MAX_CB] =
+    {
+        { fn1, NULL, NULL_HANDLE },
+        { fn2, NULL, NULL_HANDLE },
+        { fn3, NULL, NULL_HANDLE }
+    } ;
+
+static void
+Pcb(index, buffer)
+int index ;
+char * buffer ;
+{
+    dSP ;
+
+    PUSHMARK(sp) ;
+    XPUSHs(sv_2mortal(newSVpv(buffer, 0))) ;
+    PUTBACK ;
+
+    /* Call the Perl sub */
+    perl_call_sv(Map[index].PerlSub, G_DISCARD) ;
+}
+
+static void
+fn1(buffer)
+char * buffer ;
+{
+    Pcb(0, buffer) ;
+}
+
+static void
+fn2(buffer)
+char * buffer ;
+{
+    Pcb(1, buffer) ;
+}
+
+static void
+fn3(buffer)
+char * buffer ;
+{
+    Pcb(2, buffer) ;
+}
+
+void
+array_asynch_read(fh, callback)
+    int		fh
+    SV *	callback
+    CODE:
+    int index ;
+    int null_index = MAX_CB ;
+
+    /* Find the same handle or an empty entry */
+    for (index = 0 ; index < MAX_CB ; ++index)
+    {
+        if (Map[index].Handle == fh)
+            break ;
+
+        if (Map[index].Handle == NULL_HANDLE)
+            null_index = index ;
+    }
+
+    if (index == MAX_CB && null_index == MAX_CB)
+        croak ("Too many callback functions registered\n") ;
+
+    if (index == MAX_CB)
+        index = null_index ;
+
+    /* Save the file handle */
+    Map[index].Handle = fh ;
+
+    /* Remember the Perl sub */
+    if (Map[index].PerlSub == (SV*)NULL)
+        Map[index].PerlSub = newSVsv(callback) ;
+    else
+        SvSetSV(Map[index].PerlSub, callback) ;
+
+    asynch_read(fh, Map[index].Function) ;
+
+void
+array_asynch_close(fh)
+    int	fh
+    CODE:
+    int index ;
+
+    /* Find the file handle */
+    for (index = 0; index < MAX_CB ; ++ index)
+        if (Map[index].Handle == fh)
+            break ;
+
+    if (index == MAX_CB)
+        croak ("could not close fh %d\n", fh) ;
+
+    Map[index].Handle = NULL_HANDLE ;
+    SvREFCNT_dec(Map[index].PerlSub) ;
+    Map[index].PerlSub = (SV*)NULL ;
+
+    asynch_close(fh) ;
+

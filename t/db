@@ -1,0 +1,61 @@
+From boehmer@optimumtech.com  Fri Sep 15 20:07:29 1995
+Return-Path: <boehmer@optimumtech.com>
+Received: from bfsec.bt.co.uk by claudius.bfsec.bt.co.uk (4.1/SMI-4.1)
+	id AA06995; Fri, 15 Sep 95 20:07:29 BST
+Received: from zaphod.axion.bt.co.uk by major.bfsec.bt.co.uk with SMTP (PP) 
+          id <04517-0@major.bfsec.bt.co.uk>; Fri, 15 Sep 1995 20:00:32 +0100
+Received: from boston.optimumtech.com (actually 204.145.205.35) 
+          by zaphod.axion.bt.co.uk with SMTP (PP);
+          Fri, 15 Sep 1995 20:02:08 +0100
+Received: (from boehmer@localhost) by boston.optimumtech.com (8.6.12/8.6.12) 
+          id OAA17335 for pmarquess@bfsec.bt.co.uk;
+          Fri, 15 Sep 1995 14:20:18 -0400
+From: "Eric M. Boehm" <Eric.M.Boehm@optimumtech.com>
+Message-Id: <199509151820.OAA17335@boston.optimumtech.com>
+Subject: question about DB_File interface
+To: pmarquess@bfsec.bt.co.uk
+Date: Fri, 15 Sep 1995 14:20:16 -0400 (EDT)
+Reply-To: Eric.M.Boehm@optimumtech.com
+X-Pgp-Fingerprint: CA 5F 8B 86 57 BF 60 74 A3 86 62 E7 79 BA 98 0E
+X-Mailer: ELM [version 2.4 PL24me1 PGP2]
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Content-Length: 1033
+X-Filter: mailagent [version 3.0 PL42] for pmarques@bfsec.bt.co.uk
+Status: RO
+
+I was looking at the DB_File interface and using $DB_RECNO to access a flat
+ascii file by lines.
+
+However, I had a problem with the following:
+
+use POSIX;
+use DB_File;
+use Fcntl;
+
+$file = "/users/boehmer/wais-sources/perl.src";
+tie (@h, DB_File, $file, O_RDWR, 0640, $DB_RECNO) 
+    or die "tie failed: $!\n";
+$index = 0;
+foreach (@h) {
+  print "h[$index++] = $_";
+}
+untie @h;
+
+I would have expected this to loop through the whole file but I got no
+output. If I refer to an individual line, I do get the line.
+
+This leads me to believe that no record exists until it is referenced. Which
+also leads me to believe that grep(/some string/,@h) would fail
+
+Am I missing something or is this how it is supposed to work? How would I loop
+over the entire file or search it using the array @h (or is that not
+possible)?
+
+--
+Eric M. Boehm                                      Eric.M.Boehm@optimumtech.com
+Senior System Analyst                              boehmer@optimumtech.com
+Optimum Technologies Inc.
+1233 Peoples Avenue, Troy, NY 12180
+

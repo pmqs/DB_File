@@ -1,0 +1,18 @@
+    #!/usr/bin/perl
+    use DB_File;
+    use Fcntl;
+    $file = shift || 'history';
+    chdir;
+    chdir '.netscape';
+    $hashed = "$file.db";
+    die "no $hashed" unless -e "$hashed";
+    tie %db, "DB_File", $hashed, O_RDONLY, 0, $DB_HASH;
+    $| = 1;
+    $k = "file:/index.html\0";
+    $v = $db{$k};
+    while  ( ($k, $v) = each %db) {
+	chop $k;
+	$n = unpack("V", $v);
+	printf "$k $n %08X %s\n", $n, scalar localtime $n, "\n";
+    } 
+
