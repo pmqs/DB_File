@@ -3,8 +3,8 @@
  DB_File.xs -- Perl 5 interface to Berkeley DB 
 
  written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
- last modified 19th November 1998
- version 1.61
+ last modified 2nd December 1998
+ version 1.62
 
  All comments/suggestions/problems are welcome
 
@@ -58,6 +58,7 @@
         1.60 -  Some code tidy up
         1.61 -  added flagSet macro for DB 2.5.x
 		fixed typo in O_RDONLY test.
+        1.62 -  No change to DB_File.xs
 
 
 

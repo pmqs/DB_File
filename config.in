@@ -73,7 +73,7 @@ HASH	=	u_int32_t
 #
 #    For example, if you have both Berkeley DB 2.3.12 and 1.85 on your
 #    system and you want to use the Berkeley DB version 2 library you
-#    could rename the version 2 library from libdb.a to lib-2.3.12.a and
+#    could rename the version 2 library from libdb.a to libdb-2.3.12.a and
 #    change the DBNAME line below to look like this:
 #
 #        DBNAME = -ldb-2.3.12
