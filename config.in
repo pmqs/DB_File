@@ -2,25 +2,29 @@
 #
 # written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
 # last modified 28th Nov 1996
-# version 1.07
+# version 1.14
 
 # 1. Where is the file db.h?
 #
 #    Change the path below to point to the directory where dh.h is
 #    installed on your system.
 
-#INCLUDE	= /usr/local/include
 INCLUDE	= ./1.86
+#INCLUDE	= /usr/local/include
+#INCLUDE	= /home1/stuff/perl5/ext/DB_File/db-2/latest
 
 # 2. Where is libdb?
 #
 #    Change the path below to point to the directory where libdb is
 #    installed on your system.
 
-#LIB	= /usr/local/lib
 LIB	= ./1.86
+#LIB	= /usr/local/lib
+#LIB	= /home1/stuff/perl5/ext/DB_File/db-2/latest
 
 # 3. What version of Berkely DB have you got?
+#
+#    This module does NOT support Berkeley DB 2.0 (or greater).
 #
 #    If you have a recent copy of Berkeley DB (1.78 or greater) you
 #    shouldn't have to change the definitions for PREFIX and HASH
@@ -30,6 +34,10 @@ LIB	= ./1.86
 #    Version 1.71, 1.72 and 1.73 are known to need this change.
 #
 #    If you don't know what version you have have a look in the file db.h. 
+#
+#    Search for the string "DB_VERSION_MAJOR". If it is present, you
+#    have Berkeley DB version 2 (or greater). This module does not support 
+#    it.
 #
 #    First, find the definition of the BTREEINFO typedef. Check the
 #    return type from the prefix element. It should look like this in an

@@ -1,12 +1,12 @@
                                      DB_File
 
-                                  Version 1.12
+                                  Version 1.15
 
-                                  6th Feb 1997 
+                                 29th Jun 1997 
 
-             Copyright (c) 1995/6 Paul Marquess. All rights reserved.
-         This program is free software; you can redistribute it and/or
-                modify it under the same terms as Perl itself.
+        Copyright (c) 1995/6/7 Paul Marquess. All rights reserved. This
+        program is free software; you can redistribute it and/or modify
+        it under the same terms as Perl itself.
 
 
 
@@ -14,7 +14,11 @@ DESCRIPTION
 -----------
 
 DB_File is a module which allows Perl programs to make use of the
-facilities provided by Berkeley DB.  
+facilities provided by Berkeley DB version 1. This release does NOT
+support Berkeley DB version 2 (or greater).
+
+A future version of DB_File will support the new features available in
+Berkeley DB 2.x.
 
 Berkeley DB is a C library which provides a consistent interface to a
 number of database formats. DB_File provides an interface to all three
@@ -30,16 +34,21 @@ PREREQUISITES
 Before you can build DB_File you need to have the following installed
 on your system:
 
-    * Perl 5.003 or better. 
+    * Perl 5.003 or greater. 
+
     * Berkeley DB. 
 
-      Berkeley DB is available at your nearest CPAN archive (see
-      the section on CPAN in the perlmod manpage for a list) in
-      src/misc/db.1.85.tar.gz, or via the host ftp.cs.berkeley.edu in
-      /ucb/4bsd/db.tar.gz.  Alternatively, check out the Berkeley DB
-      home page at http://www.bostic.com/db. It is not under the GPL.
-
-      If you are running IRIX, then get Berkeley DB from
+      Berkeley DB either 1.85 or 1.86 are best.
+ 
+      The official web site for Berkeley DB is
+      http://www.sleepycat.com/db. The ftp equivalent is
+      ftp.sleepycat.com:/pub. 
+ 
+      Alternatively, Berkeley DB version 1 is available at your nearest
+      CPAN archive (see the section on CPAN in the perlmod manpage for
+      a list) in src/misc/db.1.85.tar.gz
+ 
+      If you are running IRIX, then get Berkeley DB version 1 from
       http://reality.sgi.com/ariel. It has the patches necessary to
       compile properly on IRIX 5.3.
 
@@ -50,7 +59,7 @@ BUILDING THE MODULE
 Assuming you have met all the prerequisites, building the module should
 be relatively straightforward.
 
-The first step is to edit the file CONFIG to suit you local
+The first step is to edit the file config.in to suit you local
 installation. Instructions are given in the file.
 
 The module can now be built and tested using this sequence of
@@ -64,6 +73,8 @@ INSTALLATION
 ------------
 
     make install
+
+
 
 FEEDBACK
 --------
@@ -80,25 +91,35 @@ To help me help you, I need of the following information:
     version of DB_File.  You should consider upgrading. The problem you
     have might already be fixed.
 
- 2. the version of DB_File you have. This one-liner will tell you:
-
+ 2. The version of DB_File you have. If you have successfully installed
+    DB_File, this one-liner will tell you:
+ 
        perl -e 'use DB_File; print "DB_File ver $DB_File::VERSION\n"'
+ 
+    If you haven't installed DB_File then search DB_File for a line
+    like this:
+ 
+      $VERSION = "1.15" ;
+ 
+ 3. The version of Berkeley DB you have installed. The most recent
+    recommended versions are 1.85 and 1.86. Again, if you have an older
+    version, think about upgrading. One point to note if you are
+    considering upgrading Berkeley DB - the file formats for 1.85, and
+    1.86 are different.
 
-    The most recent version of DB_File is 1.12.
+ 4. If you are having problems building DB_File, send me a complete log
+    of what happened.
 
- 3. the version of Berkeley DB you have installed. The most recent
-    version is 1.85. Again, if you have an older version, think about
-    upgrading (the DB_File documentation tells you where to find it).
-
- 4. now the difficult one. To *greatly* enhance the chances of me
-    being able to track down a bug, I need a small self-contained Perl
-    script that will illustrate the problem you are encountering, along
-    some idea of what you think is wrong. Post a log of what happens
-    when you run the script, in case I can't reproduce your problem on
-    my system. If possible, don't have the script dependent on an
-    existing 20Meg database. If your script can create the database
-    itself then that is preferred.
-
+ 5. Now the difficult one. If you think you have found a bug in DB_File
+    and you want me to fix it, you will *greatly* enhance the chances
+    of me being able to track it down by sending me a small
+    self-contained Perl script that illustrates the problem you are
+    encountering. Include a summary of what you think the problem is
+    and a log of what happens when you run the script, in case I can't
+    reproduce your problem on my system. If possible, don't have the
+    script dependent on an existing 20Meg database. If the script you
+    send me can create the database itself then that is preferred.
+ 
     I realise that in some cases this is easier said than done, so if
     you can only reproduce the problem in your existing script, then
     you can post me that if you want. Just don't expect me to find your
