@@ -88,6 +88,6 @@ HASH	=	u_int32_t
 #    below (by removing the leading #) and edit the line to use the name
 #    you have picked.
  
-#DBNAME = -ldb-2.3.12
+#DBNAME = -ldb-2.4.10
 
 # end of file CONFIG

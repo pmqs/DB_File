@@ -3,8 +3,8 @@
  DB_File.xs -- Perl 5 interface to Berkeley DB 
 
  written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
- last modified 2nd Feb 1998
- version 1.58
+ last modified 13th May 1998
+ version 1.59
 
  All comments/suggestions/problems are welcome
 
@@ -54,6 +54,7 @@
 	1.58 -  Fixed a problem with the use of sv_setpvn. When the
 		size is specified as 0, it does a strlen on the data.
 		This was ok for DB 1.x, but isn't for DB 2.x.
+        1.59 -  No change to DB_File.xs
 
 
 

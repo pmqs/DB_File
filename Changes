@@ -192,3 +192,12 @@
    specified as 0, it does a strlen on the data.  This was ok for DB
    1.x, but isn't for DB 2.x.
 
+1.59
+   Updated the license section.
+
+   Berkeley DB 2.4.10 disallows zero length keys. Tests 32 & 42 in
+   db-btree.t and test 27 in db-hash.t
+
+   Some tests needed changed to work with Berkeley DB 2.4.10
+
+   Added dbinfo to the distribution.
