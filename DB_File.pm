@@ -2,7 +2,7 @@
 #
 # written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
 # last modified 20th Nov 1997
-# version 1.55
+# version 1.56
 #
 #     Copyright (c) 1995, 1996, 1997 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
@@ -145,7 +145,7 @@ use vars qw($VERSION @ISA @EXPORT $AUTOLOAD $DB_BTREE $DB_HASH $DB_RECNO $db_ver
 use Carp;
 
 
-$VERSION = "1.55" ;
+$VERSION = "1.56" ;
 
 #typedef enum { DB_BTREE, DB_HASH, DB_RECNO } DBTYPE;
 $DB_BTREE = new DB_File::BTREEINFO ;

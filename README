@@ -1,6 +1,6 @@
                                      DB_File
 
-                                  Version 1.55
+                                  Version 1.56
 
                                   20th Nov 1997 
 
@@ -58,7 +58,8 @@ BUILDING THE MODULE
 -------------------
 
 Assuming you have met all the prerequisites, building the module should
-be relatively straightforward.
+be relatively straightforward. If you are running Solaris 2.5 and want
+to use Berkeley DB version 2, read the Solaris Notes section below.
 
 The first step is to edit the file config.in to suit you local
 installation. Instructions are given in the file.
@@ -82,6 +83,21 @@ INSTALLATION
 ------------
 
     make install
+
+Solaris Notes
+-------------
+ 
+If you are running Solaris 2.5, and you get this error when you run the
+DB_File test harness:
+ 
+    libc internal error: _rmutex_unlock: rmutex not held.
+ 
+you probably need to install a Sun patch. It has been reported that
+Sun patch 103187-25 (or later revisions) fixes this problem.
+ 
+To find out if you have the patch installed, the command "showrev -p"
+will display the patches that are currently installed on your system.
+
 
 FEEDBACK
 --------

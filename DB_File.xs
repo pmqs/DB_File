@@ -4,7 +4,7 @@
 
  written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
  last modified 20th Nov 1997
- version 1.55
+ version 1.56
 
  All comments/suggestions/problems are welcome
 
@@ -49,6 +49,7 @@
 	1.53 -  Added DB_RENUMBER to flags for recno.
 	1.54 -  Fixed bug in the fd method
         1.55 -  Fix for AIX from Jarkko Hietaniemi
+        1.56 -  No change to DB_File.xs
 
 
 

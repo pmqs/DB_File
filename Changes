@@ -175,3 +175,6 @@
 
 1.55
    Merged 1.16 changes.
+
+1.56
+   Documented the Solaris 2.5 mutex bug

@@ -21,7 +21,7 @@ else {
 }
 
 # Solaris is special.
-$LIBS .= " -lthread" if $^O eq 'solaris' ;
+#$LIBS .= " -lthread" if $^O eq 'solaris' ;
 
 # OS2 is a special case, so check for it now.
 my $OS2 = "" ;
