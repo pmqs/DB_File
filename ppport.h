@@ -333,6 +333,7 @@ SV *sv;
 
 #define DBM_ckFilter(arg,type,name)				\
 	if (db->type) {						\
+	    /*printf("ckFilter %s\n", name);*/			\
 	    if (db->filtering) {				\
 	        croak("recursion detected in %s", name) ;	\
 	    }                     				\
