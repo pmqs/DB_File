@@ -1,8 +1,8 @@
 # DB_File.pm -- Perl 5 interface to Berkeley DB 
 #
 # written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
-# last modified 29th Jun 1997
-# version 1.15
+# last modified 20th Nov 1997
+# version 1.16
 #
 #     Copyright (c) 1995, 1996, 1997 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
@@ -145,7 +145,7 @@ use vars qw($VERSION @ISA @EXPORT $AUTOLOAD $DB_BTREE $DB_HASH $DB_RECNO) ;
 use Carp;
 
 
-$VERSION = "1.15" ;
+$VERSION = "1.16" ;
 
 #typedef enum { DB_BTREE, DB_HASH, DB_RECNO } DBTYPE;
 $DB_BTREE = new DB_File::BTREEINFO ;
@@ -329,8 +329,8 @@ hand. The interface defined here mirrors the Berkeley DB interface
 closely.
 
 Please note that this module will only work with version 1.x of
-Berkeley DB. Once Berkeley DB version 2 is released, B<DB_File> will be
-upgraded to work with it.
+Berkeley DB. If you want to make use of the new features available in
+Berkeley DB 2.x, use the Perl module B<BerkeleyDB> instead.
 
 Berkeley DB is a C library which provides a consistent interface to a
 number of database formats.  B<DB_File> provides an interface to all
@@ -1675,6 +1675,14 @@ Previously DB_File hard-wired the class name of any object that it
 created to "DB_File". This makes sub-classing difficult. Now DB_File
 creats objects in the namespace of the package it has been inherited
 into.
+
+=item 1.16
+
+A harmless looking tab was causing Makefile.PL to fail on AIX 3.2.5
+
+Small fix for the AIX strict C compiler XLC which doesn't like
+__attribute__ being defined via proto.h and redefined via db.h. Fix
+courtesy of Jarkko Hietaniemi.
 
 =back
 
