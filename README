@@ -1,8 +1,8 @@
                                      DB_File
 
-                                  Version 1.60
+                                  Version 1.61
 
-                                  16th May 1998 
+                                  19th Nov 1998 
 
  	Copyright (c) 1995/6/7/8 Paul Marquess. All rights reserved. This
 	program is free software; you can redistribute it and/or modify
@@ -58,8 +58,9 @@ BUILDING THE MODULE
 -------------------
 
 Assuming you have met all the prerequisites, building the module should
-be relatively straightforward. If you are running Solaris 2.5 and want
-to use Berkeley DB version 2, read the Solaris Notes section below.
+be relatively straightforward. If you are running either Solaris 2.5 or
+HP-UX 10 and want to use Berkeley DB version 2, read the Solaris Notes
+or HP-UX Notes sections below.
 
 The first step is to edit the file config.in to suit you local
 installation. Instructions are given in the file.
@@ -99,6 +100,32 @@ To find out if you have the patch installed, the command "showrev -p"
 will display the patches that are currently installed on your system.
 
 
+HP-UX Notes
+-----------
+
+Some people running HP-UX 10 have reported getting an error like this
+when building DB_File with the native HP-UX compiler.
+
+    ld: (Warning) At least one PA 2.0 object file (DB_File.o) was detected. 
+    The linked output may not run on a PA 1.x system.
+    ld: Invalid loader fixup for symbol "$000000A5".
+
+If this is the case for you, Berkeley DB needs to be recompiled with
+the +z or +Z option and the resulting library placed in a .sl file. The
+following steps should do the trick:
+
+  1: Configure the Berkeley DB distribution with the +z or +Z C compiler
+     flag:
+
+        env "CFLAGS=+z" ../dist/configure ...
+
+  2: Edit the Berkeley DB Makefile and change:
+
+        "libdb= libdb.a" to "libdb= libdb.sl".
+
+  3: Build and install the Berkeley DB distribution as usual.
+
+
 FEEDBACK
 --------
 
@@ -119,13 +146,13 @@ To help me help you, I need of the following information:
 
        perl -e 'use DB_File; print "DB_File ver $DB_File::VERSION\n"'
 
-    If you haven't installed DB_File then search DB_File for a line
+    If you haven't installed DB_File then search DB_File.pm for a line
     like this:
 
       $VERSION = "1.20" ;
 
  3. The version of Berkeley DB you have installed. The most recent
-    recommended versions are 1.85, 1.86 and 2.0.5. Again, if you have
+    recommended versions are 1.85, 1.86 and 2.1.14. Again, if you have
     an older version, think about upgrading. One point to note if you
     are considering upgrading Berkeley DB - the file formats for 1.85,
     1.86 and 2.0 are all different.

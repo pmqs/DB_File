@@ -3,8 +3,8 @@
  DB_File.xs -- Perl 5 interface to Berkeley DB 
 
  written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
- last modified 16th May 1998
- version 1.60
+ last modified 19th November 1998
+ version 1.61
 
  All comments/suggestions/problems are welcome
 
@@ -55,7 +55,9 @@
 		size is specified as 0, it does a strlen on the data.
 		This was ok for DB 1.x, but isn't for DB 2.x.
         1.59 -  No change to DB_File.xs
-        1.60 -  No change to DB_File.xs
+        1.60 -  Some code tidy up
+        1.61 -  added flagSet macro for DB 2.5.x
+		fixed typo in O_RDONLY test.
 
 
 
@@ -82,8 +84,6 @@
 #include <fcntl.h> 
 
 /* #define TRACE */
-
-
 
 #ifdef DB_VERSION_MAJOR
 
@@ -153,6 +153,12 @@ typedef db_recno_t	recno_t;
 #define DBT_flags(x)	x.flags = 0
 #define DB_flags(x, v)	x |= v 
 
+#if DB_VERSION_MAJOR == 2 && DB_VERSION_MINOR < 5
+#define flagSet(flags, bitmask)        ((flags) & (bitmask))
+#else
+#define flagSet(flags, bitmask)        (((flags) & DB_OPFLAGS_MASK) == (bitmask))
+#endif
+
 #else /* db version 1.x */
 
 typedef union INFO {
@@ -205,6 +211,7 @@ typedef union INFO {
 #define do_SEQ(db, key, value, flag)	(db->dbp->seq)(db->dbp, &key, &value, flag)
 #define DBT_flags(x)	
 #define DB_flags(x, v)	
+#define flagSet(flags, bitmask)        ((flags) & (bitmask))
 
 #endif /* db version 1 */
 
@@ -216,10 +223,11 @@ typedef union INFO {
 
 #define db_sync(db, flags)              ((db->dbp)->sync)(db->dbp, flags)
 #define db_get(db, key, value, flags)   ((db->dbp)->get)(db->dbp, TXN &key, &value, flags)
+
 #ifdef DB_VERSION_MAJOR
 #define db_DESTROY(db)                  ((db->dbp)->close)(db->dbp, 0)
 #define db_close(db)			((db->dbp)->close)(db->dbp, 0)
-#define db_del(db, key, flags)          ((flags & R_CURSOR) 					\
+#define db_del(db, key, flags)          (flagSet(flags, R_CURSOR) 					\
 						? ((db->cursor)->c_del)(db->cursor, 0)		\
 						: ((db->dbp)->del)(db->dbp, NULL, &key, flags) )
 
@@ -231,6 +239,7 @@ typedef union INFO {
 #define db_put(db, key, value, flags)   ((db->dbp)->put)(db->dbp, &key, &value, flags)
 
 #endif
+
 
 #define db_seq(db, key, value, flags)   do_SEQ(db, key, value, flags)
 
@@ -288,12 +297,17 @@ u_int		flags ;
 {
     int status ;
 
-    if (flags & R_CURSOR) {
+    if (flagSet(flags, R_CURSOR)) {
 	status = ((db->cursor)->c_del)(db->cursor, 0);
 	if (status != 0)
 	    return status ;
 
+#if DB_VERSION_MAJOR == 2 && DB_VERSION_MINOR < 5
 	flags &= ~R_CURSOR ;
+#else
+	flags &= ~DB_OPFLAGS_MASK ;
+#endif
+
     }
 
     return ((db->dbp)->put)(db->dbp, NULL, &key, &value, flags) ;
@@ -808,7 +822,7 @@ SV *   sv ;
 #if O_RDONLY == 0
         if (flags == O_RDONLY)
 #else
-        if (flags & O_RDONLY) == O_RDONLY)
+        if ((flags & O_RDONLY) == O_RDONLY)
 #endif
             Flags |= DB_RDONLY ;
 
@@ -1171,8 +1185,7 @@ db_FETCH(db, key, flags=0)
 	    /* RETVAL = ((db->dbp)->get)(db->dbp, TXN &key, &value, flags) ; */
 	    RETVAL = db_get(db, key, value, flags) ;
 	    ST(0) = sv_newmortal();
-	    if (RETVAL == 0) 
-	        my_sv_setpvn(ST(0), value.data, value.size);
+	    OutputValue(ST(0), value)
 	}
 
 int
@@ -1199,13 +1212,7 @@ db_FIRSTKEY(db)
 	    CurrentDB = db ;
 	    RETVAL = do_SEQ(db, key, value, R_FIRST) ;
 	    ST(0) = sv_newmortal();
-	    if (RETVAL == 0)
-	    {
-	        if (db->type != DB_RECNO)
-	            my_sv_setpvn(ST(0), key.data, key.size);
-	        else
-	            sv_setiv(ST(0), (I32)*(I32*)key.data - 1);
-	    }
+	    OutputKey(ST(0), key) ;
 	}
 
 int
@@ -1221,13 +1228,7 @@ db_NEXTKEY(db, key)
 	    CurrentDB = db ;
 	    RETVAL = do_SEQ(db, key, value, R_NEXT) ;
 	    ST(0) = sv_newmortal();
-	    if (RETVAL == 0)
-	    {
-	        if (db->type != DB_RECNO)
-	            my_sv_setpvn(ST(0), key.data, key.size);
-	        else
-	            sv_setiv(ST(0), (I32)*(I32*)key.data - 1);
-	    }
+	    OutputKey(ST(0), key) ;
 	}
 
 #
@@ -1296,7 +1297,7 @@ pop(db)
 	    if (RETVAL == 0)
 	    {
 		/* the call to del will trash value, so take a copy now */
-	        my_sv_setpvn(ST(0), value.data, value.size);
+		OutputValue(ST(0), value) ;
 	        RETVAL = db_del(db, key, R_CURSOR) ;
 	        if (RETVAL != 0) 
 	            sv_setsv(ST(0), &sv_undef); 
@@ -1323,7 +1324,7 @@ shift(db)
 	    if (RETVAL == 0)
 	    {
 		/* the call to del will trash value, so take a copy now */
-	        my_sv_setpvn(ST(0), value.data, value.size);
+		OutputValue(ST(0), value) ;
 	        RETVAL = db_del(db, key, R_CURSOR) ;
 	        if (RETVAL != 0)
 	            sv_setsv (ST(0), &sv_undef) ;
@@ -1449,7 +1450,7 @@ db_put(db, key, value, flags=0)
 #endif
 	OUTPUT:
 	  RETVAL
-	  key		if (flags & (R_IAFTER|R_IBEFORE)) OutputKey(ST(1), key);
+	  key		if (flagSet(flags, R_IAFTER) || flagSet(flags, R_IBEFORE)) OutputKey(ST(1), key);
 
 int
 db_fd(db)
