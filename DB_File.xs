@@ -2,13 +2,13 @@
 
  DB_File.xs -- Perl 5 interface to Berkeley DB 
 
- written by Paul Marquess <Paul.Marquess@btinternet.com>
+ written by Paul Marquess <pmqs@cpan.org>
  last modified 22nd October 2002
- version 1.806
+ version 1.807
 
  All comments/suggestions/problems are welcome
 
-     Copyright (c) 1995-2002 Paul Marquess. All rights reserved.
+     Copyright (c) 1995-2003 Paul Marquess. All rights reserved.
      This program is free software; you can redistribute it and/or
      modify it under the same terms as Perl itself.
 
@@ -106,6 +106,7 @@
                 Support for 4.1.X added.
                 Filter code can now cope with read-only $_
         1.806 - recursion detection beefed up.
+        1.807 - no change
 
 */
 
@@ -817,7 +818,7 @@ INFO * recno ;
     printf ("  cachesize = %d\n", recno->db_RE_cachesize) ;
     printf ("  psize     = %d\n", recno->db_RE_psize) ;
     printf ("  lorder    = %d\n", recno->db_RE_lorder) ;
-    printf ("  reclen    = %ul\n", (unsigned long)recno->db_RE_reclen) ;
+    printf ("  reclen    = %lu\n", (unsigned long)recno->db_RE_reclen) ;
     printf ("  bval      = %d 0x%x\n", recno->db_RE_bval, recno->db_RE_bval) ;
     printf ("  bfname    = %d [%s]\n", recno->db_RE_bfname, recno->db_RE_bfname) ;
 }
