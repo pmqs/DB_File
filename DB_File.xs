@@ -3,10 +3,14 @@
  DB_File.xs -- Perl 5 interface to Berkeley DB 
 
  written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
- last modified 2nd Dec 1996
- version 1.07
+ last modified 3rd Dec 1996
+ version 1.08
 
  All comments/suggestions/problems are welcome
+
+     Copyright (c) 1995, 1996 Paul Marquess. All rights reserved.
+     This program is free software; you can redistribute it and/or
+     modify it under the same terms as Perl itself.
 
  Changes:
 	0.1 - 	Initial Release
@@ -29,6 +33,7 @@
 		Makefile.PL
 	1.06 -  Minor namespace cleanup: Localized PrintBtree.
 	1.07 -  Fixed bug with RECNO, where bval wasn't defaulting to "\n". 
+	1.08 -  No change to DB_File.xs
 
 */
 

@@ -1,6 +1,6 @@
                                      DB_File
 
-                                  Version 1.07
+                                  Version 1.08
 
                                   2nd Dec 1996
 
@@ -84,7 +84,7 @@ To help me help you, I need of the following information:
 
        perl -e 'use DB_File; print "DB_File ver $DB_File::VERSION\n"'
 
-    The most recent version of DB_File is 1.07.
+    The most recent version of DB_File is 1.08.
 
  3. the version of Berkeley DB you have installed. The most recent
     version is 1.85. Again, if you have an older version, think about

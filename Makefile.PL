@@ -37,7 +37,7 @@ sub ParseCONFIG
     my %Parsed = %ValidOption ;
     my $CONFIG = 'CONFIG' ;
 
-    print "Parsing $CONFIG\n" ;
+    print "Parsing $CONFIG...\n" ;
 
     open(F, "$CONFIG") or die "Cannot open file $CONFIG: $!\n" ;
     while (<F>) {

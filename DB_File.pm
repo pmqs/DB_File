@@ -1,8 +1,13 @@
 # DB_File.pm -- Perl 5 interface to Berkeley DB 
 #
 # written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
-# last modified 2nd Dec 1996
-# version 1.07
+# last modified 3rd Dec 1996
+# version 1.08
+#
+#     Copyright (c) 1995, 1996 Paul Marquess. All rights reserved.
+#     This program is free software; you can redistribute it and/or
+#     modify it under the same terms as Perl itself.
+
 
 package DB_File::HASHINFO ;
 
@@ -141,7 +146,7 @@ use vars qw($VERSION @ISA @EXPORT $AUTOLOAD $DB_BTREE $DB_HASH $DB_RECNO) ;
 use Carp;
 
 
-$VERSION = "1.07" ;
+$VERSION = "1.08" ;
 
 #typedef enum { DB_BTREE, DB_HASH, DB_RECNO } DBTYPE;
 $DB_BTREE = new DB_File::BTREEINFO ;
@@ -454,7 +459,7 @@ values when you only want to change one. Here is an example:
      $a->{'cachesize'} =  12345 ;
      tie %y, 'DB_File', "filename", $flags, 0777, $a ;
 
-A few of the values need extra discussion here. When used, the C
+A few of the options need extra discussion here. When used, the C
 equivalent of the keys C<hash>, C<compare> and C<prefix> store pointers
 to C functions. In B<DB_File> these keys are used to store references
 to Perl subs. Below are templates for each of the subs:
@@ -488,6 +493,9 @@ to Perl subs. Below are templates for each of the subs:
 
 See L<Changing the BTREE sort order> for an example of using the
 C<compare> template.
+
+If you are using the DB_RECNO interface and you intend making use of
+C<bval>, you should check out L<The bval option>.
 
 =head2 Default Parameters
 
@@ -884,6 +892,33 @@ As with normal Perl arrays, a RECNO array can be accessed using
 negative indexes. The index -1 refers to the last element of the array,
 -2 the second last, and so on. Attempting to access an element before
 the start of the array will raise a fatal run-time error.
+
+=head2 The bval option
+
+The operation of the bval option warrants some discussion. Here is the
+definition of bval from the Berkeley DB 1.85 recno manual page:
+
+    The delimiting byte to be used to mark  the  end  of  a
+    record for variable-length records, and the pad charac-
+    ter for fixed-length records.  If no  value  is  speci-
+    fied,  newlines  (``\n'')  are  used to mark the end of
+    variable-length records and  fixed-length  records  are
+    padded with spaces.
+
+The second sentence is wrong. In actual fact bval will only default to
+C<"\n"> when the openinfo parameter in dbopen is NULL. If a non-NULL
+openinfo parameter is used at all, the value that happens to be in bval
+will be used. That means you always have to specify bval when making
+use of any of the options in the openinfo parameter. This documentation
+error will be fixed in the next release of Berkeley DB.
+
+That clarifies the situation with regards Berkeley DB itself. What
+about B<DB_File>? Well, the behavior defined in the quote above is
+quite useful, so B<DB_File> conforms it.
+
+That means that you can specify other options (e.g. cachesize) and
+still have bval default to C<"\n"> for variable length records, and
+space for fixed length records.
 
 =head2 A Simple Example
 
@@ -1517,6 +1552,10 @@ Minor namespace cleanup: Localized C<PrintBtree>.
 =item 1.07
 
 Fixed bug with RECNO, where bval wasn't defaulting to "\n".
+
+=item 1.08
+
+Documented operation of bval.
 
 =back
 
