@@ -1,8 +1,8 @@
 # DB_File.pm -- Perl 5 interface to Berkeley DB 
 #
 # written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
-# last modified 27th Nov 1996
-# version 1.06
+# last modified 2nd Dec 1996
+# version 1.07
 
 package DB_File::HASHINFO ;
 
@@ -26,13 +26,11 @@ sub TIEHASH
 {
     my $pkg = shift ;
 
-    bless {   'bsize'     => 0,
-              'ffactor'   => 0,
-              'nelem'     => 0,
-              'cachesize' => 0,
-              'hash'      => undef,
-              'lorder'    => 0,
-        }, $pkg ;
+    bless { VALID => { map {$_, 1} 
+		       qw( bsize ffactor nelem cachesize hash lorder)
+		     }, 
+	    GOT   => {}
+          }, $pkg ;
 }
 
 
@@ -41,7 +39,7 @@ sub FETCH
     my $self  = shift ;
     my $key   = shift ;
 
-    return $self->{$key} if exists $self->{$key}  ;
+    return $self->{GOT}{$key} if exists $self->{VALID}{$key}  ;
 
     my $pkg = ref $self ;
     croak "${pkg}::FETCH - Unknown element '$key'" ;
@@ -54,9 +52,9 @@ sub STORE
     my $key   = shift ;
     my $value = shift ;
 
-    if ( exists $self->{$key} )
+    if ( exists $self->{VALID}{$key} )
     {
-        $self->{$key} = $value ;
+        $self->{GOT}{$key} = $value ;
         return ;
     }
     
@@ -69,9 +67,9 @@ sub DELETE
     my $self = shift ;
     my $key  = shift ;
 
-    if ( exists $self->{$key} )
+    if ( exists $self->{VALID}{$key} )
     {
-        delete $self->{$key} ;
+        delete $self->{GOT}{$key} ;
         return ;
     }
     
@@ -84,7 +82,7 @@ sub EXISTS
     my $self = shift ;
     my $key  = shift ;
 
-    exists $self->{$key} ;
+    exists $self->{VALID}{$key} ;
 }
 
 sub NotHere
@@ -110,14 +108,11 @@ sub TIEHASH
 {
     my $pkg = shift ;
 
-    bless {   'bval'      => 0,
-              'cachesize' => 0,
-              'psize'     => 0,
-              'flags'     => 0,
-              'lorder'    => 0,
-              'reclen'    => 0,
-              'bfname'    => "",
-            }, $pkg ;
+    bless { VALID => { map {$_, 1} 
+		       qw( bval cachesize psize flags lorder reclen bfname )
+		     },
+	    GOT   => {},
+          }, $pkg ;
 }
 
 package DB_File::BTREEINFO ;
@@ -130,15 +125,12 @@ sub TIEHASH
 {
     my $pkg = shift ;
 
-    bless {   'flags'	  => 0,
-              'cachesize'  => 0,
-              'maxkeypage' => 0,
-              'minkeypage' => 0,
-              'psize'      => 0,
-              'compare'    => undef,
-              'prefix'     => undef,
-              'lorder'     => 0,
-            }, $pkg ;
+    bless { VALID => { map {$_, 1} 
+		       qw( flags cachesize maxkeypage minkeypage psize 
+			   compare prefix lorder )
+	    	     },
+	    GOT   => {},
+          }, $pkg ;
 }
 
 
@@ -149,7 +141,7 @@ use vars qw($VERSION @ISA @EXPORT $AUTOLOAD $DB_BTREE $DB_HASH $DB_RECNO) ;
 use Carp;
 
 
-$VERSION = "1.06" ;
+$VERSION = "1.07" ;
 
 #typedef enum { DB_BTREE, DB_HASH, DB_RECNO } DBTYPE;
 $DB_BTREE = new DB_File::BTREEINFO ;
@@ -1521,6 +1513,10 @@ is installed.
 =item 1.06
 
 Minor namespace cleanup: Localized C<PrintBtree>.
+
+=item 1.07
+
+Fixed bug with RECNO, where bval wasn't defaulting to "\n".
 
 =back
 

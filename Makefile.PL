@@ -1,14 +1,17 @@
+#! perl -w
+use strict ;
 use ExtUtils::MakeMaker 5.16 ;
 use Config ;
 
+my $VER_INFO ;
+my $LIB_DIR ;
+my $INC_DIR ;
 
-@Options = qw( INCLUDE LIB PREFIX HASH ) ;
-%ValidOption = map {$_, 1} @Options ;
-%Parsed = %ValidOption ;
 ParseCONFIG() ;
 
 # OS2 is a special case, so check for it now.
-my $OS2 = "-DOS2" if $Config{'osname'} eq 'os2' ;
+my $OS2 = "" ;
+$OS2 = "-DOS2" if $Config{'osname'} eq 'os2' ;
 
 WriteMakefile(
 	NAME 		=> 'DB_File',
@@ -26,11 +29,17 @@ WriteMakefile(
 
 sub ParseCONFIG
 {
+    my ($k, $v) ;
     my @badkey = () ;
+    my %Info = () ;
+    my @Options = qw( INCLUDE LIB PREFIX HASH ) ;
+    my %ValidOption = map {$_, 1} @Options ;
+    my %Parsed = %ValidOption ;
+    my $CONFIG = 'CONFIG' ;
 
-    print "Parsing CONFIG\n" ;
+    print "Parsing $CONFIG\n" ;
 
-    open(F, "CONFIG") or die "Cannot open file CONFIG: $!\n" ;
+    open(F, "$CONFIG") or die "Cannot open file $CONFIG: $!\n" ;
     while (<F>) {
 	s/^\s*|\s*$//g ;
 	next if /^\s*$/ or /^\s*#/ ;
@@ -48,27 +57,31 @@ sub ParseCONFIG
     }
     close F ;
 
-    print "Unknown keys in CONFIG ignored [@badkey]\n"
+    print "Unknown keys in $CONFIG ignored [@badkey]\n"
 	if @badkey ;
 
     # check parsed values
     my @missing = () ;
-    die "keys missing from CONFIG [@missing]\n" 
+    die "The following keys are missing from $CONFIG file: [@missing]\n" 
         if @missing = keys %Parsed ;
 
     $INC_DIR = $Info{'INCLUDE'} ;
     $LIB_DIR = $Info{'LIB'} ;
-    $PREFIX  = $Info{'PREFIX'} ;
-    $HASH    = $Info{'HASH'} ;
+    my $PREFIX  = $Info{'PREFIX'} ;
+    my $HASH    = $Info{'HASH'} ;
 
     $VER_INFO = "-DmDB_Prefix_t=${PREFIX} -DmDB_Hash_t=${HASH}" ;
 
     print <<EOM if 0 ;
-INCLUDE	[$INC_DIR]
-LIB	[$LIB_DIR]
-HASH	[$HASH]
-PREFIX	[$PREFIX]
+    INCLUDE	[$INC_DIR]
+    LIB		[$LIB_DIR]
+    HASH	[$HASH]
+    PREFIX	[$PREFIX]
+
 EOM
+
+    print "Looks Good.\n" ;
+
 }
 
 # end of file Makefile.PL
