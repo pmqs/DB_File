@@ -1,8 +1,8 @@
 # DB_File.pm -- Perl 5 interface to Berkeley DB 
 #
 # written by Paul Marquess (Paul.Marquess@btinternet.com)
-# last modified 26th April 2001
-# version 1.77
+# last modified 30th July 2001
+# version 1.78
 #
 #     Copyright (c) 1995-2001 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
@@ -151,7 +151,7 @@ use vars qw($VERSION @ISA @EXPORT $AUTOLOAD $DB_BTREE $DB_HASH $DB_RECNO
 use Carp;
 
 
-$VERSION = "1.77" ;
+$VERSION = "1.78" ;
 
 #typedef enum { DB_BTREE, DB_HASH, DB_RECNO } DBTYPE;
 $DB_BTREE = new DB_File::BTREEINFO ;
@@ -841,7 +841,7 @@ contents of the database.
     use vars qw( %h $k $v ) ;
 
     unlink "fruit" ;
-    tie %h, "DB_File", "fruit", O_RDWR|O_CREAT, 0640, $DB_HASH 
+    tie %h, "DB_File", "fruit", O_RDWR|O_CREAT, 0666, $DB_HASH 
         or die "Cannot open file 'fruit': $!\n";
 
     # Add a few key/value pairs to the file
@@ -902,7 +902,7 @@ insensitive compare function will be used.
     $DB_BTREE->{'compare'} = \&Compare ;
 
     unlink "tree" ;
-    tie %h, "DB_File", "tree", O_RDWR|O_CREAT, 0640, $DB_BTREE 
+    tie %h, "DB_File", "tree", O_RDWR|O_CREAT, 0666, $DB_BTREE 
         or die "Cannot open file 'tree': $!\n" ;
 
     # Add a key/value pair to the file
@@ -943,6 +943,35 @@ You cannot change the ordering once the database has been created. Thus
 you must use the same compare function every time you access the
 database.
 
+=item 3
+
+Duplicate keys are entirely defined by the comparison function.
+In the case-insensitive example above, the keys: 'KEY' and 'key'
+would be considered duplicates, and assigning to the second one
+would overwirte the first. If duplicates are allowed for (with the
+R_DUPS flag discussed below), only a single copy of duplicate keys
+is stored in the database --- so (again with example above) assigning
+three values to the keys: 'KEY', 'Key', and 'key' would leave just
+the first key: 'KEY' in the database with three values. For some
+situations this results in information loss, so care should be taken
+to provide fully qualified comparison functions when necessary.
+For example, the above comparison routine could be modified to
+additionally compare case-sensitively if two keys are equal in the
+case insensitive comparison:
+
+    sub compare {
+        my($key1, $key2) = @_;
+        lc $key1 cmp lc $key2 ||
+        $key1 cmp $key2;
+    }
+
+And now you will only have duplicates when the keys themselves
+are truly the same. (note: in versions of the db library prior to
+about November 1996, such duplicate keys were retained so it was
+possible to recover the original keys in sets of keys that
+compared as equal).
+
+
 =back 
 
 =head2 Handling Duplicate Keys 
@@ -967,7 +996,7 @@ code:
     # Enable duplicate records
     $DB_BTREE->{'flags'} = R_DUP ;
 
-    tie %h, "DB_File", $filename, O_RDWR|O_CREAT, 0640, $DB_BTREE 
+    tie %h, "DB_File", $filename, O_RDWR|O_CREAT, 0666, $DB_BTREE 
 	or die "Cannot open $filename: $!\n";
 
     # Add some key/value pairs to the file
@@ -1022,7 +1051,7 @@ Here is the script above rewritten using the C<seq> API method.
     # Enable duplicate records
     $DB_BTREE->{'flags'} = R_DUP ;
 
-    $x = tie %h, "DB_File", $filename, O_RDWR|O_CREAT, 0640, $DB_BTREE 
+    $x = tie %h, "DB_File", $filename, O_RDWR|O_CREAT, 0666, $DB_BTREE 
 	or die "Cannot open $filename: $!\n";
 
     # Add some key/value pairs to the file
@@ -1093,7 +1122,7 @@ this:
     # Enable duplicate records
     $DB_BTREE->{'flags'} = R_DUP ;
 
-    $x = tie %h, "DB_File", $filename, O_RDWR|O_CREAT, 0640, $DB_BTREE 
+    $x = tie %h, "DB_File", $filename, O_RDWR|O_CREAT, 0666, $DB_BTREE 
 	or die "Cannot open $filename: $!\n";
 
     my $cnt  = $x->get_dup("Wall") ;
@@ -1143,7 +1172,7 @@ Assuming the database from the previous example:
     # Enable duplicate records
     $DB_BTREE->{'flags'} = R_DUP ;
 
-    $x = tie %h, "DB_File", $filename, O_RDWR|O_CREAT, 0640, $DB_BTREE 
+    $x = tie %h, "DB_File", $filename, O_RDWR|O_CREAT, 0666, $DB_BTREE 
 	or die "Cannot open $filename: $!\n";
 
     $found = ( $x->find_dup("Wall", "Larry") == 0 ? "" : "not") ; 
@@ -1182,7 +1211,7 @@ Again assuming the existence of the C<tree> database
     # Enable duplicate records
     $DB_BTREE->{'flags'} = R_DUP ;
 
-    $x = tie %h, "DB_File", $filename, O_RDWR|O_CREAT, 0640, $DB_BTREE 
+    $x = tie %h, "DB_File", $filename, O_RDWR|O_CREAT, 0666, $DB_BTREE 
 	or die "Cannot open $filename: $!\n";
 
     $x->del_dup("Wall", "Larry") ;
@@ -1235,7 +1264,7 @@ and print the first matching key/value pair given a partial key.
     $filename = "tree" ;
     unlink $filename ;
 
-    $x = tie %h, "DB_File", $filename, O_RDWR|O_CREAT, 0640, $DB_BTREE
+    $x = tie %h, "DB_File", $filename, O_RDWR|O_CREAT, 0666, $DB_BTREE
         or die "Cannot open $filename: $!\n";
 
     # Add some key/value pairs to the file
@@ -1332,7 +1361,7 @@ L<Extra RECNO Methods> for a workaround).
     unlink $filename ;
 
     my @h ;
-    tie @h, "DB_File", $filename, O_RDWR|O_CREAT, 0640, $DB_RECNO 
+    tie @h, "DB_File", $filename, O_RDWR|O_CREAT, 0666, $DB_RECNO 
         or die "Cannot open file 'text': $!\n" ;
 
     # Add a few key/value pairs to the file
@@ -1428,7 +1457,7 @@ L<THE API INTERFACE>).
 
     unlink $file ;
 
-    $H = tie @h, "DB_File", $file, O_RDWR|O_CREAT, 0640, $DB_RECNO 
+    $H = tie @h, "DB_File", $file, O_RDWR|O_CREAT, 0666, $DB_RECNO 
         or die "Cannot open file $file: $!\n" ;
 
     # first create a text file to play with
@@ -1848,7 +1877,7 @@ peril!
 
 The locking technique went like this. 
 
-    $db = tie(%db, 'DB_File', '/tmp/foo.db', O_CREAT|O_RDWR, 0644)
+    $db = tie(%db, 'DB_File', '/tmp/foo.db', O_CREAT|O_RDWR, 0666)
         || die "dbcreat /tmp/foo.db $!";
     $fd = $db->fd;
     open(DB_FH, "+<&=$fd") || die "dup $!";

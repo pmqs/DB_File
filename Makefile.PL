@@ -32,7 +32,7 @@ else {
 #$LIBS .= " -lthread" if $^O eq 'solaris' ;
 
 # AIX is special.
-$LIBS .= " -plthread" if $^O eq 'aix' ;
+$LIBS .= " -lpthread" if $^O eq 'aix' ;
 
 # OS2 is a special case, so check for it now.
 my $OS2 = "" ;
@@ -49,12 +49,22 @@ WriteMakefile(
 	OBJECT		=> 'version$(OBJ_EXT) DB_File$(OBJ_EXT)',
 	OPTIMIZE	=> '-g',
 	'macro'		=> { INSTALLDIRS => 'perl' },
-        'dist'          => {COMPRESS=>'gzip', SUFFIX=>'gz'},    
+        'dist'          => {COMPRESS=>'gzip', SUFFIX=>'gz',
+			    DIST_DEFAULT => 'MyDoubleCheck tardist'},    
 	);
 
 
 sub MY::postamble {
 	'
+
+MyDoubleCheck:	
+	@echo Checking config.in is setup for a release
+	@(grep "^LIB.*/usr/local/BerkeleyDB" config.in && 	\
+	grep "^INCLUDE.*/usr/local/BerkeleyDB" config.in &&	\
+	grep "^#DBNAME.*" config.in) >/dev/null ||		\
+	(echo config.in needs fixing ; exit 1)
+	@echo config.in is ok
+
 version$(OBJ_EXT):	version.c
 
 $(NAME).xs:	typemap
