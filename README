@@ -1,8 +1,8 @@
                                      DB_File
 
-                                  Version 1.802
+                                  Version 1.803
 
-                                  6th Jan 2002
+                                  1st Mar 2002
 
  	Copyright (c) 1995-2002 Paul Marquess. All rights reserved. This
 	program is free software; you can redistribute it and/or modify
@@ -346,13 +346,13 @@ To help me help you, I need the following information:
     I want you to run "perl -V" and NOT "perl -v".
 
     If your perl does not understand the "-V" option it is too old. DB_File
-    needs Perl version 5.004 or better.
+    needs Perl version 5.00405 or better.
 
  2. The version of DB_File you have.
     If you have successfully installed DB_File, this one-liner will
     tell you:
 
-       perl -e 'use DB_File; print "DB_File ver $DB_File::VERSION\n"'
+       perl -e 'use DB_File; print qq{DB_File ver $DB_File::VERSION\n}'
 
     If you haven't installed DB_File then search DB_File.pm for a line
     like this:
@@ -367,7 +367,7 @@ To help me help you, I need the following information:
     If you have successfully installed DB_File, this command will display
     the version of Berkeley DB it was built with:
 
-       perl -e 'use DB_File; print "Berkeley DB ver $DB_File::db_ver\n"'
+       perl -e 'use DB_File; print qq{Berkeley DB ver $DB_File::db_ver\n}'
 
  4. If you are having problems building DB_File, send me a complete log
     of what happened.
