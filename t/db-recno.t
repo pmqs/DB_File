@@ -1,8 +1,5 @@
 #!./perl -w
 
-use warnings;
-use strict ;
-
 BEGIN {
     unless(grep /blib/, @INC) {
         chdir 't' if -d 't';
@@ -10,12 +7,14 @@ BEGIN {
     }
 }
  
+use warnings;
+use strict;
 use Config;
  
 BEGIN {
     if(-d "lib" && -f "TEST") {
         if ($Config{'extensions'} !~ /\bDB_File\b/ ) {
-            print "1..138\n";
+            print "1..0 # Skip: DB_File was not built\n";
             exit 0;
         }
     }
@@ -23,7 +22,7 @@ BEGIN {
 
 use DB_File; 
 use Fcntl;
-use vars qw($dbh $Dfile $bad_ones $FA) ;
+our ($dbh, $Dfile, $bad_ones, $FA);
 
 # full tied array support started in Perl 5.004_57
 # Double check to see if it is available.
@@ -78,16 +77,14 @@ sub docat
     open(CAT,$file) || die "Cannot open $file:$!";
     my $result = <CAT>;
     close(CAT);
+    normalise($result) ;
     return $result;
 }
 
 sub docat_del
 { 
     my $file = shift;
-    local $/ = undef;
-    open(CAT,$file) || die "Cannot open $file: $!";
-    my $result = <CAT>;
-    close(CAT);
+    my $result = docat($file);
     unlink $file ;
     return $result;
 }   
@@ -110,19 +107,38 @@ sub bad_one
 EOM
 }
 
+sub normalise
+{
+    return unless $^O eq 'cygwin' ;
+    foreach (@_)
+      { s#\r\n#\n#g }     
+}
+
+BEGIN 
+{ 
+    { 
+        local $SIG{__DIE__} ; 
+        eval { require Data::Dumper ; import Data::Dumper } ; 
+    }
+ 
+    if ($@) {
+        *Dumper = sub { my $a = shift; return "[ @{ $a } ]" } ;
+    }          
+}
+
 my $splice_tests = 10 + 1; # ten regressions, plus the randoms
 my $total_tests = 138 ;
 $total_tests += $splice_tests if $FA ;
 print "1..$total_tests\n";   
 
-my $Dfile = "recno.tmp";
+$Dfile = "recno.tmp";
 unlink $Dfile ;
 
 umask(0);
 
 # Check the interface to RECNOINFO
 
-my $dbh = new DB_File::RECNOINFO ;
+$dbh = new DB_File::RECNOINFO ;
 ok(1, ! defined $dbh->{bval}) ;
 ok(2, ! defined $dbh->{cachesize}) ;
 ok(3, ! defined $dbh->{psize}) ;
@@ -165,8 +181,10 @@ my $X  ;
 my @h ;
 ok(17, $X = tie @h, 'DB_File', $Dfile, O_RDWR|O_CREAT, 0640, $DB_RECNO ) ;
 
+my %noMode = map { $_, 1} qw( amigaos MSWin32 NetWare cygwin ) ;
+
 ok(18, ((stat($Dfile))[2] & 0777) == (($^O eq 'os2' || $^O eq 'MacOS') ? 0666 : 0640)
-	||  $^O eq 'MSWin32' ||  $^O eq 'NetWare' || $^O eq 'amigaos') ;
+	||  $noMode{$^O} );
 
 #my $l = @h ;
 my $l = $X->length ;
@@ -382,7 +400,7 @@ unlink $Dfile;
 
    use warnings ;
    use strict ;
-   use vars qw( @ISA @EXPORT) ;
+   our (@ISA, @EXPORT);
 
    require Exporter ;
    use DB_File;
@@ -774,7 +792,7 @@ EOM
 
     use warnings FATAL => qw(all);
     use strict ;
-    use vars qw(@h $H $file $i) ;
+    our (@h, $H, $file, $i);
     use DB_File ;
     use Fcntl ;
     
@@ -984,9 +1002,8 @@ require POSIX; my $tmp = POSIX::tmpnam();
 foreach my $test (@tests) {
     my $err = test_splice(@$test);
     if (defined $err) {
-	require Data::Dumper;
-	print STDERR "failed: ", Data::Dumper::Dumper($test);
-	print STDERR "error: $err\n";
+	print STDERR "# failed: ", Dumper($test);
+	print STDERR "# error: $err\n";
 	$failed = 1;
 	ok($testnum++, 0);
     }
@@ -995,7 +1012,7 @@ foreach my $test (@tests) {
 
 if ($failed) {
     # Not worth running the random ones
-    print STDERR 'skipping ', $testnum++, "\n";
+    print STDERR '# skipping ', $testnum++, "\n";
 }
 else {
     # A thousand randomly-generated tests
@@ -1005,11 +1022,10 @@ else {
 	my $test = rand_test();
 	my $err = test_splice(@$test);
 	if (defined $err) {
-	    require Data::Dumper;
-	    print STDERR "failed: ", Data::Dumper::Dumper($test);
-	    print STDERR "error: $err\n";
+	    print STDERR "# failed: ", Dumper($test);
+	    print STDERR "# error: $err\n";
 	    $failed = 1;
-	    print STDERR "skipping any remaining random tests\n";
+	    print STDERR "# skipping any remaining random tests\n";
 	    last;
 	}
     }
@@ -1045,13 +1061,14 @@ sub test_splice {
     my @array = @$array;
     my @list = @$list;
 
-    open(TEXT, ">$tmp") or die "cannot write to $tmp: $!";
-    foreach (@array) { print TEXT "$_\n" }
-    close TEXT or die "cannot close $tmp: $!";
+    unlink $tmp;
     
     my @h;
-    my $H = tie @h, 'DB_File', $tmp, O_RDWR, 0644, $DB_RECNO
+    my $H = tie @h, 'DB_File', $tmp, O_CREAT|O_RDWR, 0644, $DB_RECNO
       or die "cannot open $tmp: $!";
+
+    my $i = 0;
+    foreach ( @array ) { $h[$i++] = $_ }
     
     return "basic DB_File sanity check failed"
       if list_diff(\@array, \@h);
@@ -1169,7 +1186,7 @@ sub test_splice {
     untie @h;
     
     open(TEXT, $tmp) or die "cannot open $tmp: $!";
-    @h = <TEXT>; chomp @h;
+    @h = <TEXT>; normalise @h; chomp @h;
     close TEXT or die "cannot close $tmp: $!";
     return('list is different when re-read from disk: '
 	   . Dumper(\@array) . ' vs ' . Dumper(\@h))

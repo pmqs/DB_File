@@ -3,8 +3,8 @@
  DB_File.xs -- Perl 5 interface to Berkeley DB 
 
  written by Paul Marquess <Paul.Marquess@btinternet.com>
- last modified 22nd Oct 2001
- version 1.79
+ last modified 23rd Nov 2001
+ version 1.800
 
  All comments/suggestions/problems are welcome
 
@@ -95,6 +95,8 @@
         1.78 -  Core patch 10335, 10372, 10534, 10549, 11051 included.
         1.79 -  NEXTKEY ignores the input key.
                 Added lots of casts
+        1.800 - Moved backward compatability code into ppport.h.
+                Use the new constants code.
 
 */
 
@@ -103,23 +105,8 @@
 #include "perl.h"
 #include "XSUB.h"
 
-#ifndef PERL_VERSION
-#    include "patchlevel.h"
-#    define PERL_REVISION	5
-#    define PERL_VERSION	PATCHLEVEL
-#    define PERL_SUBVERSION	SUBVERSION
-#endif
-
-#if PERL_REVISION == 5 && (PERL_VERSION < 4 || (PERL_VERSION == 4 && PERL_SUBVERSION <= 75 ))
-
-#    define PL_sv_undef		sv_undef
-#    define PL_na		na
-
-#endif
-
-/* DEFSV appears first in 5.004_56 */
-#ifndef DEFSV
-#    define DEFSV		GvSV(defgv)
+#ifdef _NOT_CORE
+#  include "ppport.h"
 #endif
 
 /* Mention DB_VERSION_MAJOR_CFG, DB_VERSION_MINOR_CFG, and
@@ -135,13 +122,6 @@
 #endif
 
 
-
-/* If Perl has been compiled with Threads support,the symbol op will
-   be defined here. This clashes with a field name in db.h, so get rid of it.
- */
-#ifdef op
-#    undef op
-#endif
 
 #ifdef COMPAT185
 #    include <db_185.h>
@@ -176,17 +156,6 @@
 #  define dXSI32 dNOOP
 
 #endif /* Perl >= 5.7 */
-
-#ifndef pTHX
-#    define pTHX
-#    define pTHX_
-#    define aTHX
-#    define aTHX_
-#endif
-
-#ifndef newSVpvn
-#    define newSVpvn(a,b)	newSVpv(a,b)
-#endif
 
 #include <fcntl.h> 
 
@@ -463,10 +432,22 @@ extern void __getBerkeleyDBInfo(void);
 #endif
 
 /* Internal Global Data */
-static recno_t Value ; 
-static recno_t zero = 0 ;
-static DB_File CurrentDB ;
-static DBTKEY empty ;
+
+#define MY_CXT_KEY "DB_File::_guts" XS_VERSION
+
+typedef struct {
+    recno_t	x_Value; 
+    recno_t	x_zero;
+    DB_File	x_CurrentDB;
+    DBTKEY	x_empty;
+} my_cxt_t;
+
+START_MY_CXT
+
+#define Value		(MY_CXT.x_Value)
+#define zero		(MY_CXT.x_zero)
+#define CurrentDB	(MY_CXT.x_CurrentDB)
+#define empty		(MY_CXT.x_empty)
 
 #ifdef DB_VERSION_MAJOR
 
@@ -560,7 +541,8 @@ const DBT * key2 ;
     dTHX;
 #endif    
     dSP ;
-    char * data1, * data2 ;
+    dMY_CXT ;
+    void * data1, * data2 ;
     int retval ;
     int count ;
     
@@ -631,6 +613,7 @@ const DBT * key2 ;
     dTHX;
 #endif    
     dSP ;
+    dMY_CXT ;
     char * data1, * data2 ;
     int retval ;
     int count ;
@@ -709,6 +692,7 @@ HASH_CB_SIZE_TYPE size ;
     dTHX;
 #endif    
     dSP ;
+    dMY_CXT;
     int retval ;
     int count ;
 
@@ -884,6 +868,7 @@ SV *   sv ;
     void *	openinfo = NULL ;
     INFO	* info  = &RETVAL->info ;
     STRLEN	n_a;
+    dMY_CXT;
 
 /* printf("In ParseOpenInfo name=[%s] flags=[%d] mode = [%d]\n", name, flags, mode) ;  */
     Zero(RETVAL, 1, DB_File_type) ;
@@ -1157,6 +1142,7 @@ SV *   sv ;
     DB *	dbp ;
     STRLEN	n_a;
     int		status ;
+    dMY_CXT;
 
 /* printf("In ParseOpenInfo name=[%s] flags=[%d] mode = [%d]\n", name, flags, mode) ;  */
     Zero(RETVAL, 1, DB_File_type) ;
@@ -1399,246 +1385,15 @@ SV *   sv ;
 } /* ParseOpenInfo */
 
 
-static double 
-#ifdef CAN_PROTOTYPE
-constant(char *name, int arg)
-#else
-constant(name, arg)
-char *name;
-int arg;
-#endif
-{
-    errno = 0;
-    switch (*name) {
-    case 'A':
-	break;
-    case 'B':
-	if (strEQ(name, "BTREEMAGIC"))
-#ifdef BTREEMAGIC
-	    return BTREEMAGIC;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "BTREEVERSION"))
-#ifdef BTREEVERSION
-	    return BTREEVERSION;
-#else
-	    goto not_there;
-#endif
-	break;
-    case 'C':
-	break;
-    case 'D':
-	if (strEQ(name, "DB_LOCK"))
-#ifdef DB_LOCK
-	    return DB_LOCK;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "DB_SHMEM"))
-#ifdef DB_SHMEM
-	    return DB_SHMEM;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "DB_TXN"))
-#ifdef DB_TXN
-	    return (U32)DB_TXN;
-#else
-	    goto not_there;
-#endif
-	break;
-    case 'E':
-	break;
-    case 'F':
-	break;
-    case 'G':
-	break;
-    case 'H':
-	if (strEQ(name, "HASHMAGIC"))
-#ifdef HASHMAGIC
-	    return HASHMAGIC;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "HASHVERSION"))
-#ifdef HASHVERSION
-	    return HASHVERSION;
-#else
-	    goto not_there;
-#endif
-	break;
-    case 'I':
-	break;
-    case 'J':
-	break;
-    case 'K':
-	break;
-    case 'L':
-	break;
-    case 'M':
-	if (strEQ(name, "MAX_PAGE_NUMBER"))
-#ifdef MAX_PAGE_NUMBER
-	    return (U32)MAX_PAGE_NUMBER;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "MAX_PAGE_OFFSET"))
-#ifdef MAX_PAGE_OFFSET
-	    return MAX_PAGE_OFFSET;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "MAX_REC_NUMBER"))
-#ifdef MAX_REC_NUMBER
-	    return (U32)MAX_REC_NUMBER;
-#else
-	    goto not_there;
-#endif
-	break;
-    case 'N':
-	break;
-    case 'O':
-	break;
-    case 'P':
-	break;
-    case 'Q':
-	break;
-    case 'R':
-	if (strEQ(name, "RET_ERROR"))
-#ifdef RET_ERROR
-	    return RET_ERROR;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "RET_SPECIAL"))
-#ifdef RET_SPECIAL
-	    return RET_SPECIAL;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "RET_SUCCESS"))
-#ifdef RET_SUCCESS
-	    return RET_SUCCESS;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "R_CURSOR"))
-#ifdef R_CURSOR
-	    return R_CURSOR;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "R_DUP"))
-#ifdef R_DUP
-	    return R_DUP;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "R_FIRST"))
-#ifdef R_FIRST
-	    return R_FIRST;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "R_FIXEDLEN"))
-#ifdef R_FIXEDLEN
-	    return R_FIXEDLEN;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "R_IAFTER"))
-#ifdef R_IAFTER
-	    return R_IAFTER;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "R_IBEFORE"))
-#ifdef R_IBEFORE
-	    return R_IBEFORE;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "R_LAST"))
-#ifdef R_LAST
-	    return R_LAST;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "R_NEXT"))
-#ifdef R_NEXT
-	    return R_NEXT;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "R_NOKEY"))
-#ifdef R_NOKEY
-	    return R_NOKEY;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "R_NOOVERWRITE"))
-#ifdef R_NOOVERWRITE
-	    return R_NOOVERWRITE;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "R_PREV"))
-#ifdef R_PREV
-	    return R_PREV;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "R_RECNOSYNC"))
-#ifdef R_RECNOSYNC
-	    return R_RECNOSYNC;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "R_SETCURSOR"))
-#ifdef R_SETCURSOR
-	    return R_SETCURSOR;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "R_SNAPSHOT"))
-#ifdef R_SNAPSHOT
-	    return R_SNAPSHOT;
-#else
-	    goto not_there;
-#endif
-	break;
-    case 'S':
-	break;
-    case 'T':
-	break;
-    case 'U':
-	break;
-    case 'V':
-	break;
-    case 'W':
-	break;
-    case 'X':
-	break;
-    case 'Y':
-	break;
-    case 'Z':
-	break;
-    case '_':
-	break;
-    }
-    errno = EINVAL;
-    return 0;
-
-not_there:
-    errno = ENOENT;
-    return 0;
-}
+#include "constants.h"   
 
 MODULE = DB_File	PACKAGE = DB_File	PREFIX = db_
 
+INCLUDE: constants.xs
+
 BOOT:
   {
+    MY_CXT_INIT;
     __getBerkeleyDBInfo() ;
  
     DBT_clear(empty) ; 
@@ -1646,10 +1401,6 @@ BOOT:
     empty.size =  sizeof(recno_t) ;
   }
 
-double
-constant(name,arg)
-	char *		name
-	int		arg
 
 
 DB_File
@@ -1680,6 +1431,8 @@ db_DoTie_(isHASH, dbtype, name=undef, flags=O_CREAT|O_RDWR, mode=0666, type=DB_H
 int
 db_DESTROY(db)
 	DB_File		db
+	PREINIT:
+	  dMY_CXT;
 	INIT:
 	  CurrentDB = db ;
 	CLEANUP:
@@ -1711,6 +1464,8 @@ db_DELETE(db, key, flags=0)
 	DB_File		db
 	DBTKEY		key
 	u_int		flags
+	PREINIT:
+	  dMY_CXT;
 	INIT:
 	  CurrentDB = db ;
 
@@ -1719,6 +1474,8 @@ int
 db_EXISTS(db, key)
 	DB_File		db
 	DBTKEY		key
+	PREINIT:
+	  dMY_CXT;
 	CODE:
 	{
           DBT		value ;
@@ -1736,7 +1493,8 @@ db_FETCH(db, key, flags=0)
 	DBTKEY		key
 	u_int		flags
 	PREINIT:
-	int RETVAL;
+	  dMY_CXT ;
+	  int RETVAL ;
 	CODE:
 	{
             DBT		value ;
@@ -1755,6 +1513,8 @@ db_STORE(db, key, value, flags=0)
 	DBTKEY		key
 	DBT		value
 	u_int		flags
+	PREINIT:
+	  dMY_CXT;
 	INIT:
 	  CurrentDB = db ;
 
@@ -1763,7 +1523,8 @@ void
 db_FIRSTKEY(db)
 	DB_File		db
 	PREINIT:
-	int RETVAL;
+	  dMY_CXT ;
+	  int RETVAL ;
 	CODE:
 	{
 	    DBTKEY	key ;
@@ -1782,7 +1543,8 @@ db_NEXTKEY(db, key)
 	DB_File		db
 	DBTKEY		key = NO_INIT
 	PREINIT:
-	int RETVAL;
+	  dMY_CXT ;
+	  int RETVAL ;
 	CODE:
 	{
 	    DBT		value ;
@@ -1803,6 +1565,8 @@ int
 unshift(db, ...)
 	DB_File		db
 	ALIAS:		UNSHIFT = 1
+	PREINIT:
+	  dMY_CXT;
 	CODE:
 	{
 	    DBTKEY	key ;
@@ -1843,9 +1607,11 @@ unshift(db, ...)
 void
 pop(db)
 	DB_File		db
+	PREINIT:
+	  dMY_CXT;
 	ALIAS:		POP = 1
 	PREINIT:
-	I32 RETVAL;
+	  I32 RETVAL;
 	CODE:
 	{
 	    DBTKEY	key ;
@@ -1872,9 +1638,11 @@ pop(db)
 void
 shift(db)
 	DB_File		db
+	PREINIT:
+	  dMY_CXT;
 	ALIAS:		SHIFT = 1
 	PREINIT:
-	I32 RETVAL;
+	  I32 RETVAL;
 	CODE:
 	{
 	    DBT		value ;
@@ -1901,6 +1669,8 @@ shift(db)
 I32
 push(db, ...)
 	DB_File		db
+	PREINIT:
+	  dMY_CXT;
 	ALIAS:		PUSH = 1
 	CODE:
 	{
@@ -1943,6 +1713,8 @@ push(db, ...)
 I32
 length(db)
 	DB_File		db
+	PREINIT:
+	  dMY_CXT;
 	ALIAS:		FETCHSIZE = 1
 	CODE:
 	    CurrentDB = db ;
@@ -1960,6 +1732,8 @@ db_del(db, key, flags=0)
 	DB_File		db
 	DBTKEY		key
 	u_int		flags
+	PREINIT:
+	  dMY_CXT;
 	CODE:
 	  CurrentDB = db ;
 	  RETVAL = db_del(db, key, flags) ;
@@ -1979,6 +1753,8 @@ db_get(db, key, value, flags=0)
 	DBTKEY		key
 	DBT		value = NO_INIT
 	u_int		flags
+	PREINIT:
+	  dMY_CXT;
 	CODE:
 	  CurrentDB = db ;
 	  DBT_clear(value) ; 
@@ -1999,6 +1775,8 @@ db_put(db, key, value, flags=0)
 	DBTKEY		key
 	DBT		value
 	u_int		flags
+	PREINIT:
+	  dMY_CXT;
 	CODE:
 	  CurrentDB = db ;
 	  RETVAL = db_put(db, key, value, flags) ;
@@ -2015,6 +1793,8 @@ db_put(db, key, value, flags=0)
 int
 db_fd(db)
 	DB_File		db
+	PREINIT:
+	  dMY_CXT ;
 	CODE:
 	  CurrentDB = db ;
 #ifdef DB_VERSION_MAJOR
@@ -2039,6 +1819,8 @@ int
 db_sync(db, flags=0)
 	DB_File		db
 	u_int		flags
+	PREINIT:
+	  dMY_CXT;
 	CODE:
 	  CurrentDB = db ;
 	  RETVAL = db_sync(db, flags) ;
@@ -2056,6 +1838,8 @@ db_seq(db, key, value, flags)
 	DBTKEY		key 
 	DBT		value = NO_INIT
 	u_int		flags
+	PREINIT:
+	  dMY_CXT;
 	CODE:
 	  CurrentDB = db ;
 	  DBT_clear(value) ; 
