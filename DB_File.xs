@@ -3,8 +3,8 @@
  DB_File.xs -- Perl 5 interface to Berkeley DB 
 
  written by Paul Marquess <Paul.Marquess@btinternet.com>
- last modified 1st March 2002
- version 1.803
+ last modified 2nd June 2002
+ version 1.804
 
  All comments/suggestions/problems are welcome
 
@@ -101,7 +101,6 @@
         1.802 - No change to DB_File.xs
         1.803 - FETCH, STORE & DELETE don't map the flags parameter
                 into the equivalent Berkeley DB function anymore.
-
 */
 
 #define PERL_NO_GET_CONTEXT

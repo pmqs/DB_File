@@ -91,10 +91,24 @@ sub docat_del
 
 sub bad_one
 {
-    print STDERR <<EOM unless $bad_ones++ ;
+    unless ($bad_ones++) {
+	print STDERR <<EOM ;
 #
-# Some older versions of Berkeley DB version 1 will fail tests 61,
-# 63 and 65.
+# Some older versions of Berkeley DB version 1 will fail db-recno
+# tests 61, 63 and 65.
+EOM
+        if ($^O eq 'darwin'
+	    && $Config{db_version_major} == 1
+	    && $Config{db_version_minor} == 0
+	    && $Config{db_version_patch} == 0) {
+	    print STDERR <<EOM ;
+#
+# For example Mac OS X 10.1.4 (or earlier) has such an old
+# version of Berkeley DB.
+EOM
+	}
+
+	print STDERR <<EOM ;
 #
 # You can safely ignore the errors if you're never going to use the
 # broken functionality (recno databases with a modified bval). 
@@ -105,6 +119,7 @@ sub bad_one
 # being updated -- Check out http://www.sleepycat.com/ for more details.
 #
 EOM
+    }
 }
 
 sub normalise
@@ -126,7 +141,7 @@ BEGIN
     }          
 }
 
-my $splice_tests = 10 + 1; # ten regressions, plus the randoms
+my $splice_tests = 10 + 11 + 1; # ten regressions, 11 warnings, plus the randoms
 my $total_tests = 138 ;
 $total_tests += $splice_tests if $FA ;
 print "1..$total_tests\n";   
@@ -940,6 +955,81 @@ EOM
 exit unless $FA ;
 
 # Test SPLICE
+
+{
+    # check that the splice warnings are under the same lexical control
+    # as their non-tied counterparts.
+
+    use warnings;
+    use strict;
+
+    my $a = '';
+    my @a = (1);
+    local $SIG{__WARN__} = sub {$a = $_[0]} ;
+
+    unlink $Dfile;
+    my @tied ;
+    
+    tie @tied, 'DB_File', $Dfile, O_RDWR|O_CREAT, 0664, $DB_RECNO 
+	or die "Can't open file: $!\n" ;
+
+    # uninitialized offset
+    use warnings;
+    my $offset ;
+    $a = '';
+    splice(@a, $offset);
+    ok(139, $a =~ /^Use of uninitialized value /);
+    $a = '';
+    splice(@tied, $offset);
+    ok(140, $a =~ /^Use of uninitialized value in splice/);
+
+    no warnings 'uninitialized';
+    $a = '';
+    splice(@a, $offset);
+    ok(141, $a eq '');
+    $a = '';
+    splice(@tied, $offset);
+    ok(142, $a eq '');
+
+    # uninitialized length
+    use warnings;
+    my $length ;
+    $a = '';
+    splice(@a, 0, $length);
+    ok(143, $a =~ /^Use of uninitialized value /);
+    $a = '';
+    splice(@tied, 0, $length);
+    ok(144, $a =~ /^Use of uninitialized value in splice/);
+
+    no warnings 'uninitialized';
+    $a = '';
+    splice(@a, 0, $length);
+    ok(145, $a eq '');
+    $a = '';
+    splice(@tied, 0, $length);
+    ok(146, $a eq '');
+
+    # offset past end of array
+    use warnings;
+    $a = '';
+    splice(@a, 3);
+    my $splice_end_array = ($a =~ /^splice\(\) offset past end of array/);
+    $a = '';
+    splice(@tied, 3);
+    ok(147, !$splice_end_array || $a =~ /^splice\(\) offset past end of array/);
+
+    no warnings 'misc';
+    $a = '';
+    splice(@a, 3);
+    ok(148, $a eq '');
+    $a = '';
+    splice(@tied, 3);
+    ok(149, $a eq '');
+
+    untie @tied;
+    unlink $Dfile;
+}
+
 # 
 # These are a few regression tests: bundles of five arguments to pass
 # to test_splice().  The first four arguments correspond to those
@@ -997,7 +1087,7 @@ my @tests = ([ [ 'falsely', 'dinosaur', 'remedy', 'commotion',
 	       'void' ],
 	    );
 
-my $testnum = 139;
+my $testnum = 150;
 my $failed = 0;
 require POSIX; my $tmp = POSIX::tmpnam();
 foreach my $test (@tests) {
@@ -1150,7 +1240,7 @@ sub test_splice {
 
     foreach ($ms_error, @ms_warnings) {
 	chomp;
-	s/ at \S+ line \d+\.?$//;
+	s/ at \S+ line \d+\.?.*//s;
     }
 
     return "different errors: '$s_error' vs '$ms_error'"
