@@ -3,8 +3,8 @@
  DB_File.xs -- Perl 5 interface to Berkeley DB 
 
  written by Paul Marquess <Paul.Marquess@btinternet.com>
- last modified 16th January 2000
- version 1.72
+ last modified 10 December 2000
+ version 1.74
 
  All comments/suggestions/problems are welcome
 
@@ -82,6 +82,10 @@
 		Support for Berkeley DB 2/3's backward compatability mode.
 		Rewrote push
         1.72 -  No change to DB_File.xs
+        1.73 -  No change to DB_File.xs
+        1.74 -  A call to open needed parenthesised to stop it clashing
+                with a win32 macro.
+		Added Perl core patches 7703 & 7801.
 
 */
 
@@ -125,6 +129,10 @@
 #    include <db_185.h>
 #else
 #    include <db.h>
+#endif
+
+#ifdef CAN_PROTOTYPE
+extern void __getBerkeleyDBInfo(void);
 #endif
 
 #ifndef pTHX
@@ -583,13 +591,20 @@ const DBT * key2 ;
     return (retval) ;
 }
 
+
+#ifdef BERKELEY_DB_1_OR_2
+#    define HASH_CB_SIZE_TYPE size_t
+#else
+#    define HASH_CB_SIZE_TYPE u_int32_t
+#endif
+
 static DB_Hash_t
 #ifdef CAN_PROTOTYPE
-hash_cb(const void *data, size_t size)
+hash_cb(const void *data, HASH_CB_SIZE_TYPE size)
 #else
 hash_cb(data, size)
 const void * data ;
-size_t size ;
+HASH_CB_SIZE_TYPE size ;
 #endif
 {
 #ifdef dTHX
@@ -1265,7 +1280,7 @@ SV *   sv ;
             Flags |= DB_TRUNCATE ;
 #endif
 
-        status = RETVAL->dbp->open(RETVAL->dbp, name, NULL, RETVAL->type, 
+        status = (RETVAL->dbp->open)(RETVAL->dbp, name, NULL, RETVAL->type, 
 	    			Flags, mode) ; 
 	/* printf("open returned %d %s\n", status, db_strerror(status)) ; */
 

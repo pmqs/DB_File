@@ -1,8 +1,8 @@
                                      DB_File
 
-                                  Version 1.73
+                                  Version 1.74
 
-                                 25th April 2000
+                              10th December 2000
 
  	Copyright (c) 1995-2000 Paul Marquess. All rights reserved. This
 	program is free software; you can redistribute it and/or modify
@@ -68,10 +68,9 @@ Assuming you have met all the prerequisites, building the module should
 be relatively straightforward. 
 
 Step 1 : If you are running either Solaris 2.5 or HP-UX 10 and want
-         to use Berkeley DB version 2, read either the Solaris Notes or
-         HP-UX Notes sections below. 
-         If you are running Linux please read the Linux Notes section
-         before proceeding.
+         to use Berkeley DB version 2 or 3, read either the Solaris Notes
+         or HP-UX Notes sections below.  If you are running Linux please
+         read the Linux Notes section before proceeding.
 
 Step 2 : Edit the file config.in to suit you local installation. 
          Instructions are given in the file.
@@ -101,7 +100,8 @@ INSTALLATION
 TROUBLESHOOTING
 ===============
 
-Here are some of the problems that people encounter when building DB_File.
+Here are some of the common problems people encounter when building
+DB_File.
 
 Missing db.h or libdb.a
 -----------------------
@@ -187,22 +187,46 @@ Solution: Setting the LIB & INCLUDE variables in config.in to point to the
           problem. If that doesn't work the easiest way to fix the
           problem is to either delete or temporarily rename the copies
           of db.h and libdb.a that you don't want BerkeleyDB to use.
-          If you are running Linux, please read the Linux Notes section below.
+          If you are running Linux, please read the Linux Notes section
+          below.
 
 
 Linux Notes
 -----------
 
-Newer versions of Linux (e.g. RedHat 6) ship with a C library that has
-a version of Berkeley DB linked into it. This makes it very difficult to
-build DB_File with anything other than the version of Berkeley DB that
-shipped with your Linux release. If you do try to use a different
-version of Berkeley DB you will probably get the error described in the
-"Incompatible versions of db.h and libdb" section of this file.
+Newer versions of Linux (e.g. RedHat 6, SuSe 6) ship with a C library
+that has version 2.x of Berkeley DB linked into it. This makes it
+difficult to build DB_File with anything other than the version of
+Berkeley DB that shipped with your Linux release. If you do try to use
+a different version of Berkeley DB you will most likely get the error
+described in the "Incompatible versions of db.h and libdb" section of
+this file.
 
-As yet I haven't found a satisfactory way around this problem. If you
-do know a workaround to this problem which doesn't involve replacing
-the built in version of Berkeley DB I would like to hear from you.
+To make matters worse, prior to Perl 5.6.1, the perl binary itself
+*always* included the Berkeley DB library, regardless of whether the
+DB_File module was built.
+
+If you want to use a newer version of Berkeley DB with DB_File, the
+easiest solution is to use Perl 5.6.1 (or better) and Berkeley DB 3.x
+(or better). If you want to use Berkeley DB 2.x you are on your own.
+
+If you want to use a version of Perl older than 5.6.1 along with Berkeley
+DB 3.x, you will have to rebuild your existing version of Perl after
+applying an unofficial patch. The "patches" directory in the DB_File
+source distribution contains a number of patch files. There is one patch
+file for every stable version of Perl since 5.004. Apply the appropriate
+patch to your Perl source tree before re-building and installing Perl
+from scratch.  For example, assuming you are in the top-level source
+directory for Perl 5.6.0, the command below will apply the necessary
+patch. Remember to replace the path shown below with one that points to
+DB_File's patches directory.
+
+    patch -p1 -N </path/to/DB_File/patches/5.6.0
+
+Now rebuild & install perl. You should now have a perl binary that can
+be used to build DB_File. Follow the instructions in "BUILDING THE
+MODULE".
+
 
 Solaris Notes
 -------------
@@ -259,16 +283,19 @@ FEEDBACK
 
 How to report a problem with DB_File.
 
-To help me help you, I need of the following information:
+To help me help you, I need the following information:
 
  1. The version of Perl and the operating system name and version you
-    are running. The complete output from running "perl -V" will tell 
-    me all I need to know.
-    If your perl does not understand the "-V" option is is too old. DB_File
+    are running. The *complete* output from running "perl -V" will
+    tell me all I need to know. Don't edit the output in any way. Note,
+    I want you to run "perl -V" and NOT "perl -v".
+
+    If your perl does not understand the "-V" option it is too old. DB_File
     needs Perl version 5.004 or better.
     
- 2. The version of DB_File you have. If you have successfully installed
-    DB_File, this one-liner will tell you:
+ 2. The version of DB_File you have. 
+    If you have successfully installed DB_File, this one-liner will
+    tell you:
 
        perl -e 'use DB_File; print "DB_File ver $DB_File::VERSION\n"'
 
@@ -277,10 +304,15 @@ To help me help you, I need of the following information:
 
       $VERSION = "1.20" ;
 
- 3. The version of Berkeley DB you have installed.
+ 3. The version of Berkeley DB you are using.
     If you are using a version older than 1.85, think about upgrading. One
     point to note if you are considering upgrading Berkeley DB - the
-    file formats for 1.85, 1.86, 2.0 & 3.0 are all different.
+    file formats for 1.85, 1.86, 2.0, 3.0 & 3.1 are all different.
+
+    If you have successfully installed DB_File, this command will display
+    the version of Berkeley DB it was built with:
+
+       perl -e 'use DB_File; print "Berkeley DB ver $DB_File::db_ver\n"'
 
  4. If you are having problems building DB_File, send me a complete log
     of what happened.
