@@ -1,0 +1,195 @@
+
+        use strict ;
+        use vars qw(@h $H $file $i $opened $no @Real @ans) ;
+        use DB_File ;
+        use Fcntl ;
+ 
+sub ok
+{
+    ++ $no ;
+    #my $no = shift ;
+    my $result = shift ;
+
+    print "ok $no\n" if $result ;
+    print "not ok $no\n" if ! $result ;
+
+}
+
+sub Populate
+{
+    my $count = shift ;
+
+    undef $H ;
+    untie @h if $opened ;
+    @Real = () ;
+
+    # create a text file to play with
+    open (F, ">$file") or die "Cannot open $file: $!\n" ;
+    foreach (0 .. $count -1)
+      { print F "$_\n" ; push (@Real, $_) }
+    close F ;
+ 
+    $H = tie @h, "DB_File", $file, O_RDWR, 0640, $DB_RECNO
+        or die "Cannot open file $file: $!\n" ;
+
+    $opened = 1 ;
+}
+
+sub PrintArray
+{
+	my $i ;
+	my @tmp ;
+        # print the records in order and make them
+        foreach $i (0 .. $H->length - 1) {
+            push(@tmp, $h[$i]) ;
+        }
+
+        print "TIED=[@tmp]" ;
+	print "  REAL=[@Real]\n" ;
+}
+
+sub ArrayCmp
+{
+    my ($a1, $a2) = @_ ;
+    my @a1 = @$a1 ;
+
+    return 0 if @a1 != (tied @{$a2})->length ;
+
+    for ($i = 0 ; $i < length @a1 ; ++ $i) {
+	return 0 if $a1[$i] ne $a2->[$i] ;
+    }
+
+   return 1 ;
+}
+
+sub Splice
+{
+    my $joined = join(",", @_) ;
+    eval " \@ans = splice(\@Real, $joined) ; " ;
+    #my @ans = splice(@Real, @_) ; 
+
+    my @mine = $H->splice(@_) ;
+
+    #print "XX real splice[@ans][@Real] DB method[@mine][@h] eq ok\n" ;
+    #PrintArray() ;
+    ok("@ans" eq "@mine" and ArrayCmp(\@Real, \@h) ) ; 
+}
+
+	$opened = 0 ;
+        $file = "text" ;
+ 
+	while (<DATA>) {
+	    next if /^\s*#/ or /^\s*$/ ;
+
+	    my @array = split ;
+	    Populate(shift @array) ;
+	    Splice(@array) ;
+	}
+
+
+	undef $H ;
+        untie @h ;
+	unlink $file ;
+	exit ;
+
+
+
+
+package DB_File ;
+
+
+sub splice
+{
+    croak 'Usage: $x->splice(offset, length, list)'
+	unless @_ >= 1 ;
+
+    my $db     = shift ;
+    my $offset = shift ;
+    my $orig_length = $db->length ;
+    my $length = @_ ? shift : $orig_length ;
+    my @list   = @_ ;
+    my @junk ;
+    my $i ;
+    my $v ;
+
+    #print "DB_File::splice(offset=$offset, length=$length, list=[@list])\n" ;
+
+
+    # check for negative offset
+    if ($offset < 0) {
+	$offset = $orig_length + $offset  ;
+
+	# the offset may still be negative
+	if ($offset < 0 ) {
+	    $length += $offset ;
+	    $offset = 0 ;
+	    $length = 0 if $length < 0 ;
+	}
+    }
+
+    $offset = $orig_length if $offset > $orig_length ;
+
+    # First remove the elements required
+    foreach $i ($offset .. $offset + $length - 1) {
+	last if $i >= $orig_length ;
+	$db->get($offset, $v) ;
+	push (@junk, $v) ;
+	$db->del($offset) ;
+    }
+
+    # Now add the new stuff
+    foreach (reverse @list) {
+	$db->put($offset, $_, R_IBEFORE) ;
+    }
+
+    # return the elements removed
+    return @junk ;
+}
+
+
+__END__
+# array size offset   length   list
+	4
+	4	0
+	4	0	0
+	4	0	0	111 222
+	4	1
+	4	2
+	4	3
+	4	4
+	4	5
+	4	1	0
+	4	1	1
+	4	1	2
+	4	1	5
+	4	3	0
+	4	3	1
+	4	3	2
+	4	1	1	111
+	4	1	1	111 222 333 444
+	4	0	1	111 222 333 444
+	4	1	2	111 222 333 444
+	4	3	0	111
+	4	5	2	111 222 333 444
+
+	0
+	0	0
+	0	0	0
+	0	0	0	111
+	0	1
+	0	1	0
+	0	1	0	111
+	0	2	0	111
+
+	4	-1
+	4	-1	0
+	4	-1	-1
+	4	 1	-1
+	4	-1	-1	111
+	4	-2	 2	111
+	4	-4
+	4	-4	2
+	4	-4	2	222
+	4	-5
+	4	-5	2	
+	4	-5	2	222 333

@@ -3,8 +3,8 @@
  DB_File.xs -- Perl 5 interface to Berkeley DB 
 
  written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
- last modified 14th November 1995
- version 1.01
+ last modified 4th Sept 1996
+ version 1.03
 
  All comments/suggestions/problems are welcome
 
@@ -17,6 +17,13 @@
 	1.01 - 	Fixed a SunOS core dump problem.
 		The return value from TIEHASH wasn't set to NULL when
 		dbopen returned an error.
+	1.02 - 	Use ALIAS to define TIEARRAY.
+		Removed some redundant commented code.
+		Merged OS2 code into the main distribution.
+		Allow negative subscripts with RECNO interface.
+		Changed the default flags to O_CREAT|O_RDWR
+	1.03 - 	Added EXISTS
+
 */
 
 #include "EXTERN.h"  
@@ -45,7 +52,7 @@ union INFO {
       } ;
 
 
-/* #define TRACE  */
+/* #define TRACE   */
 
 #define db_DESTROY(db)                  ((db->dbp)->close)(db->dbp)
 #define db_DELETE(db, key, flags)       ((db->dbp)->del)(db->dbp, &key, flags)
@@ -61,14 +68,18 @@ union INFO {
 #define db_sync(db, flags)              ((db->dbp)->sync)(db->dbp, flags)
 
 
-#define OutputValue(arg, name)  \
-	{ if (RETVAL == 0) sv_setpvn(arg, name.data, name.size) ; }
+#define OutputValue(arg, name)  				\
+	{ if (RETVAL == 0) {					\
+	      sv_setpvn(arg, name.data, name.size) ;		\
+	  }							\
+	}
 
 #define OutputKey(arg, name)	 				\
 	{ if (RETVAL == 0) \
 	  { 							\
-		if (db->type != DB_RECNO) 			\
+		if (db->type != DB_RECNO) {			\
 		    sv_setpvn(arg, name.data, name.size); 	\
+		}						\
 		else 						\
 		    sv_setiv(arg, (I32)*(I32*)name.data - 1); 	\
 	  } 							\
@@ -235,7 +246,7 @@ RECNOINFO recno ;
     printf ("  lorder    = %d\n", recno.lorder) ;
     printf ("  reclen    = %d\n", recno.reclen) ;
     printf ("  bval      = %d\n", recno.bval) ;
-    printf ("  bfname    = %s\n", recno.bfname) ;
+    printf ("  bfname    = %d [%s]\n", recno.bfname, recno.bfname) ;
 }
 
 PrintBtree(btree)
@@ -278,6 +289,27 @@ DB * db ;
     return (RETVAL) ;
 }
 
+static recno_t
+GetRecnoKey(db, value)
+DB_File  db ;
+I32      value ;
+{
+    if (value < 0) {
+	/* Get the length of the array */
+	I32 length = GetArrayLength(db->dbp) ;
+
+	/* check for attempt to write before start of array */
+	if (length + value + 1 <= 0)
+	    croak("Modification of non-creatable array value attempted, subscript %d", value) ;
+
+	value = length + value + 1 ;
+    }
+    else
+        ++ value ;
+
+    return value ;
+}
+
 static DB_File
 ParseOpenInfo(name, flags, mode, sv, string)
 char * name ;
@@ -291,8 +323,8 @@ char * string ;
     union INFO	info ;
     DB_File	RETVAL = (DB_File)safemalloc(sizeof(DB_File_type)) ;
     void *	openinfo = NULL ;
-    /* DBTYPE	type = DB_HASH ; */
 
+    /* Default to HASH */
     RETVAL->hash = RETVAL->compare = RETVAL->prefix = NULL ;
     RETVAL->type = DB_HASH ;
 
@@ -415,7 +447,10 @@ char * string ;
 	    }
          
             svp = hv_fetch(action, "bfname", 6, FALSE); 
-            info.recno.bfname = (char *) svp ? SvPV(*svp,na) : 0;
+            if (svp) {
+		char * ptr = SvPV(*svp,na) ;
+                info.recno.bfname = (char*) na ? ptr : 0 ;
+	    }
 
             PrintRecno(info) ;
         }
@@ -424,17 +459,14 @@ char * string ;
     }
 
 
+    /* OS2 Specific Code */
+#ifdef OS2
+#ifdef __EMX__
+    flags |= O_BINARY;
+#endif /* __EMX__ */
+#endif /* OS2 */
+
     RETVAL->dbp = dbopen(name, flags, mode, RETVAL->type, openinfo) ; 
-
-#if 0
-    /* kludge mode on: RETVAL->type for DB_RECNO is set to DB_BTREE
-		       so remember a DB_RECNO by saving the address
-		       of one of it's internal routines
-    */
-    if (RETVAL->dbp && type == DB_RECNO)
-        DB_recno_close = RETVAL->dbp->close ;
-#endif
-
 
     return (RETVAL) ;
 }
@@ -695,10 +727,11 @@ constant(name,arg)
 
 
 DB_File
-db_TIEHASH(dbtype, name=undef, flags=O_RDWR, mode=0640, type=DB_HASH)
+db_TIEHASH(dbtype, name=undef, flags=O_CREAT|O_RDWR, mode=0640, type=DB_HASH)
 	char *		dbtype
 	int		flags
 	int		mode
+	ALIAS: TIEARRAY = 1
 	CODE:
 	{
 	    char *	name = (char *) NULL ; 
@@ -716,9 +749,6 @@ db_TIEHASH(dbtype, name=undef, flags=O_RDWR, mode=0640, type=DB_HASH)
 	}
 	OUTPUT:	
 	    RETVAL
-
-BOOT:
-    newXS("DB_File::TIEARRAY", XS_DB_File_db_TIEHASH, file);
 
 int
 db_DESTROY(db)
@@ -742,6 +772,21 @@ db_DELETE(db, key, flags=0)
 	u_int		flags
 	INIT:
 	  CurrentDB = db ;
+
+
+int
+db_EXISTS(db, key)
+	DB_File		db
+	DBTKEY		key
+	CODE:
+	{
+          DBT		value ;
+	
+	  CurrentDB = db ;
+	  RETVAL = (((db->dbp)->get)(db->dbp, &key, &value, 0) == 0) ;
+	}
+	OUTPUT:
+	  RETVAL
 
 int
 db_FETCH(db, key, flags=0)
@@ -859,9 +904,11 @@ pop(db)
 	    /* Now delete it */
 	    if (RETVAL == 0)
 	    {
+		/* the call to del will trash value, so take a copy now */
+	        sv_setpvn(ST(0), value.data, value.size);
 	        RETVAL = (Db->del)(Db, &key, R_CURSOR) ;
-	        if (RETVAL == 0)
-	            sv_setpvn(ST(0), value.data, value.size);
+	        if (RETVAL != 0) 
+	            sv_setsv(ST(0), &sv_undef); 
 	    }
 	}
 
@@ -870,20 +917,22 @@ shift(db)
 	DB_File		db
 	CODE:
 	{
-	    DBTKEY	key ;
 	    DBT		value ;
+	    DBTKEY	key ;
 	    DB *	Db = db->dbp ;
 
 	    CurrentDB = db ;
 	    /* get the first value */
-	    RETVAL = (Db->seq)(Db, &key, &value, R_FIRST) ;	
+	    RETVAL = (Db->seq)(Db, &key, &value, R_FIRST) ;	 
 	    ST(0) = sv_newmortal();
 	    /* Now delete it */
 	    if (RETVAL == 0)
 	    {
-	        RETVAL = (Db->del)(Db, &key, R_CURSOR) ;
-	        if (RETVAL == 0)
-	            sv_setpvn(ST(0), value.data, value.size);
+		/* the call to del will trash value, so take a copy now */
+	        sv_setpvn(ST(0), value.data, value.size);
+	        RETVAL = (Db->del)(Db, &key, R_CURSOR) ; 
+	        if (RETVAL != 0)
+	            sv_setsv (ST(0), &sv_undef) ;
 	    }
 	}
 

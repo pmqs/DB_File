@@ -1,4 +1,80 @@
+Add EXISTS  Done 1.03
+Add CLEAR. - remember to modify the test harnesses.
+
+Redo safemalloc as SvPVN
 
 1. test harness for multiple callbacks
 
 2. test harness for push & empty list
+
+3. Allow the free memory in the SV buffer to be cleared before db
+writes it to disk.
+
+Add options to allow terminating NULL's to be added/stripped automatically.
+allow RECNO to begin the array at 1 instead of 0.
+
+
+Allow indexing with negative numbers in RECNO. - DONE 1.02
+
+Make the test harnesses strict clean.
+
+
+Preserve the CURSOR when using it ourselves or at leat document the
+fact that I trash it.
+
+Add an autoflush option - just call sync after each put/del.
+
+Add a locking interface
+
+
+
+For Berkeley DB ver. 2
+----------------------
+
+* get DB_File2 to automatically import Fcntl O_* constants - look at
+  IO::File for an example.
+
+Create a separate API interface.
+
+     $a = dbopen BerkeleyDB::HASH "filename",
+		-Type		=> 'HASH',
+		-Flags		=> O_RDWR|O_CREAT,
+		-Mode		=> 0666,
+		-hash		=> \&my_hash,
+		-cachesize	=> 100,
+		) ;
+
+
+or
+
+     $a = new BerkeleyDB::RECNO
+     $a = new BerkeleyDB::BTREE
+     $a = new BerkeleyDB::HASH
+		-Filename	=> "fred",
+		-Flags		=> O_RDWR|O_CREAT,
+		-Mode		=> 0666,
+		# -Type		=> 'HASH', # type not needed
+		-hash		=> \&my_hash,
+		-cachesize	=> 100,
+		) ;
+
+Change the tie i/f
+to
+
+     $a = tie %x, 'DB_File2::HASH', "filename",
+
+     $a = tie %x, 'DB_File2', "filename",
+		-Flags		=> O_RDWR|O_CREAT,
+		-Mode		=> 0666,
+		-Type		=> 'HASH',
+		-hash		=> \&my_hash,
+		-cachesize	=> 100,
+		 ;
+
+
+Problem: there are two flags parameters!
+
+REMEMBER EXISTS is only valid for BTREE & HASH
+
+
+TieFilter - allow multiple filters to be applied to a tie.

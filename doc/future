@@ -1,0 +1,27 @@
+I have been putting off the wholesale reorganisation of DB_File till
+version 2 of Berkeley DB arrived. Given that it has been coming "some
+time soon" for about 2 years I though I'd bit the bullet and do it
+anyway.
+
+First a simple change which has been discussed at length in the past.
+The DBM* implementations cannot be sub-classed easily because of the
+foreign object problem. The proposal a looong time ago was to get the
+code to check for *an* object, rather than a specific object. This would
+allow for easier sub-classing, but the downside was the possibility of
+creating a core dump if the wrong object was used. I know I was
+strongly against this at the time, but I have almost changed camps on
+this one. I don't think it would break any existing code to change all
+the DBM*'s to
+
+Secondly, the format of the DB_File interface. Currently DB_File is
+really 3 database interfaces (hash, btree and recno) all rolled into 1
+package. The choice of which one gets used is controlled by a "typed
+parameter". When I wrote it that way it did seem like a good idea, but
+I now feel it is clumbsy.
+
+Proposal: keep the current interface to keep existing code happy.
+
+Create 3 new base classes BerkDB::Hash BerkDB::Btree and BerkDB::Recno.
+
+An additional 3 classes DB_File2::Hash etc will be sub-classed off the
+base classes.

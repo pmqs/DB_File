@@ -1,58 +1,33 @@
-#######################
+    use DB_File ;
+    use Fcntl ;
+    use strict 'untie' ;
+ 
+    $filename = "tree" ;
+    unlink $filename ;
+ 
+    # Enable duplicate records
+    $DB_BTREE->{'flags'} = R_DUP ;
+ 
+    $x = tie %h, "DB_File", $filename, O_RDWR|O_CREAT, 0640, $DB_BTREE 
+	or die "Cannot open $filename: $!\n";
+ 
+    # Add some key/value pairs to the file
+    $h{'Wall'} = 'Larry' ;
+    $h{'Wall'} = 'Brick' ; # Note the duplicate key
+    $h{'Smith'} = 'John' ;
+    $h{'Smith'} = 'John' ;
+    $h{'Smith'} = 'John' ;
+    $h{'Smith'} = 'John' ;
+    $h{'mouse'} = 'mickey' ;
+ 
+    # Point to the first record in the btree 
+    $x->seq($key, $value, R_FIRST) ;
 
-
-use Fcntl;
-use DB_File;
-
-use strict;
-
-sub LOCK_SH { 1 }
-sub LOCK_EX { 2 }
-sub LOCK_NB { 4 }
-sub LOCK_UN { 8 }
-
-my($oldval, $size, $nfd, $fd, $db, %db, $value, $key);
-
-$key = shift || 'default';
-$value = shift || 'magic';
-
-$value .= " $$";
-
-$db = tie( %db, 'DB_File', '/tmp/foo.db', O_CREAT|O_RDWR, 0644) || die "dbcreat $!";
-$fd = $db->fd;
-print "$$: db fd is $fd\n";
-open(DB_FH, "+<&=$fd") || die "dup $!";
-$nfd = fileno(DB_FH);
-$size = -s DB_FH;
-print "$$: db (size $size) new should still be $nfd == $fd\n";
-
-unless (flock (DB_FH, LOCK_SH | LOCK_NB)) {
-    print "$$: CONTENTION; can't read during write update!\nWaiting for read lock ($!) ....  ";
-    unless (flock (DB_FH, LOCK_SH)) { die "flock: $!" }
-} 
-print "$$: Read lock granted\n";
-
-$oldval = $db{$key};
-print "$$: Old value was $oldval\n";
-flock(DB_FH, LOCK_UN);
-unless (flock (DB_FH, LOCK_EX | LOCK_NB)) {
-    print "$$: CONTENTION; must have exclusive lock!\nWaiting for write lock ($!) ....";
-    unless (flock (DB_FH, LOCK_EX)) { die "flock: $!" }
-} 
-print "$$: Write lock granted\n";
-$db{$key} = $value;
-sleep 10;
-
-flock(DB_FH, LOCK_UN);
-untie %db;
-print "$$: Updated db to $key=$value\n";
-## $nfd = fileno(DB_FH);
-## $size = -s DB_FH;
-## print "$$: db (size $size) new should NOT be $nfd == $fd\n";
-## close(DB_FH) && warn "why is this still open?";
-
-__END__
-
-
-
-
+    # now iterate through the rest of the btree
+    # and print each key/value pair.
+    print "$key     -> $value\n" ;
+    while ( $x->seq($key, $value, R_NEXT) == 0)
+      {  print "$key -> $value\n" }
+ 
+    undef $x ;
+    untie %h ;

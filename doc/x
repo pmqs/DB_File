@@ -1,0 +1,26 @@
+
+ORIGINAL
+0: zero
+1: one
+2: two
+3: three
+4: four
+
+The last record was [four]
+The first record was [zero]
+
+REVERSE
+5: last
+4: three
+3: Newbie
+2: one
+1: New One
+0: first
+
+REVERSE again
+5: last
+4: three
+3: Newbie
+2: one
+1: New One
+0: first

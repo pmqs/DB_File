@@ -1,0 +1,356 @@
+=head1 COMMON QUESTIONS
+
+Here are answers to some of the most common questions that get asked
+about DB_File. Some aren't strictly to do with DB_File, but they come
+up often enough in the context of DB_File that
+
+=head2 What is the latest version of Berkeley DB?
+
+At the time of writing this file, it was 1.85.
+
+Berkeley DB is available at your nearest CPAN archive (see
+L<perlmod/"CPAN"> for a list) in F<src/misc/db.1.85.tar.gz>, or via the
+host F<ftp.cs.berkeley.edu> in F</ucb/4bsd/db.tar.gz>.
+
+If you are running IRIX, then get Berkeley DB from
+F<http://reality.sgi.com/ariel>. It has the patches necessary to
+compile properly on IRIX 5.3. 
+
+A major upgrade of Berkeley DB is in progress. No date is currently
+available for its release.
+
+=head2 What is the latest version of DB_File?
+
+DB_File ships with Perl itself, so the latest copy of Perl is the place
+to look. The current version of Perl is 5.003. It ships with DB_File
+1.01.
+
+=head2 How do I build/install DB_File after Perl itself?
+
+B<Installing DB_File after Perl's Configure has been run.>
+
+NB - upgrading Berkeley DB.
+
+There are two different cases to consider.
+
+Firstly, the case where Berkeley DB I<is> already installed when Perl
+was built, but a new version has subsequently been installed.
+
+Secondly, the case where Berkeley DB is I<not> installed at all when
+Configure is run.
+
+If you have build and installed Perl wi
+
+The problem with this is that the C<Configure> script that is run as
+part of the Perl build process
+
+Building DB_File after Perl has already been installed is complicated
+by the fact that the Configure script is used to determine some
+features of the version of Berkeley DB that is installed on the system.
+If Berkeley DB is not available when Configure is run, a default set of
+values will be assumed.
+
+If DB_File is built after the Configure script has been run, it 
+
+The safest way to achieve the task is to reconfigure and build Perl
+again.
+
+=head2 What does C<Can't locate DB_File.pm in @INC> mean?
+
+There are a couple of possibilities:
+
+=over 5
+
+=item 1.
+
+DB_File hasn't been installed at all on your system.
+
+=item 2.
+
+The perl library path is wrong.
+
+=back
+
+=head2 What does C<Can't find loadable object for module DB_File in @INC> mean ?
+
+DB_File hasn't been installed correctly.
+
+It has found DB_File.pm, it cannot find DB_File.so
+
+=head2 What does "Invalid Argument" mean?
+
+Pat Answer: An Argument is Invalid.
+
+You are likely to get this error message when one of the parameters in
+the C<tie> call is wrong. Unfortunately there are quite a few
+parameters to get wrong, so it can be difficult to figure out which one
+is is.
+
+The most common reported reason for getting this error is forgetting to
+include the C<Fcntl> module in your script. Reminder: the C<Fcntl>
+module contains the file access flag symbols, e.g. C<O_RDWR>,
+C<O_CREAT>.
+
+For example, say you have a script like this: 
+
+    use DB_File ;
+    $filename = "abcd" ;
+    tie %h, "DB_File", $filename, O_RDWR|O_CREAT, 0640, $DB_HASH 
+	or die "Cannot open $filename: $!\n" ;
+
+Because neither of the two C<O_*> symbols are defined, they will both
+have the evaluate to 0.
+
+So the tie line will actually be equivalent to this:
+
+    tie %h, "DB_File", $filename, 0, 0640, $DB_HASH
+	or die "Cannot open $filename: $!\n" ;
+
+This particular problem can be caught at compile time by specifing
+C<use strict>. As an illustration, if the script above was made strict,
+like this:
+
+    use strict ;
+    use DB_File ;
+    use vars qw(%h $filename) ;
+    tie %h, "DB_File", $filename, O_RDWR|O_CREAT, 0640, $DB_HASH ;
+
+The following error messages would be printed:
+
+    Bareword "O_RDWR" not allowed while "strict subs" in use at bad line 4.
+    Bareword "O_CREAT" not allowed while "strict subs" in use at bad line 4.
+
+
+The second most common reason is using the wrong flags. Note that a
+database cannot be opened C<O_WRONLY>.
+
+
+Here are some of the common reasons you may get the error:
+
+If 
+Here are some of the reasons you may get the error:
+
+B<HASH>
+
+1. flags is O_WRONLY
+
+2. bsize > MAX_BSIZE
+
+3. lorder != (BIG_ENDIAN or LITTLE_ENDIAN)
+
+The 
+This error message is encountered when the C<tie> call fails.
+
+This error message is used by Berkeley DB as catch all which means
+"There is something wrong". You will encounter it 
+
+Some of the common reasons for getting this error are:
+
+
+In your case the 'something' that is wrong is that you are trying
+to open a DB file wothout closing it first.
+
+Normally the untie will close the DB file for you, in this case it
+won't.
+
+--
+
+I've just spent many hours tracing a problem I was having with
+the DB code (via Paul's Perl5 DB_File module).
+
+If you ^C a process which has a DB file open and then try to open that
+file in a later process without O_TRUNC you get the not very helpful
+message 'Invalid argument' (via errno).
+
+
+BTREE
+
+1. Any flag apart from R_DUP
+2.                 if (b.psize &&
+                    (b.psize < MINPSIZE || b.psize > MAX_PAGE_OFFSET + 1 ||
+                    b.psize & sizeof(indx_t) - 1))
+
+3. minkeypage spacified and < 2
+
+4. lorder != (BIG_ENDIAN or LITTLE_ENDIAN)
+
+5. O_ not any of O_RDONLY, O_RDWR (note O_WRONLY is not allowed)
+
+
+
+RECNO
+
+1. and flag other than R_FIXEDLEN | R_NOKEY | R_SNAPSHOT specified
+
+2. reclen == 0
+
+3. flags any other than O_RDONLY or O_RDWR
+
+
+=head2 What does C<'Bareword "DB_File" not allowed'> mean? 
+
+You will encounter this particular error message when you have the
+C<strict 'subs'> pragma (or the full strict pragma) in your script.
+Consider this script:
+
+    use strict ;
+    use DB_File ;
+    use vars qw(%x) ;
+    tie %x, DB_File, "filename" ;
+
+Running it produces the error in question:
+
+    Bareword "DB_File" not allowed while "strict subs" in use 
+
+To get around the error, place the word C<DB_File> in either single or
+double quotes, like this:
+
+    tie %x, "DB_File", "filename" ;
+
+Although it might seem like a real pain, it is really worth the effort
+of having a <use strict> in all your scripts.
+
+=item B<3.>
+
+Make sure any references to the inner object are destroyed before the
+call to untie.
+
+This one can be tricky to spot...
+
+=item B<5.>
+
+using default flag O_RDWR on new file and wondering why no database
+was created.
+
+   need O_RDWR and O_CREAT.
+
+
+=head2 Accessing a database from both a C and a Perl application
+
+There is no technical reason why a Berkeley DB database cannot be used
+in both a Perl and a C application as long as you remember one thing -
+whilst C terminates strings with a NULL character, Perl does not.
+
+Of course if you are storing binary data in the database, rather than
+strings, then the database will work fine in both applications.
+
+If you are storing strings though, it is fairly easy to 
+
+There are a couple of approaches if you are faced with this situation.
+
+=over 5
+
+=item 1.
+
+Don't assume that strings are NULL terminated in the C application. 
+
+=item 2 .
+
+Explicitly terminate the key/values pairs with a NULL in Perl.
+
+    $X{"$key\0"} = "abcd\0" ;
+
+    print "Green is there\n" if defined $X{"Green\0"} ;
+
+=back
+
+B<Why can't I access the database I created in C using DB_File?>
+
+B<Why can't I access the database I created in DB_File using C?>
+
+Simple Answer: You can, as long as you remember that Perl does not
+terminate strings with a NULL character, wheras C does.
+
+Why can't I access the database I created in C?
+
+I have a DB file created by a C program and I cannot access any of the
+records
+
+The usual reason for this problem is Perl does not terminate strings
+with \0
+
+The usual reason people ask this question is that they forget that C
+will terminate strings witha NULL character, but Perl doesn't.
+
+Most of the standard string functions in C assume that the string is
+NULL terminated. Perl does not terminate strings with a NULL character.
+
+If you want the database to be I<C compatable>, you can explicitly add
+the NULL character yourself.
+
+    $X{"$key\0"} = "abcd\0" ;
+
+
+
+=head2 What bugs are there?
+
+There are a few outstanding bugs 
+
+cf 217 229
+221 223
+231
+249 250 251 254
+351 357
+373->378
+
+
+=head2 Problem with RECNO
+
+Tied arrays aren't fully supported yet.
+
+cf 135
+
+
+=head2 Limits on the size of databases/keys/values.
+
+
+=head2 Why is my database file empty?
+
+You forgot to use O_CREAT.
+
+
+=head2 Caching
+
+DB_File doesn't cache at all. Berkeley DB will cache to a certain
+extent. If you want to flush all recors to the database you need to
+make use of the API function C<sync>. See L<>.
+
+=head2 Why does my database have part of a Perl script in it?
+
+Simple answer: Berkeley DB doesn't clear buffers allocated from dynamic
+memory before using them.
+
+If you look at the contents of a database file created by DB_File,
+there can sometimes be part of a Perl script included in it.
+
+This happens because Berkeley DB uses dynamic memory to allocate
+buffers which will subsequently be written to the database file. Being
+dynamic, the memory could have been used for anything before DB
+malloced it. As Berkeley DB doesn't clear the memory once it has been
+allocated, the unused portions will contain random junk. In the case
+where a Perl script gets written to the database, the random junk will
+correspond to an area of dynamic memory that happened to be used during
+the compilation of the script.
+
+Unless you don't like the possibility of there being part of your Perl
+scripts embedded in a database file, this is nothing to wory about.
+
+
+=head2 How do I store complex data structures with DB_File?
+
+Simple Answer: You cannot I<directly> store complex Perl data structures
+in in a Berkeley DB database.
+
+Although you cannot store a Perl data structure in a Berkeley DB
+database, there is a module which can let you do this. Look on CPAN for
+the C<MLDBM> module.
+
+MLDBM Data::Dumper
+
+
+
+
+=head2 Locking
+
+Berkeley DB doesn't support locking itself.
+

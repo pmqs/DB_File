@@ -1,0 +1,65 @@
+
+
+
+    $Module = "DB_File" ;
+    #$Module = "Fred" ;
+
+    # Check if the module is linked statically or dynamically
+    # If linked syatically the bootstrap function should be defined
+    $static = (defined &{"${Module}::bootstrap"} ? "Static" : "Dynamic" )  ;
+
+    $Used = "Passed" ;
+    # Check that use Module works.
+    $x = eval "use $Module; " ;
+    if ($@ ne "") {
+	chop $@ ;
+        $Used = "Failed: $@" ;
+    }
+
+use Config ;
+use DynaLoader ;
+
+my $ver = $] ;
+
+# find the location of db.h, libdb.[a|so], DB_File.pm, DB_File.so etc.
+
+foreach (@INC)
+  { push (@inc, "[$_]") if -e "$_/${Module}.pm" ;
+  }
+
+push (@inc, "Not Found") unless @inc ;
+
+
+@dblib = DynaLoader::dl_findfile("-ldb") ;
+push (@dblib, "Not Found") unless @dblib ;
+@so = DynaLoader::dl_findfile(map("-L$_", @INC), "auto/${Module}/${Module}") ;
+push (@so, "Not Found") unless @so ;
+
+format =
+@<<<<<<<<<<<<<<<< ^<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+$a,			$b
+~                        @*
+			$b
+.
+
+sub pr
+{
+    local $a = shift ;
+    local $b = shift ;
+    write ;
+}
+
+$version = defined ${"${Module}::VERSION"} 
+		? ${"${Module}::VERSION"} : "Not Found" ;
+
+
+pr("Perl Version", 	$ver) ;
+pr("use $Module", 	$Used) ;
+pr("Linked", 		$static) ;
+pr("${Module}::VERSION", $version) ;
+pr("${Module}.pm", 	"@inc") ;
+pr("${Module}.so",	"@so") ;
+pr("libdb", 		"@dblib") ;
+pr("db_hashtype", 	$Config{'db_hashtype'}) ;
+pr("db_prefixtype", 	$Config{'db_prefixtype'}) ;
+

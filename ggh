@@ -1,0 +1,224 @@
+#!/usr/local/bin/perl -w
+
+require 5.001; 		
+if (sprintf("%5.3f", $]) < 5.002) {  # darned floats
+    warn "Version $] may not run properly -- see BUGS; continuing";
+}
+
+$VERSION = $VERSION || 2.000;				# LINTHAPPINESS
+
+$USAGE = <<EO_COMPLAINT;
+usage: $0 [-database dbfilename] [-help]
+	   [-epochtime | -localtime | -gmtime]
+	   [ [-regexp] pattern] | href ... ]
+EO_COMPLAINT
+
+use Getopt::Long;
+
+($opt_database, $opt_epochtime, $opt_localtime, 	# LINTHAPPINESS
+ $opt_gmtime,   $opt_regexp,    $opt_help,
+ $pattern, 					)      = (0) x 7;
+
+usage() unless GetOptions qw{ database=s
+			      regexp=s
+			      epochtime localtime gmtime
+			      help
+};
+
+if ($opt_help) { print $USAGE; exit; }
+
+usage("only one of localtime, gmtime, and epochtime allowed")
+    if $opt_localtime + $opt_gmtime + $opt_epochtime > 1;
+
+if ( $opt_regexp ) {
+    $pattern = $opt_regexp;
+} elsif (@ARGV && $ARGV[0] !~ m(://)) {
+    $pattern = shift;
+}
+
+usage("can't mix URLs and explicit patterns")
+    if $pattern && @ARGV;
+
+if ($pattern && !eval { '' =~ /$pattern/; 1 } ) {	# '' is LINTHAPPINESS
+    $@ =~ s/ at \w+ line \d+\.//;
+    die "$0: bad pattern $@";
+}
+
+require DB_File; DB_File->import();  # delay loading until runtime
+$| = 1;				     # eager pagers
+
+$dotdir = $ENV{HOME} || $ENV{LOGNAME};
+
+$HISTORY = $opt_database || "$dotdir/.netscape/history.db";
+%hist_db = %hist_db; 					# LINTHAPPINESS
+
+die "no netscape history dbase in $HISTORY: $!" unless -e $HISTORY;
+die "can't dbmopen $HISTORY: $!" unless dbmopen %hist_db, $HISTORY, 0644;
+
+$add_nulls   = (ord(substr(each %hist_db, -1)) == 0);
+$nulled_href = "";	
+$byte_order  = "V"; # should be "N", ya nimrods! haven't you ever
+		    # heard of standard network byte order?  see the
+		    # htonl() macros in <netinet/in.h> for starters
+		    # and then go read a networking book. sheesh,
+		    # i thought we freed ourselves from the provicial
+		    # "all the worlds a vax" worldview years ago. :-(
+
+if (@ARGV) {
+    foreach $href (@ARGV) {
+	$nulled_href = $href . ($add_nulls && "\0");
+	unless ($binary_time = $hist_db{$nulled_href}) {
+	    warn "$0: No history entry for HREF $href\n";
+	    next;
+	}
+	$epoch_secs = unpack($byte_order, $binary_time);
+	$stardate   = $opt_epochtime ? $epoch_secs
+		  		     : $opt_gmtime ? gmtime    $epoch_secs
+		  				   : localtime $epoch_secs;
+	print "$stardate $href\n";
+    }
+} else {
+    while ( ($href, $binary_time) = each %hist_db ) {
+	chop $href if $add_nulls;
+	$epoch_secs = unpack($byte_order, $binary_time);
+	$stardate   = $opt_epochtime ? $epoch_secs
+				     : $opt_gmtime ? gmtime    $epoch_secs
+						   : localtime $epoch_secs;
+	print "$stardate $href\n" unless $pattern && $href !~ /$pattern/o;
+    }
+}
+
+sub usage {
+    print STDERR "@_\n" if @_;
+    die $USAGE;
+}
+
+__END__
+
+=head1 NAME
+
+ggh - grovel global history (for Netscape v2.0)
+
+=head1 SYNOPSYS
+
+ggh [ B<-database> I<dbfilename> ] [ B<-help> ]
+    [ B<-epochtime> | B<-localtime> | B<-gmtime> ]
+    [ [ B<-regexp> ] I<pattern> ] | I<href> ... ]
+
+Options may be abbreviated.
+
+=head1 DESCRIPTION
+
+B<ggh> is a program to divulge the contents of Netscape v2.0's fancy new
+F<history.db> file.  It can be called with full URLs or with a (single)
+pattern.  If called without arguments, it just cats the whole history
+file.
+
+Each line is the date of access and the URL stored there.  The date is
+converted into localtime() representation with B<-localtime>, gmtime()
+representation with B<-gmtime> -- or left in its raw form with
+B<-epochtime>, which is useful for sorting by date.
+
+If you give one single argument, and it doesn't have a C<://> in it,
+then this will be taken to be a perl regexp to match against.
+
+=head1 EXAMPLES
+
+To look up one or more URLs, just supply them as arguments:
+
+ % ggh http://www.perl.com/index.html
+
+To find out a link you don't quite recall, use a regular expression
+(a single argument without a colon + double slash is a pattern):
+
+ % ggh perl
+
+To find out all the people you've mailed:
+
+ % ggh mailto:
+
+To find out the FAQ sites you've visited using snazzy perl patterns
+and an explicit switch i case you want a double slash in the pattern:
+
+ % ggh -regexp '(?i)\bfaq\b'
+
+If you don't want the internal date converted to localtime, use B<-epoch>:
+
+ % ggh -epoch http://www.perl.com/perl/
+
+If you prefer gmtime to localtime, use B<-gm>:
+
+ % ggh -gmtime http://www.perl.com/perl/
+
+To look at the whole file, give no arguments, but perhaps
+redirect to a pager:
+
+ % ggh | less
+
+If you want the output sorted by date, make sure to use the B<-epoch> flag:
+
+ % ggh -epoch | sort -rn | less
+
+If you want it sorted by date into your local timezone format,
+use a more sophisticated pipeline:
+
+ % ggh -epoch | sort -rn | perl -pe 's/\d+/localtime $&/e' | less
+
+=head1 FILES
+
+The F<~/.netscape/history.db> file is used, unless the B<-database>S< >I<file>
+option is given.
+
+=head1 NOTES
+
+The Netscape release notes claim that they're using NDBM format.  This is
+misleading: they're actually using Berkeley DB format, which is why we
+require DB_File (not supplied standard with Perl) instead of NDBM_File
+(which is).  If you need Berkeley DB by Keith Bostic, get it from a
+standard CPAN archive (see http://perl.com/ or ftp://perl.com/ for
+pointers), or else from ftp://ftp.cs.berkeley.edu/ucb/4bsd/db.tar.gz .
+The current version appears to be 1.85 as of this writing.
+
+=head1 DOCUMENTATION
+
+This is a self-contained program, including not only its complete source
+code but also its own documentation within itself.  It's easy to convert,
+though--to turn this program (or rather, its podpage) into a manpage
+
+    % pod2man ggh > ggh.man
+
+or to print use
+
+    % pod2man ggh | psroff -man -
+
+To convert it into a text file, use
+
+    % pod2text ggh > ggh.txt
+
+To convert it into a webpage, run
+
+    % pod2html ggh > ggh.html
+
+=head1 BUGS
+
+Under SunOS, you may get a coredump in the Berkeley DB routines.  If so,
+see the patches on
+ftp://ftp.perl.com/pub/perl/src/patches/dbfile-5.001n.patch for a fix.
+These have been fixed in the version 5.002 release of Perl.
+
+=head1 AUTHOR
+
+Tom Christiansen 
+tchrist@perl.com
+
+=head1 COPYRIGHT
+
+Copyright (c) 1995-1996 Tom Christiansen.
+
+Permission granted to freely redistribute this program in
+source form.  If you change something, please document this
+in the HISTORY section.
+
+=head1 HISTORY
+
+Last update: 17 January 1996

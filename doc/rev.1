@@ -1,0 +1,400 @@
+.rn '' }`
+''' $RCSfile$$Revision$$Date$
+'''
+''' $Log$
+'''
+.de Sh
+.br
+.if t .Sp
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.de Sp
+.if t .sp .5v
+.if n .sp
+..
+.de Ip
+.br
+.ie \\n(.$>=3 .ne \\$3
+.el .ne 3
+.IP "\\$1" \\$2
+..
+.de Vb
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve
+.ft R
+
+.fi
+..
+'''
+'''
+'''     Set up \*(-- to give an unbreakable dash;
+'''     string Tr holds user defined translation string.
+'''     Bell System Logo is used as a dummy character.
+'''
+.tr \(*W-|\(bv\*(Tr
+.ie n \{\
+.ds -- \(*W-
+.ds PI pi
+.if (\n(.H=4u)&(1m=24u) .ds -- \(*W\h'-12u'\(*W\h'-12u'-\" diablo 10 pitch
+.if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\" diablo 12 pitch
+.ds L" ""
+.ds R" ""
+.ds L' '
+.ds R' '
+'br\}
+.el\{\
+.ds -- \(em\|
+.tr \*(Tr
+.ds L" ``
+.ds R" ''
+.ds L' `
+.ds R' '
+.ds PI \(*p
+'br\}
+.\"	If the F register is turned on, we'll generate
+.\"	index entries out stderr for the following things:
+.\"		TH	Title 
+.\"		SH	Header
+.\"		Sh	Subsection 
+.\"		Ip	Item
+.\"		X<>	Xref  (embedded
+.\"	Of course, you have to process the output yourself
+.\"	in some meaninful fashion.
+.if \nF \{
+.de IX
+.tm Index:\\$1\t\\n%\t"\\$2"
+..
+.nr % 0
+.rr F
+.\}
+.TH REVERSE 1 "perl " "5/Sep/96" "User Contributed Perl Documentation"
+.IX Title "REVERSE 1"
+.UC
+.IX Name "reverse - Perl5 access to Berkeley DB"
+.if n .hy 0
+.if n .na
+.ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+.de CQ          \" put $1 in typewriter font
+.ft CW
+'if n "\c
+'if t \\&\\$1\c
+'if n \\&\\$1\c
+'if n \&"
+\\&\\$2 \\$3 \\$4 \\$5 \\$6 \\$7
+'.ft R
+..
+.\" @(#)ms.acc 1.5 88/02/08 SMI; from UCB 4.2
+.	\" AM - accent mark definitions
+.bd B 3
+.	\" fudge factors for nroff and troff
+.if n \{\
+.	ds #H 0
+.	ds #V .8m
+.	ds #F .3m
+.	ds #[ \f1
+.	ds #] \fP
+.\}
+.if t \{\
+.	ds #H ((1u-(\\\\n(.fu%2u))*.13m)
+.	ds #V .6m
+.	ds #F 0
+.	ds #[ \&
+.	ds #] \&
+.\}
+.	\" simple accents for nroff and troff
+.if n \{\
+.	ds ' \&
+.	ds ` \&
+.	ds ^ \&
+.	ds , \&
+.	ds ~ ~
+.	ds ? ?
+.	ds ! !
+.	ds /
+.	ds q
+.\}
+.if t \{\
+.	ds ' \\k:\h'-(\\n(.wu*8/10-\*(#H)'\'\h"|\\n:u"
+.	ds ` \\k:\h'-(\\n(.wu*8/10-\*(#H)'\`\h'|\\n:u'
+.	ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'^\h'|\\n:u'
+.	ds , \\k:\h'-(\\n(.wu*8/10)',\h'|\\n:u'
+.	ds ~ \\k:\h'-(\\n(.wu-\*(#H-.1m)'~\h'|\\n:u'
+.	ds ? \s-2c\h'-\w'c'u*7/10'\u\h'\*(#H'\zi\d\s+2\h'\w'c'u*8/10'
+.	ds ! \s-2\(or\s+2\h'-\w'\(or'u'\v'-.8m'.\v'.8m'
+.	ds / \\k:\h'-(\\n(.wu*8/10-\*(#H)'\z\(sl\h'|\\n:u'
+.	ds q o\h'-\w'o'u*8/10'\s-4\v'.4m'\z\(*i\v'-.4m'\s+4\h'\w'o'u*8/10'
+.\}
+.	\" troff and (daisy-wheel) nroff accents
+.ds : \\k:\h'-(\\n(.wu*8/10-\*(#H+.1m+\*(#F)'\v'-\*(#V'\z.\h'.2m+\*(#F'.\h'|\\n:u'\v'\*(#V'
+.ds 8 \h'\*(#H'\(*b\h'-\*(#H'
+.ds v \\k:\h'-(\\n(.wu*9/10-\*(#H)'\v'-\*(#V'\*(#[\s-4v\s0\v'\*(#V'\h'|\\n:u'\*(#]
+.ds _ \\k:\h'-(\\n(.wu*9/10-\*(#H+(\*(#F*2/3))'\v'-.4m'\z\(hy\v'.4m'\h'|\\n:u'
+.ds . \\k:\h'-(\\n(.wu*8/10)'\v'\*(#V*4/10'\z.\v'-\*(#V*4/10'\h'|\\n:u'
+.ds 3 \*(#[\v'.2m'\s-2\&3\s0\v'-.2m'\*(#]
+.ds o \\k:\h'-(\\n(.wu+\w'\(de'u-\*(#H)/2u'\v'-.3n'\*(#[\z\(de\v'.3n'\h'|\\n:u'\*(#]
+.ds d- \h'\*(#H'\(pd\h'-\w'~'u'\v'-.25m'\f2\(hy\fP\v'.25m'\h'-\*(#H'
+.ds D- D\\k:\h'-\w'D'u'\v'-.11m'\z\(hy\v'.11m'\h'|\\n:u'
+.ds th \*(#[\v'.3m'\s+1I\s-1\v'-.3m'\h'-(\w'I'u*2/3)'\s-1o\s+1\*(#]
+.ds Th \*(#[\s+2I\s-2\h'-\w'I'u*3/5'\v'-.3m'o\v'.3m'\*(#]
+.ds ae a\h'-(\w'a'u*4/10)'e
+.ds Ae A\h'-(\w'A'u*4/10)'E
+.ds oe o\h'-(\w'o'u*4/10)'e
+.ds Oe O\h'-(\w'O'u*4/10)'E
+.	\" corrections for vroff
+.if v .ds ~ \\k:\h'-(\\n(.wu*9/10-\*(#H)'\s-2\u~\d\s+2\h'|\\n:u'
+.if v .ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'\v'-.4m'^\v'.4m'\h'|\\n:u'
+.	\" for low resolution devices (crt and lpr)
+.if \n(.H>23 .if \n(.V>19 \
+\{\
+.	ds : e
+.	ds 8 ss
+.	ds v \h'-1'\o'\(aa\(ga'
+.	ds _ \h'-1'^
+.	ds . \h'-1'.
+.	ds 3 3
+.	ds o a
+.	ds d- d\h'-1'\(ga
+.	ds D- D\h'-1'\(hy
+.	ds th \o'bp'
+.	ds Th \o'LP'
+.	ds ae ae
+.	ds Ae AE
+.	ds oe oe
+.	ds Oe OE
+.\}
+.rm #[ #] #H #V #F C
+.SH "NAME"
+.IX Header "NAME"
+reverse \- Perl5 access to Berkeley DB
+.SH "SYNOPSIS"
+.IX Header "SYNOPSIS"
+.SH "DESCRIPTION"
+.IX Header "DESCRIPTION"
+.SH "DB_RECNO"
+.IX Header "DB_RECNO"
+DB_RECNO provides an interface to flat text files. Both variable and
+fixed length records are supported.
+.PP
+In order to make RECNO more compatible with Perl the array offset for
+all RECNO arrays begins at 0 rather than 1 as in Berkeley DB.
+.PP
+As with normal Perl arrays, a RECNO array can be accessed using
+negative indexes. The index \-1 refers to the last element of the array,
+\-2 the second last, and so on. Attempting to access an element before
+the start of the array will raise a fatal run-time error.
+.Sh "A Simple Example"
+.IX Subsection "A Simple Example"
+Here is a simple example that uses \s-1RECNO\s0.
+.PP
+.Vb 2
+\&    use DB_File ;
+\&    use strict 'untie' ;
+.Ve
+.Vb 2
+\&    tie @h, "DB_File", "text", O_RDWR|O_CREAT, 0640, $DB_RECNO 
+\&        or die "Cannot open file 'text': $!\en" ;
+.Ve
+.Vb 4
+\&    # Add a few key/value pairs to the file
+\&    $h[0] = "orange" ;
+\&    $h[1] = "blue" ;
+\&    $h[2] = "yellow" ;
+.Ve
+.Vb 2
+\&    # Check for existence of a key
+\&    print "Element 1 Exists with value $h[1]\en" if $h[1] ;
+.Ve
+.Vb 3
+\&    # use a negative index
+\&    print "The last element is $h[-1]\en" ;
+\&    print "The 2nd last element is $h[-2]\en" ;
+.Ve
+.Vb 1
+\&    untie @h ;
+.Ve
+Here is the output from the script:
+.PP
+.Vb 3
+\&    Element 1 Exists with value blue
+\&    The last element is yellow
+\&    The 2nd last element is blue
+.Ve
+.Sh "Extra Methods"
+.IX Subsection "Extra Methods"
+As you can see from the example above, the tied array interface is
+quite limited. To make the interface more useful, a number of methods
+are supplied with \fBDB_File\fR to simulate the standard array operations
+that are not currently implemented in Perl's tied array interface. All
+these methods are accessed via the object returned from the tie call.
+.PP
+Here are the methods:
+.Ip "\fB$X\->push(list) ;\fR" 5
+.IX Item "\fB$X\->push(list) ;\fR"
+Pushes the elements of \f(CWlist\fR to the end of the array.
+.Ip "\fB$value = $X\->pop ;\fR" 5
+.IX Item "\fB$value = $X\->pop ;\fR"
+Removes and returns the last element of the array.
+.Ip "\fB$X\->shift\fR" 5
+.IX Item "\fB$X\->shift\fR"
+Removes and returns the first element of the array.
+.Ip "\fB$X\->unshift(list) ;\fR" 5
+.IX Item "\fB$X\->unshift(list) ;\fR"
+Pushes the elements of \f(CWlist\fR to the start of the array.
+.Ip "\fB$X\->splice($offset, $length, @list) ;\fR" 5
+.IX Item "\fB$X\->splice($offset, $length, @list) ;\fR"
+.Ip "\fB$X\->length\fR" 5
+.IX Item "\fB$X\->length\fR"
+Returns the number of elements in the array.
+.Sh "Another Example"
+.IX Subsection "Another Example"
+Here is a more complete example that makes use of some of the methods
+described above. It also makes use of the \s-1API\s0 interface directly (see 
+the section on \fI\s-1THE\s0 \s-1API\s0 \s-1INTERFACE\s0\fR).
+.PP
+.Vb 6
+\&    use strict ;
+\&    use vars qw(@h $H $file $i) ;
+\&    use DB_File ;
+\&    use Fcntl ;
+\&    
+\&    $file = "text" ;
+.Ve
+.Vb 1
+\&    unlink $file ;
+.Ve
+.Vb 9
+\&    $H = tie @h, "DB_File", $file, O_RDWR|O_CREAT, 0640, $DB_RECNO 
+\&        or die "Cannot open file $file: $!\en" ;
+\&    
+\&    # first create a text file to play with
+\&    $h[0] = "zero" ;
+\&    $h[1] = "one" ;
+\&    $h[2] = "two" ;
+\&    $h[3] = "three" ;
+\&    $h[4] = "four" ;
+.Ve
+.Vb 6
+\&    
+\&    # Print the records in order.
+\&    #
+\&    # The length method is needed here because evaluating a tied
+\&    # array in a scalar context does not return the number of
+\&    # elements in the array.  
+.Ve
+.Vb 4
+\&    print "\enORIGINAL\en" ;
+\&    foreach $i (0 .. $H->length - 1) {
+\&        print "$i: $h[$i]\en" ;
+\&    }
+.Ve
+.Vb 4
+\&    # use the push & pop methods
+\&    $a = $H->pop ;
+\&    $H->push("last") ;
+\&    print "\enThe last record was [$a]\en" ;
+.Ve
+.Vb 4
+\&    # and the shift & unshift methods
+\&    $a = $H->shift ;
+\&    $H->unshift("first") ;
+\&    print "The first record was [$a]\en" ;
+.Ve
+.Vb 3
+\&    # Use the API to add a new record after record 2.
+\&    $i = 2 ;
+\&    $H->put($i, "Newbie", R_IAFTER) ;
+.Ve
+.Vb 3
+\&    # and a new record before record 1.
+\&    $i = 1 ;
+\&    $H->put($i, "New One", R_IBEFORE) ;
+.Ve
+.Vb 2
+\&    # delete record 3
+\&    $H->del(3) ;
+.Ve
+.Vb 4
+\&    # now print the records in reverse order
+\&    print "\enREVERSE\en" ;
+\&    for ($i = $H->length - 1 ; $i >= 0 ; -- $i)
+\&      { print "$i: $h[$i]\en" }
+.Ve
+.Vb 7
+\&    # same again, but use the API functions instead
+\&    print "\enREVERSE again\en" ;
+\&    my ($s, $k, $v)  ;
+\&    for ($s = $H->seq($k, $v, R_LAST) ; 
+\&             $s == 0 ; 
+\&             $s = $H->seq($k, $v, R_PREV))
+\&      { print "$k: $v\en" }
+.Ve
+.Vb 2
+\&    undef $H ;
+\&    untie @h ;
+.Ve
+and this is what it ouputs:
+.PP
+.Vb 6
+\&    ORIGINAL
+\&    0: zero
+\&    1: one
+\&    2: two
+\&    3: three
+\&    4: four
+.Ve
+.Vb 2
+\&    The last record was [four]
+\&    The first record was [zero]
+.Ve
+.Vb 7
+\&    REVERSE
+\&    5: last
+\&    4: three
+\&    3: Newbie
+\&    2: one
+\&    1: New One
+\&    0: first
+.Ve
+.Vb 7
+\&    REVERSE again
+\&    5: last
+\&    4: three
+\&    3: Newbie
+\&    2: one
+\&    1: New One
+\&    0: first
+.Ve
+Notes:
+.Ip "1." 5
+.IX Item "1."
+Rather than iterating through the array, \f(CW@h\fR like this:
+.Sp
+.Vb 1
+\&    foreach $i (@h)
+.Ve
+it is necessary to use either this:
+.Sp
+.Vb 1
+\&    foreach $i (0 .. $H->length - 1) 
+.Ve
+or this:
+.Sp
+.Vb 3
+\&    for ($a = $H->get($k, $v, R_FIRST) ;
+\&         $a == 0 ;
+\&         $a = $H->get($k, $v, R_NEXT) )
+.Ve
+.Ip "2." 5
+.IX Item "2."
+Notice that both times the \f(CWput\fR method was used the record index was
+specified using a variable, \f(CW$i\fR, rather than the literal value
+itself. This is because \f(CWput\fR will return the record number of the
+inserted line via that parameter.
+
+.rn }` ''

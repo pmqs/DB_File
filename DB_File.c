@@ -1,5 +1,5 @@
 /*
- * This file was generated automatically by xsubpp version 1.923 from the 
+ * This file was generated automatically by xsubpp version 1.933 from the 
  * contents of DB_File.xs. Don't edit this file, edit DB_File.xs instead.
  *
  *	ANY CHANGES MADE HERE WILL BE LOST! 
@@ -11,18 +11,27 @@
  DB_File.xs -- Perl 5 interface to Berkeley DB 
 
  written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
- last modified 7th October 1995
- version 1.0
+ last modified 4th Sept 1996
+ version 1.03
 
  All comments/suggestions/problems are welcome
 
  Changes:
-	0.1 - Initial Release
-	0.2 - No longer bombs out if dbopen returns an error.
-	0.3 - Added some support for multiple btree compares
-	1.0 - Complete support for multiple callbacks added.
-	      Fixed a problem with pushing a value onto an empty list.
-	1.001 - 
+	0.1 - 	Initial Release
+	0.2 - 	No longer bombs out if dbopen returns an error.
+	0.3 - 	Added some support for multiple btree compares
+	1.0 - 	Complete support for multiple callbacks added.
+	      	Fixed a problem with pushing a value onto an empty list.
+	1.01 - 	Fixed a SunOS core dump problem.
+		The return value from TIEHASH wasn't set to NULL when
+		dbopen returned an error.
+	1.02 - 	Use ALIAS to define TIEARRAY.
+		Removed some redundant commented code.
+		Merged OS2 code into the main distribution.
+		Allow negative subscripts with RECNO interface.
+		Changed the default flags to O_CREAT|O_RDWR
+	1.03 - 	Added EXISTS
+
 */
 
 #include "EXTERN.h"  
@@ -51,7 +60,7 @@ union INFO {
       } ;
 
 
-/* #define TRACE  */
+/* #define TRACE   */
 
 #define db_DESTROY(db)                  ((db->dbp)->close)(db->dbp)
 #define db_DELETE(db, key, flags)       ((db->dbp)->del)(db->dbp, &key, flags)
@@ -67,14 +76,18 @@ union INFO {
 #define db_sync(db, flags)              ((db->dbp)->sync)(db->dbp, flags)
 
 
-#define OutputValue(arg, name)  \
-	{ if (RETVAL == 0) sv_setpvn(arg, name.data, name.size) ; }
+#define OutputValue(arg, name)  				\
+	{ if (RETVAL == 0) {					\
+	      sv_setpvn(arg, name.data, name.size) ;		\
+	  }							\
+	}
 
 #define OutputKey(arg, name)	 				\
 	{ if (RETVAL == 0) \
 	  { 							\
-		if (db->type != DB_RECNO) 			\
+		if (db->type != DB_RECNO) {			\
 		    sv_setpvn(arg, name.data, name.size); 	\
+		}						\
 		else 						\
 		    sv_setiv(arg, (I32)*(I32*)name.data - 1); 	\
 	  } 							\
@@ -241,7 +254,7 @@ RECNOINFO recno ;
     printf ("  lorder    = %d\n", recno.lorder) ;
     printf ("  reclen    = %d\n", recno.reclen) ;
     printf ("  bval      = %d\n", recno.bval) ;
-    printf ("  bfname    = %s\n", recno.bfname) ;
+    printf ("  bfname    = %d [%s]\n", recno.bfname, recno.bfname) ;
 }
 
 PrintBtree(btree)
@@ -284,6 +297,27 @@ DB * db ;
     return (RETVAL) ;
 }
 
+static recno_t
+GetRecnoKey(db, value)
+DB_File  db ;
+I32      value ;
+{
+    if (value < 0) {
+	/* Get the length of the array */
+	I32 length = GetArrayLength(db->dbp) ;
+
+	/* check for attempt to write before start of array */
+	if (length + value + 1 <= 0)
+	    croak("Modification of non-creatable array value attempted, subscript %d", value) ;
+
+	value = length + value + 1 ;
+    }
+    else
+        ++ value ;
+
+    return value ;
+}
+
 static DB_File
 ParseOpenInfo(name, flags, mode, sv, string)
 char * name ;
@@ -297,8 +331,8 @@ char * string ;
     union INFO	info ;
     DB_File	RETVAL = (DB_File)safemalloc(sizeof(DB_File_type)) ;
     void *	openinfo = NULL ;
-    /* DBTYPE	type = DB_HASH ; */
 
+    /* Default to HASH */
     RETVAL->hash = RETVAL->compare = RETVAL->prefix = NULL ;
     RETVAL->type = DB_HASH ;
 
@@ -421,7 +455,10 @@ char * string ;
 	    }
          
             svp = hv_fetch(action, "bfname", 6, FALSE); 
-            info.recno.bfname = (char *) svp ? SvPV(*svp,na) : 0;
+            if (svp) {
+		char * ptr = SvPV(*svp,na) ;
+                info.recno.bfname = (char*) na ? ptr : 0 ;
+	    }
 
             PrintRecno(info) ;
         }
@@ -430,17 +467,14 @@ char * string ;
     }
 
 
+    /* OS2 Specific Code */
+#ifdef OS2
+#ifdef __EMX__
+    flags |= O_BINARY;
+#endif /* __EMX__ */
+#endif /* OS2 */
+
     RETVAL->dbp = dbopen(name, flags, mode, RETVAL->type, openinfo) ; 
-
-#if 0
-    /* kludge mode on: RETVAL->type for DB_RECNO is set to DB_BTREE
-		       so remember a DB_RECNO by saving the address
-		       of one of it's internal routines
-    */
-    if (RETVAL->dbp && type == DB_RECNO)
-        DB_recno_close = RETVAL->dbp->close ;
-#endif
-
 
     return (RETVAL) ;
 }
@@ -712,8 +746,9 @@ XS(XS_DB_File_constant)
 XS(XS_DB_File_db_TIEHASH)
 {
     dXSARGS;
+    dXSI32;
     if (items < 1 || items > 5)
-	croak("Usage: DB_File::TIEHASH(dbtype, name=undef, flags=O_RDWR, mode=0640, type=DB_HASH)");
+       croak("Usage: %s(dbtype, name=undef, flags=O_CREAT|O_RDWR, mode=0640, type=DB_HASH)", GvNAME(CvGV(cv)));
     {
 	char *	dbtype = (char *)SvPV(ST(0),na);
 	int	flags;
@@ -721,7 +756,7 @@ XS(XS_DB_File_db_TIEHASH)
 	DB_File	RETVAL;
 
 	if (items < 3)
-	    flags = O_RDWR;
+	    flags = O_CREAT|O_RDWR;
 	else {
 	    flags = (int)SvIV(ST(2));
 	}
@@ -800,15 +835,12 @@ XS(XS_DB_File_db_DELETE)
 	else
 	    croak("db is not of type DB_File");
 
-	if (db->type != DB_RECNO)
-	{
+	if (db->type != DB_RECNO) {
 	    key.data = SvPV(ST(1), na);
 	    key.size = (int)na;
 	}
-	else
-	{
-	    Value =  SvIV(ST(1)) ; 
-	    ++ Value ; 
+	else {
+	    Value =  GetRecnoKey(db, SvIV(ST(1))) ; 
 	    key.data = & Value; 
 	    key.size = (int)sizeof(recno_t);
 	};
@@ -821,6 +853,44 @@ XS(XS_DB_File_db_DELETE)
 	  CurrentDB = db ;
 
 	RETVAL = db_DELETE(db, key, flags);
+	ST(0) = sv_newmortal();
+	sv_setiv(ST(0), (IV)RETVAL);
+    }
+    XSRETURN(1);
+}
+
+XS(XS_DB_File_db_EXISTS)
+{
+    dXSARGS;
+    if (items != 2)
+	croak("Usage: DB_File::EXISTS(db, key)");
+    {
+	DB_File	db;
+	DBTKEY	key;
+	int	RETVAL;
+
+	if (sv_isa(ST(0), "DB_File")) {
+	    IV tmp = SvIV((SV*)SvRV(ST(0)));
+	    db = (DB_File) tmp;
+	}
+	else
+	    croak("db is not of type DB_File");
+
+	if (db->type != DB_RECNO) {
+	    key.data = SvPV(ST(1), na);
+	    key.size = (int)na;
+	}
+	else {
+	    Value =  GetRecnoKey(db, SvIV(ST(1))) ; 
+	    key.data = & Value; 
+	    key.size = (int)sizeof(recno_t);
+	};
+	{
+          DBT		value ;
+
+	  CurrentDB = db ;
+	  RETVAL = (((db->dbp)->get)(db->dbp, &key, &value, 0) == 0) ;
+	}
 	ST(0) = sv_newmortal();
 	sv_setiv(ST(0), (IV)RETVAL);
     }
@@ -845,15 +915,12 @@ XS(XS_DB_File_db_FETCH)
 	else
 	    croak("db is not of type DB_File");
 
-	if (db->type != DB_RECNO)
-	{
+	if (db->type != DB_RECNO) {
 	    key.data = SvPV(ST(1), na);
 	    key.size = (int)na;
 	}
-	else
-	{
-	    Value =  SvIV(ST(1)) ; 
-	    ++ Value ; 
+	else {
+	    Value =  GetRecnoKey(db, SvIV(ST(1))) ; 
 	    key.data = & Value; 
 	    key.size = (int)sizeof(recno_t);
 	};
@@ -895,15 +962,12 @@ XS(XS_DB_File_db_STORE)
 	else
 	    croak("db is not of type DB_File");
 
-	if (db->type != DB_RECNO)
-	{
+	if (db->type != DB_RECNO) {
 	    key.data = SvPV(ST(1), na);
 	    key.size = (int)na;
 	}
-	else
-	{
-	    Value =  SvIV(ST(1)) ; 
-	    ++ Value ; 
+	else {
+	    Value =  GetRecnoKey(db, SvIV(ST(1))) ; 
 	    key.data = & Value; 
 	    key.size = (int)sizeof(recno_t);
 	};
@@ -977,15 +1041,12 @@ XS(XS_DB_File_db_NEXTKEY)
 	else
 	    croak("db is not of type DB_File");
 
-	if (db->type != DB_RECNO)
-	{
+	if (db->type != DB_RECNO) {
 	    key.data = SvPV(ST(1), na);
 	    key.size = (int)na;
 	}
-	else
-	{
-	    Value =  SvIV(ST(1)) ; 
-	    ++ Value ; 
+	else {
+	    Value =  GetRecnoKey(db, SvIV(ST(1))) ; 
 	    key.data = & Value; 
 	    key.size = (int)sizeof(recno_t);
 	};
@@ -1077,9 +1138,11 @@ XS(XS_DB_File_pop)
 	    /* Now delete it */
 	    if (RETVAL == 0)
 	    {
+		/* the call to del will trash value, so take a copy now */
+	        sv_setpvn(ST(0), value.data, value.size);
 	        RETVAL = (Db->del)(Db, &key, R_CURSOR) ;
-	        if (RETVAL == 0)
-	            sv_setpvn(ST(0), value.data, value.size);
+	        if (RETVAL != 0) 
+	            sv_setsv(ST(0), &sv_undef); 
 	    }
 	}
     }
@@ -1102,20 +1165,22 @@ XS(XS_DB_File_shift)
 	else
 	    croak("db is not of type DB_File");
 	{
-	    DBTKEY	key ;
 	    DBT		value ;
+	    DBTKEY	key ;
 	    DB *	Db = db->dbp ;
 
 	    CurrentDB = db ;
 	    /* get the first value */
-	    RETVAL = (Db->seq)(Db, &key, &value, R_FIRST) ;	
+	    RETVAL = (Db->seq)(Db, &key, &value, R_FIRST) ;	 
 	    ST(0) = sv_newmortal();
 	    /* Now delete it */
 	    if (RETVAL == 0)
 	    {
-	        RETVAL = (Db->del)(Db, &key, R_CURSOR) ;
-	        if (RETVAL == 0)
-	            sv_setpvn(ST(0), value.data, value.size);
+		/* the call to del will trash value, so take a copy now */
+	        sv_setpvn(ST(0), value.data, value.size);
+	        RETVAL = (Db->del)(Db, &key, R_CURSOR) ; 
+	        if (RETVAL != 0)
+	            sv_setsv (ST(0), &sv_undef) ;
 	    }
 	}
     }
@@ -1208,15 +1273,12 @@ XS(XS_DB_File_db_del)
 	else
 	    croak("db is not of type DB_File");
 
-	if (db->type != DB_RECNO)
-	{
+	if (db->type != DB_RECNO) {
 	    key.data = SvPV(ST(1), na);
 	    key.size = (int)na;
 	}
-	else
-	{
-	    Value =  SvIV(ST(1)) ; 
-	    ++ Value ; 
+	else {
+	    Value =  GetRecnoKey(db, SvIV(ST(1))) ; 
 	    key.data = & Value; 
 	    key.size = (int)sizeof(recno_t);
 	};
@@ -1254,15 +1316,12 @@ XS(XS_DB_File_db_get)
 	else
 	    croak("db is not of type DB_File");
 
-	if (db->type != DB_RECNO)
-	{
+	if (db->type != DB_RECNO) {
 	    key.data = SvPV(ST(1), na);
 	    key.size = (int)na;
 	}
-	else
-	{
-	    Value =  SvIV(ST(1)) ; 
-	    ++ Value ; 
+	else {
+	    Value =  GetRecnoKey(db, SvIV(ST(1))) ; 
 	    key.data = & Value; 
 	    key.size = (int)sizeof(recno_t);
 	};
@@ -1304,15 +1363,12 @@ XS(XS_DB_File_db_put)
 	else
 	    croak("db is not of type DB_File");
 
-	if (db->type != DB_RECNO)
-	{
+	if (db->type != DB_RECNO) {
 	    key.data = SvPV(ST(1), na);
 	    key.size = (int)na;
 	}
-	else
-	{
-	    Value =  SvIV(ST(1)) ; 
-	    ++ Value ; 
+	else {
+	    Value =  GetRecnoKey(db, SvIV(ST(1))) ; 
 	    key.data = & Value; 
 	    key.size = (int)sizeof(recno_t);
 	};
@@ -1409,15 +1465,12 @@ XS(XS_DB_File_db_seq)
 	else
 	    croak("db is not of type DB_File");
 
-	if (db->type != DB_RECNO)
-	{
+	if (db->type != DB_RECNO) {
 	    key.data = SvPV(ST(1), na);
 	    key.size = (int)na;
 	}
-	else
-	{
-	    Value =  SvIV(ST(1)) ; 
-	    ++ Value ; 
+	else {
+	    Value =  GetRecnoKey(db, SvIV(ST(1))) ; 
 	    key.data = & Value; 
 	    key.size = (int)sizeof(recno_t);
 	};
@@ -1435,15 +1488,27 @@ XS(XS_DB_File_db_seq)
     XSRETURN(1);
 }
 
+#ifdef __cplusplus
+extern "C"
+#endif
 XS(boot_DB_File)
 {
     dXSARGS;
     char* file = __FILE__;
 
+    XS_VERSION_BOOTCHECK ;
+
+    {
+        CV * cv ;
+
         newXS("DB_File::constant", XS_DB_File_constant, file);
-        newXS("DB_File::TIEHASH", XS_DB_File_db_TIEHASH, file);
+        cv = newXS("DB_File::TIEARRAY", XS_DB_File_db_TIEHASH, file);
+        XSANY.any_i32 = 1 ;
+        cv = newXS("DB_File::TIEHASH", XS_DB_File_db_TIEHASH, file);
+        XSANY.any_i32 = 0 ;
         newXS("DB_File::DESTROY", XS_DB_File_db_DESTROY, file);
         newXS("DB_File::DELETE", XS_DB_File_db_DELETE, file);
+        newXS("DB_File::EXISTS", XS_DB_File_db_EXISTS, file);
         newXS("DB_File::FETCH", XS_DB_File_db_FETCH, file);
         newXS("DB_File::STORE", XS_DB_File_db_STORE, file);
         newXS("DB_File::FIRSTKEY", XS_DB_File_db_FIRSTKEY, file);
@@ -1459,14 +1524,7 @@ XS(boot_DB_File)
         newXS("DB_File::fd", XS_DB_File_db_fd, file);
         newXS("DB_File::sync", XS_DB_File_db_sync, file);
         newXS("DB_File::seq", XS_DB_File_db_seq, file);
-
-    /* Initialisation Section */
-
-    newXS("DB_File::TIEARRAY", XS_DB_File_db_TIEHASH, file);
-
-
-    /* End of Initialisation Section */
-
+    }
     ST(0) = &sv_yes;
     XSRETURN(1);
 }

@@ -1,11 +1,28 @@
 use DB_File ;
 use Fcntl ;
 
-$A = tie @a, DB_File, "fred", O_CREAT|O_RDWR, 0777, $DB_RECNO ;
+$filename = "fred" ;
 
-$a[0] = "hello" ;
-$A->push("hdhdhdh") ;
-$A->unshift ("ppppp") ;
+if (0) {
+unlink $filename ;
+open(F, ">$filename") or die "Cannot open $filename: $!\n" ;
+print F <<EOM ;
+kjhsdkj
+okdl
+lkdlk
+;lkfl
+;;ld;
 
-$A = '' ;
+EOM
+close F ;
+}
+
+$DB_RECNO->{reclen} = 315 ;
+tie @a, DB_File, $filename, O_CREAT|O_RDWR, 0777, $DB_RECNO ;
+
+$x = ("hdhdhdhhgdhgdhgdhgdhgdhgdhgdh" x 10) ;
+for ($i = 0 ; $i < 10 ; ++ $i) {
+    print "$i\n" ;
+    $a[$i] = $x ;
+}
 untie @a ;

@@ -1,0 +1,118 @@
+=head1 DB_HASH Options
+
+Standard Berkeley DB options
+
+=over 5
+=item bsize
+=item cachesize
+=item ffactor
+=item hash
+=item lorder
+=item nelem
+=back
+
+Extra DB_File specific options:
+
+=over 5
+
+=item cstring
+
+=back
+
+=head1 DB_BTREE Options
+
+Standard Berkeley DB options
+
+=over 5
+=item flags
+=item cachesize
+=item psize
+=item lorder
+=item minkeypage
+=item compare
+=item prefix
+=back
+
+Extra DB_File specific options
+
+=over 5
+
+=item cstring
+
+=back
+
+=head1 DB_RECNO Options
+
+Standard Berkeley DB options
+
+=over 5
+=item bval
+=item psize
+=item bfname
+=item flags
+=item lorder
+=item reclen
+=item cachesize
+=back
+
+There are no extra options supplied by DB_File for RECNO.
+
+=head1 Interoperating with C applications
+
+To make interoperation with C applications that store strings in
+databases easier, DB_File supplies a C<cstring> option. When enabled
+this option will make the key/value pairs stored in the database
+
+This can be used with either the DB_HASH or DB_BTREE databases to
+transparently
+
+To allow DB_File databases (HASH and BTREE) to
+
+The C<cstring> flag is a bitmask which can take the following values
+OR'ed together:
+
+=over 5
+
+=item CSTR_KEY
+
+Assume only the Key value is a C string.
+
+=item CSTR_DATA
+
+Assume only the Data value is a C string.
+
+=item CSTR_ALL
+
+Assume both the Key and the Data values are C strings.
+
+=back 
+
+The C<Cstring> flag will do the following:
+
+=over 5
+
+=item Reading.
+
+When reading from a database, if the data item (Key, Value or both
+depending on the cstring setting) is terminated with a NULL, the data
+returned to Perl will have it removed.
+
+If the data item is not NULL terminated, it will be read as is.
+
+=item Writing.
+
+When writing to the database a data item will have a NULL added unless
+it already has one.
+
+=back
+
+Note that use of this option on an existing database will not convert
+the complete database.
+
+Note that if a database has two keys which are al
+
+    $a{"abc\0"} = 123 ;
+    $a{"abc"}   = 456 ;
+
+When the C<cstring> option is set, it will only be able to read the key
+with the terminating NULL.

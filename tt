@@ -1,0 +1,5 @@
+use Fcntl ;
+use DB_File ;
+
+tie %X, DB_File, "FREDDY" or die "error: $!\n" ;
+

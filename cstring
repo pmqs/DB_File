@@ -1,0 +1,50 @@
+use Fcntl ;
+use DB_File;
+
+print "top\n" ;
+$file = "/tmp/cstring" ;
+unlink $file ;
+
+$DB_HASH->{'cstring'} = 1 ;
+tie(%db, DB_File, $file, O_CREAT|O_RDWR, 0644, $DB_HASH)
+    or die "tie die $file: $!\n" ;
+
+
+$db{'1'} = 'fred';			# 5 -> 4
+$db{'Mary'} = 'lamb';			# 5 -> 4
+$db{'12'} = 'fred' x 1024;		# 4 -> 4096
+untie(%db);
+
+print "Written\n" ;
+
+$DB_HASH->{'cstring'} = 0 ;
+tie(%q, DB_File, $file, O_RDWR, 0644, $DB_HASH);
+
+$q{ABCD} = "DEF" ;
+untie %q ;
+
+$DB_HASH->{'cstring'} = 0 ;
+tie(%s, DB_File, $file, O_RDWR, 0644, $DB_HASH);
+
+$z = $s{"1\0"} ;
+$l = length $z ;
+print qq#1 = $s{"1\0"} $l\n# ;
+print qq#mary = $s{"Mary\0"} $l\n# ;
+print qq#ABCD = $s{"ABCD"} $l\n# ;
+untie %s ;
+
+print "done\n" ;
+exit 0;
+
+__END__
+
+
+=head1 CSTRING
+
+The cstring option is provided to make it easier to exchange database
+files between Perl applications a C applications.
+
+   CSTR_KEY
+   CSTR_DATA
+   CSTR_ALL
+

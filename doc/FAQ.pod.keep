@@ -1,0 +1,162 @@
+=head1 NAME
+
+DB_File FAQ - DB_File Frequently Asked Questions
+
+
+=head1 DESCRIPTION
+
+This file lists some of the common questions with answers.
+
+
+=head2 1.
+
+What does "Invalid Argument" mean?
+
+This error message is got when the C<tie> call fails.
+
+This error message is used by Berkeley DB as catch all which means
+"There is something wrong".
+
+Some of the common reasons for getting this error are:
+
+
+In your case the 'something' that is wrong is that you are trying
+to open a DB file wothout closing it first.
+
+Normally the untie will close the DB file for you, in this case it
+won't.
+
+--
+
+I've just spent many hours tracing a problem I was having with
+the DB code (via Paul's Perl5 DB_File module).
+
+If you ^C a process which has a DB file open and then try to open that
+file in a later process without O_TRUNC you get the not very helpful
+message 'Invalid argument' (via errno).
+
+=over 5
+
+=item 2. 
+
+you need to put DB_File in quotes when "use strict" is in operation.
+
+=item 3. 
+
+Make sure any references to the inner object are destroyed before
+
+the call to untie.
+
+=item 4. 
+
+What is the most recent copy of Berkeley DB and where can I get it?
+
+At the time of writing this file, 1.85
+
+Berkeley DB is available at your nearest CPAN archive (see
+L<perlmod/"CPAN"> for a list) in F<src/misc/db.1.85.tar.gz>, or via the
+host F<ftp.cs.berkeley.edu> in F</ucb/4bsd/db.tar.gz>.
+
+IRIX is 
+
+A rewrite of Berkeley DB is in progress. At this time it 
+
+=item 5. 
+
+What is the most recent copy of DB_File and where can I get it?
+
+Look on CPAN.
+
+=item 6. 
+
+not using Fcntl
+
+=item 7. 
+
+using default flag O_RDWR on new file and wondering why no database
+was created.
+
+   need O_RDWR and O_CREAT.
+
+
+=item 8. 
+
+How do I access duplicate values?
+
+cf 72, 143
+
+=item 9. 
+
+I have a DB file created by a C program and I cannot access any of the records
+
+The usual reason for this problem is Perl does not terminate strings
+with \0
+
+=item 10. 
+
+Installing DB_File after Perl's Configure has been run.
+
+=item 11. 
+
+What bugs are there?
+
+=item 12. 
+
+How do I store complex data structures in DB?
+
+MLDBM Data::Dumper
+
+=item 13. 
+
+Problem with RECNO
+
+Tied arrays aren't fully supported yet.
+
+cf 135
+
+
+=item 14. 
+
+Building DB on SGI/Irix
+
+cf 298 
+
+Get the Berkeley DB library from http://reality.sgi.com/ariel .
+It has the patches necessary to compile and pass the tests on
+IRIX 5.3 . Install the library and header files. Reconfigure Perl5.
+
+
+=item 15. 
+
+Locking
+
+=item 16. 
+
+Limits on the size of databases/keys/values.
+
+=item 17. 
+
+Caching
+
+=item 18. 
+
+My database has Perl source in it.
+
+I ran your script and it did more or less the same as yours. Lots of
+nulls, then a pile of text then \377's.
+
+I really don't think it is anything to be concerned about though.
+Berkeley DB uses dynamic memory to allocate buffers which will
+subsequently be written to the db file. Being dynamic, the memory could
+have been used for anything before DB malloced it. As DB doesn't clear
+the memory once it has been allocated the unused portions will contain
+random junk. In fact the text you reproduced comes from the file
+Config.pm - DB_File includes this file so it is quite reasonable for
+Berkeley DB to end up with part of a freed buffer that Perl used when
+reading Config.pm from disk.
+
+=back 4
+
+=head1 VERSION
+
+DB_File FAQ 1.0 20th May 1996
