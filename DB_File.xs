@@ -3,12 +3,12 @@
  DB_File.xs -- Perl 5 interface to Berkeley DB 
 
  written by Paul Marquess <Paul.Marquess@btinternet.com>
- last modified 19th December 1998
- version 1.63
+ last modified 21st February 1999
+ version 1.64
 
  All comments/suggestions/problems are welcome
 
-     Copyright (c) 1995, 1996, 1997, 1998 Paul Marquess. All rights reserved.
+     Copyright (c) 1995-9 Paul Marquess. All rights reserved.
      This program is free software; you can redistribute it and/or
      modify it under the same terms as Perl itself.
 
@@ -60,16 +60,31 @@
 		fixed typo in O_RDONLY test.
         1.62 -  No change to DB_File.xs
         1.63 -  Fix to alllow DB 2.6.x to build.
+        1.64 -  Tidied up the 1.x to 2.x flags mapping code.
+		Added a patch from Mark Kettenis <kettenis@wins.uva.nl>
+		to fix a flag mapping problem with O_RDONLY on the Hurd
 
 
 
 */
 
-
-#define PERL_POLLUTE
 #include "EXTERN.h"  
 #include "perl.h"
 #include "XSUB.h"
+
+#ifndef PERL_VERSION
+#include "patchlevel.h"
+#define PERL_REVISION	5
+#define PERL_VERSION	PATCHLEVEL
+#define PERL_SUBVERSION	SUBVERSION
+#endif
+
+#if PERL_REVISION == 5 && (PERL_VERSION < 4 || (PERL_VERSION == 4 && PERL_SUBVERSION <= 75 ))
+
+#    define PL_sv_undef		sv_undef
+#    define PL_na		na
+
+#endif
 
 /* Being the Berkeley DB we prefer the <sys/cdefs.h> (which will be
  * shortly #included by the <db.h>) __attribute__ to the possibly
@@ -88,6 +103,8 @@
 #include <fcntl.h> 
 
 /* #define TRACE */
+
+
 
 #ifdef DB_VERSION_MAJOR
 
@@ -334,7 +351,7 @@ GetVersionInfo()
 	croak("DB_File needs Berkeley DB 2.0.5 or greater, you have %d.%d.%d\n",
 		 Major, Minor, Patch) ;
  
-#if PATCHLEVEL > 3
+#if PERL_VERSION > 3
     sv_setpvf(ver_sv, "%d.%d", Major, Minor) ;
 #else
     {
@@ -595,6 +612,7 @@ SV *   sv ;
     DB_File	RETVAL = (DB_File)safemalloc(sizeof(DB_File_type)) ;
     void *	openinfo = NULL ;
     INFO	* info  = &RETVAL->info ;
+    STRLEN	n_a;
 
 /* printf("In ParseOpenInfo name=[%s] flags=[%d] mode = [%d]\n", name, flags, mode) ;  */
     Zero(RETVAL, 1, DB_File_type) ;
@@ -736,11 +754,11 @@ SV *   sv ;
 #endif
             svp = hv_fetch(action, "bfname", 6, FALSE); 
             if (svp && SvOK(*svp)) {
-		char * ptr = SvPV(*svp,na) ;
+		char * ptr = SvPV(*svp,n_a) ;
 #ifdef DB_VERSION_MAJOR
-		name = (char*) na ? ptr : NULL ;
+		name = (char*) n_a ? ptr : NULL ;
 #else
-                info->db_RE_bfname = (char*) (na ? ptr : NULL) ;
+                info->db_RE_bfname = (char*) (n_a ? ptr : NULL) ;
 #endif
 	    }
 	    else
@@ -756,7 +774,7 @@ SV *   sv ;
             {
 		int value ;
                 if (SvPOK(*svp))
-		    value = (int)*SvPV(*svp, na) ;
+		    value = (int)*SvPV(*svp, n_a) ;
 		else
 		    value = SvIV(*svp) ;
 
@@ -774,7 +792,7 @@ SV *   sv ;
             if (svp && SvOK(*svp))
             {
                 if (SvPOK(*svp))
-		    info->db_RE_bval = (u_char)*SvPV(*svp, na) ;
+		    info->db_RE_bval = (u_char)*SvPV(*svp, n_a) ;
 		else
 		    info->db_RE_bval = (u_char)(unsigned long) SvIV(*svp) ;
 		DB_flags(info->flags, DB_DELIMITER) ;
@@ -818,19 +836,14 @@ SV *   sv ;
         if ((flags & O_CREAT) == O_CREAT)
             Flags |= DB_CREATE ;
 
-#ifdef O_NONBLOCK
-        if ((flags & O_NONBLOCK) == O_NONBLOCK)
-            Flags |= DB_EXCL ;
-#endif
-
 #if O_RDONLY == 0
         if (flags == O_RDONLY)
 #else
-        if ((flags & O_RDONLY) == O_RDONLY)
+        if ((flags & O_RDONLY) == O_RDONLY && (flags & O_RDWR) != O_RDWR)
 #endif
             Flags |= DB_RDONLY ;
 
-#ifdef O_NONBLOCK
+#ifdef O_TRUNC
         if ((flags & O_TRUNC) == O_TRUNC)
             Flags |= DB_TRUNCATE ;
 #endif
@@ -840,7 +853,7 @@ SV *   sv ;
 #if DB_VERSION_MAJOR == 2 && DB_VERSION_MINOR < 6
             status = (RETVAL->dbp->cursor)(RETVAL->dbp, NULL, &RETVAL->cursor) ;
 #else
-            status = (RETVAL->dbp->cursor)(RETVAL->dbp, NULL, &RETVAL->cursor, 
+            status = (RETVAL->dbp->cursor)(RETVAL->dbp, NULL, &RETVAL->cursor,
 			0) ;
 #endif
 
@@ -1123,9 +1136,10 @@ db_DoTie_(isHASH, dbtype, name=undef, flags=O_CREAT|O_RDWR, mode=0666, type=DB_H
 	{
 	    char *	name = (char *) NULL ; 
 	    SV *	sv = (SV *) NULL ; 
+	    STRLEN	n_a;
 
 	    if (items >= 3 && SvOK(ST(2))) 
-	        name = (char*) SvPV(ST(2), na) ; 
+	        name = (char*) SvPV(ST(2), n_a) ; 
 
             if (items == 6)
 	        sv = ST(5) ;
@@ -1255,6 +1269,7 @@ unshift(db, ...)
 	    int		i ;
 	    int		One ;
 	    DB *	Db = db->dbp ;
+	    STRLEN	n_a;
 
 	    DBT_flags(key) ; 
 	    DBT_flags(value) ; 
@@ -1268,8 +1283,8 @@ unshift(db, ...)
 #endif
 	    for (i = items-1 ; i > 0 ; --i)
 	    {
-	        value.data = SvPV(ST(i), na) ;
-	        value.size = na ;
+	        value.data = SvPV(ST(i), n_a) ;
+	        value.size = n_a ;
 	        One = 1 ;
 	        key.data = &One ;
 	        key.size = sizeof(int) ;
@@ -1309,7 +1324,7 @@ pop(db)
 		OutputValue(ST(0), value) ;
 	        RETVAL = db_del(db, key, R_CURSOR) ;
 	        if (RETVAL != 0) 
-	            sv_setsv(ST(0), &sv_undef); 
+	            sv_setsv(ST(0), &PL_sv_undef); 
 	    }
 	}
 
@@ -1336,7 +1351,7 @@ shift(db)
 		OutputValue(ST(0), value) ;
 	        RETVAL = db_del(db, key, R_CURSOR) ;
 	        if (RETVAL != 0)
-	            sv_setsv (ST(0), &sv_undef) ;
+	            sv_setsv (ST(0), &PL_sv_undef) ;
 	    }
 	}
 
@@ -1352,6 +1367,7 @@ push(db, ...)
 	    DBT		value ;
 	    DB *	Db = db->dbp ;
 	    int		i ;
+	    STRLEN	n_a;
 
 	    DBT_flags(key) ; 
 	    DBT_flags(value) ; 
@@ -1367,8 +1383,8 @@ push(db, ...)
 	        {
 		    
 		    ++ (* (int*)key.data) ;
-	            value.data = SvPV(ST(i), na) ;
-	            value.size = na ;
+	            value.data = SvPV(ST(i), n_a) ;
+	            value.size = n_a ;
 	            RETVAL = (Db->put)(Db, NULL, &key, &value, 0) ;
 	            if (RETVAL != 0)
 	                break;
@@ -1376,8 +1392,8 @@ push(db, ...)
 #else
 	        for (i = items - 1 ; i > 0 ; --i)
 	        {
-	            value.data = SvPV(ST(i), na) ;
-	            value.size = na ;
+	            value.data = SvPV(ST(i), n_a) ;
+	            value.size = n_a ;
 	            RETVAL = (Db->put)(Db, keyptr, &value, R_IAFTER) ;
 	            if (RETVAL != 0)
 	                break;
