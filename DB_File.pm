@@ -1,8 +1,8 @@
 # DB_File.pm -- Perl 5 interface to Berkeley DB 
 #
 # written by Paul Marquess (pmarquess@bfsec.bt.co.uk)
-# last modified 12th Mar 1997
-# version 1.12
+# last modified 30th Apr 1997
+# version 1.14
 #
 #     Copyright (c) 1995, 1996, 1997 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
@@ -146,7 +146,7 @@ use vars qw($VERSION @ISA @EXPORT $AUTOLOAD $DB_BTREE $DB_HASH $DB_RECNO) ;
 use Carp;
 
 
-$VERSION = "1.12" ;
+$VERSION = "1.14" ;
 
 #typedef enum { DB_BTREE, DB_HASH, DB_RECNO } DBTYPE;
 $DB_BTREE = new DB_File::BTREEINFO ;
@@ -229,17 +229,26 @@ bootstrap DB_File $VERSION;
 # Preloaded methods go here.  Autoload methods go after __END__, and are
 # processed by the autosplit program.
 
-sub TIEHASH
+sub tie_hash_or_array
 {
     my (@arg) = @_ ;
+    my $tieHASH = ( (caller(1))[3] =~ /TIEHASH/ ) ;
 
     $arg[4] = tied %{ $arg[4] } 
 	if @arg >= 5 && ref $arg[4] && $arg[4] =~ /=HASH/ && tied %{ $arg[4] } ;
 
-    DoTie_(@arg) ;
+    DoTie_($tieHASH, @arg) ;
 }
 
-*TIEARRAY = \&TIEHASH ;
+sub TIEHASH
+{
+    tie_hash_or_array(@_) ;
+}
+
+sub TIEARRAY
+{
+    tie_hash_or_array(@_) ;
+}
 
 sub get_dup
 {
@@ -281,8 +290,6 @@ sub get_dup
 
 1;
 __END__
-
-=cut
 
 =head1 NAME
 
@@ -772,11 +779,11 @@ with the key, C<$key>.
 In list context, it returns all the values which match C<$key>. Note
 that the values will be returned in an apparently random order.
 
-In list context, if the second parameter is present and evaluates TRUE,
-the method returns an associative array. The keys of the associative
-array correspond to the the values that matched in the BTREE and the
-values of the array are a count of the number of times that particular
-value occurred in the BTREE.
+In list context, if the second parameter is present and evaluates
+TRUE, the method returns an associative array. The keys of the
+associative array correspond to the values that matched in the BTREE
+and the values of the array are a count of the number of times that
+particular value occurred in the BTREE.
 
 So assuming the database created above, we can use C<get_dup> like
 this:
@@ -1397,7 +1404,7 @@ F<authors/id/TOMC/scripts/nshist.gz>).
 
 =head2 The untie() Gotcha
 
-If you make use of the Berkeley DB API, it is is I<very> strongly
+If you make use of the Berkeley DB API, it is I<very> strongly
 recommended that you read L<perltie/The untie Gotcha>. 
 
 Even if you don't currently make use of the API interface, it is still
@@ -1650,6 +1657,15 @@ Documented the untie gotcha.
 
 Documented the incompatibility with version 2 of Berkeley DB.
 
+=item 1.13
+
+Minor changes to DB_FIle.xs and DB_File.pm
+
+=item 1.14
+
+Made it illegal to tie an associative array to a RECNO database and an
+ordinary array to a HASH or BTREE database.
+
 =back
 
 =head1 BUGS
@@ -1706,7 +1722,7 @@ L<perl(1)>, L<dbopen(3)>, L<hash(3)>, L<recno(3)>, L<btree(3)>
 
 The DB_File interface was written by Paul Marquess
 E<lt>pmarquess@bfsec.bt.co.ukE<gt>.
-Questions about the DB system itself may be addressed to Keith Bostic
-E<lt>bostic@cs.berkeley.eduE<gt>.
+Questions about the DB system itself may be addressed to
+E<lt>db@sleepycat.com<gt>.
 
 =cut
