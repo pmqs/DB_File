@@ -73,7 +73,7 @@
 .nr % 0
 .rr F
 .\}
-.TH DB_FILE 1 "perl " "5/Sep/96" "User Contributed Perl Documentation"
+.TH DB_FILE 1 "perl " "6/Sep/96" "User Contributed Perl Documentation"
 .IX Title "DB_FILE 1"
 .UC
 .IX Name "DB_File - Perl5 access to Berkeley DB"
@@ -340,7 +340,7 @@ for \s-1DB_HASH\s0, \s-1DB_BTREE\s0 and \s-1DB_RECNO\s0 respectively.
 .Ve
 The values stored in the hashes above are mostly the direct equivalent
 of their C counterpart. Like their C counterparts, all are set to a
-default set of values \- that means you don't have to set \fIall\fR of the
+default values \- that means you don't have to set \fIall\fR of the
 values when you only want to change one. Here is an example:
 .PP
 .Vb 3
@@ -425,7 +425,7 @@ to use.
 .Sh "A Simple Example."
 .IX Subsection "A Simple Example."
 This example shows how to create a database, add key/value pairs to the
-database, delete keys/value pairs and filally how to enumerate the
+database, delete keys/value pairs and finally how to enumerate the
 contents of the database.
 .PP
 .Vb 2
@@ -445,7 +445,7 @@ contents of the database.
 .Ve
 .Vb 2
 \&    # Check for existence of a key
-\&    print "Bananna Exists\en\en" if $h{"banana"} ;
+\&    print "Banana Exists\en\en" if $h{"banana"} ;
 .Ve
 .Vb 2
 \&    # Delete a key/value pair.
@@ -462,7 +462,7 @@ contents of the database.
 here is the output:
 .PP
 .Vb 5
-\&    Bananna Exists
+\&    Banana Exists
 \& 
 \&    orange -> orange
 \&    tomato -> red
@@ -574,6 +574,9 @@ code:
 \&    # and print each key/value pair.
 \&    foreach (keys %h)
 \&      { print "$_  -> $h{$_}\en" }
+.Ve
+.Vb 1
+\&    untie %h ;
 .Ve
 Here is the output:
 .PP
@@ -944,7 +947,7 @@ the section on \fI\s-1THE\s0 \s-1API\s0 \s-1INTERFACE\s0\fR).
 \&    undef $H ;
 \&    untie @h ;
 .Ve
-and this is what it ouputs:
+and this is what it outputs:
 .PP
 .Vb 6
 \&    ORIGINAL
@@ -1194,7 +1197,7 @@ When run the script will produce this error message:
 .Ve
 Although the error message above refers to the second tie statement in
 the script, the source of the problem is really with the untie
-statement that preceeds it.
+statement that precedes it.
 .PP
 To understand why there is a problem at all with the untie statement,
 consider what the tie does for a moment. 
@@ -1377,7 +1380,7 @@ Here is a snippet of code that is loosely based on Tom Christiansen's
 \&    }
 .Ve
 .Vb 9
-\&    # check for the existance of a specific key
+\&    # check for the existence of a specific key
 \&    # remember to add the NULL
 \&    if ( $binary_time = $hist_db{"http://mox.perl.com/\ex00"} ) {
 \&        $date = localtime unpack("V", $binary_time) ;
@@ -1407,11 +1410,11 @@ correspond to an area of dynamic memory that happened to be used during
 the compilation of the script.
 .PP
 Unless you don't like the possibility of there being part of your Perl
-scripts embedded in a database file, this is nothing to wory about.
+scripts embedded in a database file, this is nothing to worry about.
 .Sh "How do I store complex data structures with DB_File?"
 .IX Subsection "How do I store complex data structures with DB_File?"
 Although \fBDB_File\fR cannot do this directly, there is a module which
-can layer transparrently over \fBDB_File\fR to accomplish this feat.
+can layer transparently over \fBDB_File\fR to accomplish this feat.
 .PP
 Check out the \s-1MLDBM\s0 module, available on \s-1CPAN\s0 in the directory
 \fImodules/by-module/\s-1MLDBM\s0\fR.
@@ -1506,28 +1509,30 @@ Documentation update.
 \fBDB_File\fR now imports the constants (O_RDWR, O_CREAT etc.) from Fcntl
 automatically.
 .Sp
-The sandard hash function \f(CWexists\fR is now supported.
+The standard hash function \f(CWexists\fR is now supported.
 .Sp
-Modified the behaviour of get_dup. When it returns an associative
+Modified the behavior of get_dup. When it returns an associative
 array, the value is the count of the number of matching \s-1BTREE\s0 values.
+.Ip "1.04" 5
+.IX Item "1.04"
 .SH "BUGS"
 .IX Header "BUGS"
 Some older versions of Berkeley DB had problems with fixed length
 records using the RECNO file format. The newest version at the time of
 writing was 1.85 \- this seems to have fixed the problems with RECNO.
-.Sp
+.PP
 I am sure there are bugs in the code. If you do find any, or can
 suggest any enhancements, I would welcome your comments.
 .SH "AVAILABILITY"
 .IX Header "AVAILABILITY"
 \fBDB_File\fR comes with the standard Perl source distribution. Look in
 the directory \fIext/DB_File\fR.
-.Sp
+.PP
 Berkeley DB is available at your nearest CPAN archive (see
 the section on \fICPAN\fR in the \fIperlmod\fR manpage for a list) in \fIsrc/misc/db.1.85.tar.gz\fR, or via the
 host \fIftp.cs.berkeley.edu\fR in \fI/ucb/4bsd/db.tar.gz\fR.  It is \fInot\fR under
 the GPL.
-.Sp
+.PP
 If you are running IRIX, then get Berkeley DB from
 \fIhttp://reality.sgi.com/ariel\fR. It has the patches necessary to
 compile properly on IRIX 5.3.

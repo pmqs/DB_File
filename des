@@ -1,0 +1,20 @@
+
+    package Demo;
+
+    sub new { bless {}}
+    sub DESTROY { die "fuz" }
+    sub foo {
+        my($self) = @_;
+        $self = $self->new() unless (ref $self);
+        my(@other) = ();                            # 1
+        for (1..2) { push @other, $self->new(); }   # 2
+        my($a1) = $self->new();                     # 3
+        my($a2) = $self->new();                     # 4
+        die "foo";
+    }
+    package main;
+    #eval { @a = Demo->foo() };
+    @a = Demo->foo() ;
+    #print $@ if $@;
+
+

@@ -2,14 +2,18 @@ use Fcntl ;
 use DB_File;
 # use GDBM_File;
 
-if (0) {
+if (1) {
 unlink "/tmp/dbfile" ;
 
-$bsize = 10_000 * 2 ;
+#$bsize = 10_000 * 2 ;
 
-$DB_HASH->{'bsize'} = $bsize ;
-$X = tie(%db, DB_File, "/tmp/dbfile", O_CREAT|O_RDWR, 0644, $DB_HASH)
+#$DB_BTREE->{'bsize'} = $bsize ;
+$X = tie(%db, DB_File, "/tmp/dbfile", O_CREAT|O_RDWR, 0644, $DB_BTREE)
     or die "tie die: $!\n" ;
+
+$db{1} = 2 ;
+$db{2} = 3 ;
+$db{3} = 3 ;
 #dbmopen(%db, "/tmp/dbfile", 0644);
 
 
@@ -18,7 +22,7 @@ $X = tie(%db, DB_File, "/tmp/dbfile", O_CREAT|O_RDWR, 0644, $DB_HASH)
 #$db{'1'} = 'fred';			# 5 -> 4
 #$db{'12'} = 'fred' x 1024;		# 4 -> 4096
 $db{'123'} = 'x' x ((1024* 56) );	# 5 -> 1048576
-$X->put('123', 'x' x (1024* 56) );	# 5 -> 1048576
+#$X->put('123', 'x' x (1024* 56) );	# 5 -> 1048576
 #$db{$lkey} = 'x' x 1024;		# 1024 -> 1024
 
 untie(%db);
@@ -30,8 +34,8 @@ else
 {
 #dbmopen(%s, "/tmp/dbfile", undef);
 
-$DB_HASH->{'bsize'} = $bsize ;
-tie(%s, DB_File, "/tmp/dbfile", O_RDWR, 0644, $DB_HASH);
+$DB_BTREE->{'bsize'} = $bsize ;
+tie(%s, DB_File, "/tmp/dbfile", O_RDWR, 0644, $DB_BTREE);
 while (($k, $v) = each %s) {
 	$l = length($v);
 	$kl = length($k);

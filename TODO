@@ -1,6 +1,15 @@
 Add EXISTS  Done 1.03
 Add CLEAR. - remember to modify the test harnesses.
 
+Include a dbinfo script which dumps the header for a has & btree file.
+
+Add a note about use strict untie inside DESTROY.
+
+Add a note about exists and the impossibility of ever having a key
+associated with a undefined value.
+
+In the locking example use IO::File::fdopen
+
 Redo safemalloc as SvPVN
 
 1. test harness for multiple callbacks
@@ -16,7 +25,7 @@ allow RECNO to begin the array at 1 instead of 0.
 
 Allow indexing with negative numbers in RECNO. - DONE 1.02
 
-Make the test harnesses strict clean.
+Make the test harnesses strict clean. - DONE
 
 
 Preserve the CURSOR when using it ourselves or at leat document the
@@ -36,13 +45,13 @@ For Berkeley DB ver. 2
 
 Create a separate API interface.
 
-     $a = dbopen BerkeleyDB::HASH "filename",
+     $a = db_open BerkeleyDB::HASH "filename",
 		-Type		=> 'HASH',
 		-Flags		=> O_RDWR|O_CREAT,
 		-Mode		=> 0666,
 		-hash		=> \&my_hash,
 		-cachesize	=> 100,
-		) ;
+		 ;
 
 
 or
@@ -53,10 +62,9 @@ or
 		-Filename	=> "fred",
 		-Flags		=> O_RDWR|O_CREAT,
 		-Mode		=> 0666,
-		# -Type		=> 'HASH', # type not needed
 		-hash		=> \&my_hash,
 		-cachesize	=> 100,
-		) ;
+		 ;
 
 Change the tie i/f
 to
@@ -75,6 +83,13 @@ to
 Problem: there are two flags parameters!
 
 REMEMBER EXISTS is only valid for BTREE & HASH
+
+version 2 is supposed to allow multiple cursors - sounds like I'll need
+a cursor object.
+
+also, if there are multiple cursors, use a private one for the higher
+level tie interface stuff. Then there won't be any conflict with the
+API & tie interfaces.
 
 
 TieFilter - allow multiple filters to be applied to a tie.

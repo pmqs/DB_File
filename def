@@ -5,12 +5,10 @@
     $filename = "tree" ;
     unlink $filename ;
  
-    # Enable duplicate records
-    $DB_BTREE->{'flags'} = R_DUP ;
- 
-    $x = tie %h, "DB_File", $filename, O_RDWR|O_CREAT, 0640, $DB_BTREE 
+    $x = tie %h, "DB_File", $filename, O_RDWR|O_CREAT, 0640, $DB_HASH 
 	or die "Cannot open $filename: $!\n";
  
+print "x = $x\n" ;
     # Add some key/value pairs to the file
     $h{'Wall'} = 'Larry' ;
     $h{'Wall'} = 'Brick' ; # Note the duplicate key

@@ -6,11 +6,13 @@ my $OS2 = "-DOS2" if $Config{'osname'} eq 'os2' ;
 
 WriteMakefile(
 	NAME 		=> 'DB_File',
-	LIBS 		=> ["-L/usr/local/lib -ldb"],
+	#LIBS 		=> ["-L/usr/local/lib -ldb"],
+	LIBS 		=> ["-L./alpha2-1 -ldb"],
         MAN3PODS        => ' ',         # Pods will be built by installman.
 	#INC		=> '-I/usr/local/include',
 	VERSION_FROM	=> 'DB_File.pm',
 	XSPROTOARG	=> '-noprototypes',
-	DEFINE		=> "$OS2",
+	DEFINE	=> "$OS2",
+	'macro'		=> { INSTALLDIRS => 'perl' },
 	);
 

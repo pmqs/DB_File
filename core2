@@ -1,0 +1,16 @@
+
+
+    $SIG{__DIE__} = sub { print "IN __DIE__\n" ; exit } ;
+
+    package Jimmy ;
+
+    sub new { bless [] ;}
+    sub DESTROY { print "In Jimmy::DESTROY\n" ; die "death in Jimmy\n" }
+    
+    package FRED ;
+
+    sub new { my $x = Jimmy::new() ; }
+
+    package main ;
+
+    $k = FRED::new() ;

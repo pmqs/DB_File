@@ -1,18 +1,18 @@
 #!./perl -w 
 
-#BEGIN {
-#    @INC = '../lib' if -d '../lib' ;
-#    require Config; import Config;
-#    if ($Config{'extensions'} !~ /\bDB_File\b/) {
-#	print "1..0\n";
-#	exit 0;
-#    }
-#}
+BEGIN {
+    @INC = '../lib' if -d '../lib' ;
+    require Config; import Config;
+    if ($Config{'extensions'} !~ /\bDB_File\b/) {
+	print "1..0\n";
+	exit 0;
+    }
+}
 
 use DB_File; 
 use Fcntl;
 
-print "1..48\n";
+print "1..51\n";
 
 sub ok
 {
@@ -32,14 +32,14 @@ umask(0);
 
 my $dbh = new DB_File::HASHINFO ;
 
+ok(1, $dbh->{bsize} == 0) ;
+ok(2, $dbh->{ffactor} == 0) ;
+ok(3, $dbh->{nelem} == 0) ;
+ok(4, $dbh->{cachesize} == 0) ;
 $^W = 0 ;
-ok(1, $dbh->{bsize} == undef) ;
-ok(2, $dbh->{ffactor} == undef) ;
-ok(3, $dbh->{nelem} == undef) ;
-ok(4, $dbh->{cachesize} == undef) ;
 ok(5, $dbh->{hash} == undef) ;
-ok(6, $dbh->{lorder} == undef) ;
 $^W = 1 ;
+ok(6, $dbh->{lorder} == 0) ;
 
 $dbh->{bsize} = 3000 ;
 ok(7, $dbh->{bsize} == 3000 );
@@ -62,8 +62,9 @@ ok(12, $dbh->{lorder} == 1234 );
 # Check that an invalid entry is caught both for store & fetch
 eval '$dbh->{fred} = 1234' ;
 ok(13, $@ =~ /^DB_File::HASHINFO::STORE - Unknown element 'fred' at/ );
-eval '$q = $dbh->{fred}' ;
+eval 'my $q = $dbh->{fred}' ;
 ok(14, $@ =~ /^DB_File::HASHINFO::FETCH - Unknown element 'fred' at/ );
+
 
 # Now check the interface to HASH
 
@@ -71,7 +72,7 @@ ok(15, $X = tie(%h, 'DB_File',$Dfile, O_RDWR|O_CREAT, 0640, $DB_HASH ) );
 
 ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,$mtime,$ctime,
    $blksize,$blocks) = stat($Dfile);
-ok(16, ($mode & 0777) == 0640 );
+ok(16, ($mode & 0777) == ($^O eq 'os2' ? 0666 : 0640) );
 
 while (($key,$value) = each(%h)) {
     $i++;
@@ -151,7 +152,7 @@ ok(23, $#keys == 29 && $#values == 29) ;
 
 $i = 0 ;
 while (($key,$value) = each(%h)) {
-    if ($key eq $keys[$i] && $value eq $values[$i] && $key gt $value) {
+    if ($key eq $keys[$i] && $value eq $values[$i] && $key eq lc($value)) {
 	$key =~ y/a-z/A-Z/;
 	$i++ if $key eq $value;
     }
@@ -295,5 +296,20 @@ ok(48, $status == -1 );
 
 untie %h ;
 undef $X ;
+
+{
+    # check ability to override the default hashing
+    my %x ;
+    my $filename = "xyz" ;
+    my $hi = new DB_File::HASHINFO ;
+    $::count = 0 ;
+    $hi->{hash} = sub { ++$::count ; length $_[0] } ;
+    ok(49, tie %x, 'DB_File', $filename, O_RDWR|O_CREAT, 0640, $hi ) ;
+    $h{"abc"} = 123 ;
+    ok(50, $h{"abc"} == 123) ;
+    untie %x ;
+    unlink $filename ;
+    ok(51, $::count >0) ;
+}
 
 exit ;

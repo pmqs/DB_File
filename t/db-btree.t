@@ -1,13 +1,13 @@
 #!./perl -w
 
-#BEGIN {
-#    @INC = '../lib';
-#    require Config; import Config;
-#    if ($Config{'extensions'} !~ /\bDB_File\b/) {
-#	print "1..0\n";
-#	exit 0;
-#    }
-#}
+BEGIN {
+    @INC = '../lib' if -d '../lib' ;
+    require Config; import Config;
+    if ($Config{'extensions'} !~ /\bDB_File\b/) {
+	print "1..0\n";
+	exit 0;
+    }
+}
 
 use DB_File; 
 use Fcntl;
@@ -23,6 +23,21 @@ sub ok
     print "ok $no\n" ;
 }
 
+sub lexical
+{
+    my(@a) = unpack ("C*", $a) ;
+    my(@b) = unpack ("C*", $b) ;
+
+    my $len = (@a > @b ? @b : @a) ;
+    my $i = 0 ;
+
+    foreach $i ( 0 .. $len -1) {
+        return $a[$i] - $b[$i] if $a[$i] != $b[$i] ;
+    }
+
+    return @a - @b ;
+}
+
 $Dfile = "dbbtree.tmp";
 unlink $Dfile;
 
@@ -31,13 +46,13 @@ umask(0);
 # Check the interface to BTREEINFO
 
 my $dbh = new DB_File::BTREEINFO ;
+ok(1, $dbh->{flags} == 0) ;
+ok(2, $dbh->{cachesize} == 0) ;
+ok(3, $dbh->{psize} == 0) ;
+ok(4, $dbh->{lorder} == 0) ;
+ok(5, $dbh->{minkeypage} == 0) ;
+ok(6, $dbh->{maxkeypage} == 0) ;
 $^W = 0 ;
-ok(1, $dbh->{flags} == undef) ;
-ok(2, $dbh->{cachesize} == undef) ;
-ok(3, $dbh->{psize} == undef) ;
-ok(4, $dbh->{lorder} == undef) ;
-ok(5, $dbh->{minkeypage} == undef) ;
-ok(6, $dbh->{maxkeypage} == undef) ;
 ok(7, $dbh->{compare} == undef) ;
 ok(8, $dbh->{prefix} == undef) ;
 $^W = 1 ;
@@ -78,7 +93,7 @@ ok(19, $X = tie(%h, 'DB_File',$Dfile, O_RDWR|O_CREAT, 0640, $DB_BTREE )) ;
 
 ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,$mtime,$ctime,
    $blksize,$blocks) = stat($Dfile);
-ok(20, ($mode & 0777) == 0640 );
+ok(20, ($mode & 0777) == ($^O eq 'os2' ? 0666 : 0640) );
 
 while (($key,$value) = each(%h)) {
     $i++;
@@ -158,7 +173,7 @@ ok(27, $#keys == 29 && $#values == 29) ;
 
 $i = 0 ;
 while (($key,$value) = each(%h)) {
-    if ($key eq $keys[$i] && $value eq $values[$i] && $key gt $value) {
+    if ($key eq $keys[$i] && $value eq $values[$i] && $key eq lc($value)) {
 	$key =~ y/a-z/A-Z/;
 	$i++ if $key eq $value;
     }
@@ -170,13 +185,9 @@ ok(28, $i == 30) ;
 ok(29, $#keys == 31) ;
 
 #Check that the keys can be retrieved in order
-$ok = 1 ;
-foreach (keys %h)
-{
-    ($ok = 0), last if defined $previous && $previous gt $_ ;
-    $previous = $_ ;
-}
-ok(30, $ok ) ;
+my @b = keys %h ;
+my @c = sort lexical @b ;
+ok(30, ArrayCompare(\@b, \@c)) ;
 
 $h{'foo'} = '';
 ok(31, $h{'foo'} eq '' ) ;
@@ -440,7 +451,9 @@ $^W = 1 ;
 @srt_3 = sort { length $a <=> length $b } @Keys ;
  
 foreach (@Keys) {
-    $^W = 0 ; $h{$_} = 1 ; $^W = 1 ;
+    $^W = 0 ; 
+    $h{$_} = 1 ; 
+    $^W = 1 ;
     $g{$_} = 1 ;
     $k{$_} = 1 ;
 }

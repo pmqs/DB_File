@@ -1,0 +1,70 @@
+=head2 The limitations of exists in DB_File
+
+Note: this section discusses the limitations of the B<exists> function
+when used with DB_File only.
+
+The B<exists> function is supported in B<DB_File> from version 1.03
+on.
+
+When used with a B<DB_File> database file, it should be thought of as
+an alias for the B<defined> function.
+
+The reason for that is quite straightforward - it is impossible to have
+a key/value pair in Berkeley DB (or any other DBM implementation that I
+know of) where the key is associated with a value that is undefined
+(B<undef>). Remember the concept of something being undefined has a
+special meaning in Perl.
+
+It is possible, though, to have a key/value pair where the value is an
+empty string (""), but Perl considers that a defined value.
+
+If you do attempt to store B<undef> in a B<DB_File> tied hash, like
+this:
+
+    $x{'abc"} = undef ;
+
+an empty string will be stored in the database.
+
+So the bottom line is this: if a key is present in a database, then the
+associated value will I<always> be defined.
+
+
+As of DB_File version 1.03, 'exists' is supported. If you get the
+latest development relase of Perl, version 5.003_05, it will be
+included in it. Alternatively, read on.
+
+The reason 'exists' was never implemented in DB_File is because it
+doesn't really give you anything that 'defined' can't already in the
+context of a hash tied to a DBM file. Here is part of the manual page
+entry on exists and defined:
+
+    exists EXPR
+
+    Returns TRUE if the specified hash key exists in its hash array,
+    even if the corresponding value is undefined.
+
+    defined EXPR
+
+    Returns a boolean value saying whether EXPR has a real value or
+    not.  
+    ...
+
+    When used on a hash array element, it tells you whether the value
+    is defined, not whether the key exists in the hash.  Use exists()
+    for that.
+
+        print "Exists\n" if exists $array{$key};
+        print "Defined\n" if defined $array{$key};
+        print "True\n" if $array{$key};
+
+The concept of a value being undefined is part of Perl. DBM files in
+general, and Berkeley DB in this particular case, cannot associate a
+key with a Perl undefined value. The best they can do is store an empty
+string ("") instead, and 'defined' can test for the existance of your
+key in this case.
+
+So the bottom line is, 'defined' and 'exists' do exactly the same thing
+in DB_File.
+
+Paul
+

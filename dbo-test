@@ -1,0 +1,8 @@
+use DBM0 ;
+
+$file = "/tmp/db0" ;
+
+tie %x, "DBM0", $file or die "Cannot tie: $!\n" ;
+$x{abc} = "def" ;
+print "abc = $x{abc}\n" ;
+untie %x ;

@@ -1,0 +1,156 @@
+##
+###From chris@althea.ixlabs.com  Tue Oct 22 21:40:59 1996
+##Return-Path: <chris@althea.ixlabs.com>
+##Received: from bfsec.bt.co.uk by claudius.bfsec.bt.co.uk (4.1/SMI-4.1)
+##	id AA19855; Tue, 22 Oct 96 21:40:59 BST
+##Received: from mailhub.axion.bt.co.uk by major.bfsec.bt.co.uk with SMTP (PP) 
+##          id <23739-0@major.bfsec.bt.co.uk>; Tue, 22 Oct 1996 21:38:56 +0100
+##Received: from althea.ixlabs.com by mailhub.axion.bt.co.uk with SMTP (PP);
+##          Tue, 22 Oct 1996 21:38:27 +0100
+##Received: (from chris@localhost) by althea.ixlabs.com (8.7.6/8.7.3) id NAA07515;
+##          Tue, 22 Oct 1996 13:31:11 -0700
+##Date: Tue, 22 Oct 1996 13:31:11 -0700 (PDT)
+##From: Chris Schoenfeld <chris@althea.ixlabs.com>
+##To: Paul Marquess <pmarquess@bfsec.bt.co.uk>,
+##        Keith Bostic <bostic@cs.berkeley.edu>
+##Subject: Null keys in BTREES
+##Message-Id: <Pine.LNX.3.91.961022132523.7463A-100000@althea.ixlabs.com>
+##Mime-Version: 1.0
+##Content-Type: TEXT/PLAIN; charset=US-ASCII
+##X-Filter: mailagent [version 3.0 PL44] for pmarques@bfsec.bt.co.uk
+##Status: RO
+##
+##
+##I don't know if this is a bug or not, but I'll throw it out there.
+##
+##If you create a null key ( i.e., "") in a BTREE, you will no longer be
+##able to use the each function to get the keys. You will still be able to 
+##retrieve the values individually, however, even the null key's value!
+##
+##Here's a program that create 250 random keys with the value of 
+##$bigstring. I am synching and re-tie-ing for testing purposes only.
+##It also creates a null key with the value of bigstring.
+##
+##At teh end of the program, it tries to do an each, and then does trys to 
+##get known keys individually. Each does not work, although it does if you 
+##comment out the creation of the null key.
+##
+##
+##-Chris
+##
+##
+###!/usr/local/bin/perl5  -Tw
+##
+#use strict;
+#
+#use DB_File;
+#use Fcntl;
+#sub Compare {
+#    my ($key1, $key2) = @_;
+#    "\L$key1" cmp "\L$key2";
+#}
+#
+#my $count;
+#my $c;
+#my $d;
+#my $key;
+#my %h;
+#my $bigstring="piwuefh wuiefh pweufh qweioufh oWEIFH ASLKDHF AP[SUIOV AQWUEBFPWIUEF WUEFHWIEFJ'OWEIFJ WIOEFJ [Qweifjweifj wiopEFJ WOIEFJ A";
+#my @array=("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z");
+#
+#$DB_BTREE->{compare} = \&Compare;
+#
+#my $db;
+#
+#my $i = 0 ;
+##write 250 unique key-value pairs
+#for($c=0;$c<=10;$c++){
+#        for($count=0;$count<=25;$count++){
+#        	$db = tie %h,  'DB_File', "tree", O_RDWR|O_CREAT, 0644, $DB_BTREE;
+#                $h{$c.$array[$count]}=$bigstring;
+#                $h{""}=$bigstring;			#THIS WILL BREAK EACH!!!!!!!!
+#		#$h{NULL}="";
+#		$h{NORMAL}="Normalvalue";
+#		$db->sync();
+#		undef $db ;
+#                untie %h;
+#	++ $i ;
+#	}
+#}
+#
+#print "added $i records\n" ;
+##delete all begining with "0"
+#for($d=0;$d<=25;$d++){
+#	$db = tie %h,  'DB_File', "tree", O_RDWR|O_CREAT, 0644, $DB_BTREE;
+#       	delete $h{"0".$array[$d]};
+#        $db->sync();
+#	undef $db ;
+#	untie %h;
+#        }
+#
+#print "EACHing\n" ;
+#$i = 0 ;
+#$db = tie %h,  'DB_File', "tree", O_RDWR|O_CREAT, 0644, $DB_BTREE;
+##while ($key = each %h) { print "$key $h{$key}\n" }
+##while (($key, $value) = each %h) { print "$key $value\n" }
+#foreach $key ( keys %h) { print "$i [$key] [$h{$key}]\n" ; ++$i }
+#print "NULL KEY is " . $h{""} . "\n";
+#print "NULL VALUE is $h{NULL}\n";
+#print "NORMAL is $h{NORMAL}\n";
+#
+#undef $db ;
+#untie %h;
+
+
+use DB_File ;
+use Fcntl ;
+
+
+#my @array=("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z");
+
+my @array = ( "a" .. "d" ) ;
+
+sub Compare {
+    my ($key1, $key2) = @_;
+    "\L$key2" cmp "\L$key1";
+}
+
+$DB_BTREE->{compare} = \&Compare;
+
+unlink "tree" ;
+
+tie %h,  'DB_File', "tree", O_RDWR|O_CREAT, 0644, $DB_BTREE
+	or die "cannot tie: $!\n" ;
+
+foreach (@array)
+{ $h{$_} = "abc" }
+
+$h{""} = "def" ;
+
+untie %h ;
+
+tie %h,  'DB_File', "tree", O_RDWR, 0644, $DB_BTREE
+	or die "cannot tie: $!\n" ;
+
+while (($k, $v) = each %h) { print "[$k]->[$v]\n" }
+print "---\n" ;
+$i = 0 ;
+while (($k, $v) = each %h) { print "[$k]->[$v]\n" ; last if $i++ == 0 }
+
+untie %h ;
+
+tie %h,  'DB_File', "tree", O_RDWR, 0644, $DB_BTREE
+	or die "cannot tie: $!\n" ;
+
+print "---\n" ;
+print "BAd tims\n" ;
+while ($key = each %h) { print "[$key] [$h{$key}]\n" }
+
+print "---\n" ;
+while (($k, $v) = each %h) { print "[$k]->[$v]\n" }
+print "---\n" ;
+while (($k, $v) = each %h) { print "[$k]->[$v]\n" }
+print "---\n" ;
+
+print "null = $h{''}\n" ;
+untie %h ; 

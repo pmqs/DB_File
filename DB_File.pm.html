@@ -29,9 +29,16 @@ SYNOPSIS</A>
  $status = $X->seq($key, $value, $flags) ;
  $status = $X->sync([$flags]) ;
  $status = $X->fd ;
+ # BTREE only
  $count = $X->get_dup($key) ;
  @list  = $X->get_dup($key) ;
  %list  = $X->get_dup($key, 1) ;
+ # RECNO only
+ $a = $X->length;
+ $a = $X->pop ;
+ $X->push(list);
+ $a = $X->shift;
+ $X->unshift(list);
  untie %hash ;
  untie @array ;
 
@@ -191,7 +198,7 @@ for DB_HASH, DB_BTREE and DB_RECNO respectively.
 </XMP>
 <p>The values stored in the hashes above are mostly the direct equivalent
 of their C counterpart. Like their C counterparts, all are set to a
-default set of values - that means you don't have to set <EM>all</EM> of the
+default values - that means you don't have to set <EM>all</EM> of the
 values when you only want to change one. Here is an example:
 <p>
 <XMP>
@@ -294,21 +301,42 @@ to use.
 <A NAME="DB_File.pm_a_0">
 A Simple Example.</A>
 </H2>
-
+This example shows how to create a database, add key/value pairs to the
+database, delete keys/value pairs and finally how to enumerate the
+contents of the database.
+<p>
 <XMP>
     use DB_File ;
     use strict 'untie' ;
-    tie %h, "DB_File", "hashed", O_RDWR|O_CREAT, 0640, $DB_HASH 
-        or die "Cannot open file 'hashed': $!\n";
-    # Add a key/value pair to the file
-    $h{"apple"} = "orange" ;
+    tie %h, "DB_File", "fruit", O_RDWR|O_CREAT, 0640, $DB_HASH 
+        or die "Cannot open file 'fruit': $!\n";
+    # Add a few key/value pairs to the file
+    $h{"apple"} = "red" ;
+    $h{"orange"} = "orange" ;
+    $h{"banana"} = "yellow" ;
+    $h{"tomato"} = "red" ;
     # Check for existence of a key
-    print "Exists\n" if $h{"banana"} ;
-    # Delete 
+    print "Banana Exists\n\n" if $h{"banana"} ;
+    # Delete a key/value pair.
     delete $h{"apple"} ;
+    # print the contents of the file
+    while (($k, $v) = each %h)
+      { print "$k -> $v\n" }
     untie %h ;
 
 </XMP>
+<p>here is the output:
+<p>
+<XMP>
+    Banana Exists
+ 
+    orange -> orange
+    tomato -> red
+    banana -> yellow
+
+</XMP>
+<p>Note that the like ordinary associative arrays, the order of the keys
+retrieved is in an apparently random order.
 <p><p><hr>
 
 <H1> 
@@ -410,6 +438,7 @@ code:
     # and print each key/value pair.
     foreach (keys %h)
       { print "$_  -> $h{$_}\n" }
+    untie %h ;
 
 </XMP>
 <p>Here is the output:
@@ -619,27 +648,235 @@ and print the first matching key/value pair given a partial key.
 <A NAME="DB_File.pm_db_recno_1">
 DB_RECNO</A>
 </H1>
-In order to make RECNO more compatible with Perl the array offset for
+DB_RECNO provides an interface to flat text files. Both variable and
+fixed length records are supported.
+<p>In order to make RECNO more compatible with Perl the array offset for
 all RECNO arrays begins at 0 rather than 1 as in Berkeley DB.
 <p>As with normal Perl arrays, a RECNO array can be accessed using
 negative indexes. The index -1 refers to the last element of the array,
 -2 the second last, and so on. Attempting to access an element before
 the start of the array will raise a fatal run-time error.
-<p>Here is a simple example that uses RECNO.
+<p>
+<H2> 
+<A NAME="DB_File.pm_a_1">
+A Simple Example</A>
+</H2>
+Here is a simple example that uses RECNO.
 <p>
 <XMP>
-        use DB_File ;
-        use strict 'untie' ;
-        $DB_RECNO->{'psize'} = 3000 ;
-        tie @h, "DB_File", "text", O_RDWR|O_CREAT, 0640, $DB_RECNO 
-            or die "Cannot open file 'text': $!\n" ;
-        # Add a key/value pair to the file
-        $h[0] = "orange" ;
-        # Check for existence of a key
-        print "Exists\n" if $h[1] ;
-        untie @h ;
+    use DB_File ;
+    use strict 'untie' ;
+    tie @h, "DB_File", "text", O_RDWR|O_CREAT, 0640, $DB_RECNO 
+        or die "Cannot open file 'text': $!\n" ;
+    # Add a few key/value pairs to the file
+    $h[0] = "orange" ;
+    $h[1] = "blue" ;
+    $h[2] = "yellow" ;
+    # Check for existence of a key
+    print "Element 1 Exists with value $h[1]\n" if $h[1] ;
+    # use a negative index
+    print "The last element is $h[-1]\n" ;
+    print "The 2nd last element is $h[-2]\n" ;
+    untie @h ;
 
 </XMP>
+<p>Here is the output from the script:
+<p>
+<XMP>
+    Element 1 Exists with value blue
+    The last element is yellow
+    The 2nd last element is blue
+
+</XMP>
+<p>
+<H2> 
+<A NAME="DB_File.pm_extra_0">
+Extra Methods</A>
+</H2>
+As you can see from the example above, the tied array interface is
+quite limited. To make the interface more useful, a number of methods
+are supplied with <STRONG>DB_File</STRONG> to simulate the standard array operations
+that are not currently implemented in Perl's tied array interface. All
+these methods are accessed via the object returned from the tie call.
+<p>Here are the methods:
+<p>
+<DL COMPACT>
+<DT><STRONG>
+
+<A NAME="DB_File.pm_x_gt_push_list_0">
+<STRONG>$X</STRONG>-&gt;push(list) ;</A>
+
+</STRONG>
+<DD>
+Pushes the elements of <CODE>list</CODE> to the end of the array.
+<p>
+<DT><STRONG>
+
+<A NAME="DB_File.pm_value_0">
+
+<A HREF="DB.html#DB_File.pm_value_0">$value</A>
+ = <STRONG>$X</STRONG>-&gt;pop ;</A>
+
+</STRONG>
+<DD>
+Removes and returns the last element of the array.
+<p>
+<DT><STRONG>
+
+<A NAME="DB_File.pm_x_gt_shift_0">
+<STRONG>$X</STRONG>-&gt;shift</A>
+
+</STRONG>
+<DD>
+Removes and returns the first element of the array.
+<p>
+<DT><STRONG>
+
+<A NAME="DB_File.pm_x_gt_unshift_list_0">
+<STRONG>$X</STRONG>-&gt;unshift(list) ;</A>
+
+</STRONG>
+<DD>
+Pushes the elements of <CODE>list</CODE> to the start of the array.
+<p>
+<DT><STRONG>
+
+<A NAME="DB_File.pm_x_gt_length_0">
+<STRONG>$X</STRONG>-&gt;length</A>
+
+</STRONG>
+<DD>
+Returns the number of elements in the array.
+<p>
+</DL>
+.
+<p>
+<H2> 
+<A NAME="DB_File.pm_another_0">
+Another Example</A>
+</H2>
+Here is a more complete example that makes use of some of the methods
+described above. It also makes use of the API interface directly (see 
+
+<A HREF="DB.html#DB_File.pm_the_1"><EM>THE API INTERFACE</EM></A>
+).
+<p>
+<XMP>
+    use strict ;
+    use vars qw(@h $H $file $i) ;
+    use DB_File ;
+    use Fcntl ;
+    
+    $file = "text" ;
+    unlink $file ;
+    $H = tie @h, "DB_File", $file, O_RDWR|O_CREAT, 0640, $DB_RECNO 
+        or die "Cannot open file $file: $!\n" ;
+    
+    # first create a text file to play with
+    $h[0] = "zero" ;
+    $h[1] = "one" ;
+    $h[2] = "two" ;
+    $h[3] = "three" ;
+    $h[4] = "four" ;
+    
+    # Print the records in order.
+    #
+    # The length method is needed here because evaluating a tied
+    # array in a scalar context does not return the number of
+    # elements in the array.  
+    print "\nORIGINAL\n" ;
+    foreach $i (0 .. $H->length - 1) {
+        print "$i: $h[$i]\n" ;
+    }
+    # use the push & pop methods
+    $a = $H->pop ;
+    $H->push("last") ;
+    print "\nThe last record was [$a]\n" ;
+    # and the shift & unshift methods
+    $a = $H->shift ;
+    $H->unshift("first") ;
+    print "The first record was [$a]\n" ;
+    # Use the API to add a new record after record 2.
+    $i = 2 ;
+    $H->put($i, "Newbie", R_IAFTER) ;
+    # and a new record before record 1.
+    $i = 1 ;
+    $H->put($i, "New One", R_IBEFORE) ;
+    # delete record 3
+    $H->del(3) ;
+    # now print the records in reverse order
+    print "\nREVERSE\n" ;
+    for ($i = $H->length - 1 ; $i >= 0 ; -- $i)
+      { print "$i: $h[$i]\n" }
+    # same again, but use the API functions instead
+    print "\nREVERSE again\n" ;
+    my ($s, $k, $v)  ;
+    for ($s = $H->seq($k, $v, R_LAST) ; 
+             $s == 0 ; 
+             $s = $H->seq($k, $v, R_PREV))
+      { print "$k: $v\n" }
+    undef $H ;
+    untie @h ;
+
+</XMP>
+<p>and this is what it outputs:
+<p>
+<XMP>
+    ORIGINAL
+    0: zero
+    1: one
+    2: two
+    3: three
+    4: four
+    The last record was [four]
+    The first record was [zero]
+    REVERSE
+    5: last
+    4: three
+    3: Newbie
+    2: one
+    1: New One
+    0: first
+    REVERSE again
+    5: last
+    4: three
+    3: Newbie
+    2: one
+    1: New One
+    0: first
+
+</XMP>
+<p>Notes:
+<p>
+<OL>
+<LI>Rather than iterating through the array, <CODE><STRONG>@h</STRONG></CODE> like this:
+<p>
+<XMP>
+    foreach $i (@h)
+
+</XMP>
+<p>it is necessary to use either this:
+<p>
+<XMP>
+    foreach $i (0 .. $H->length - 1) 
+
+</XMP>
+<p>or this:
+<p>
+<XMP>
+    for ($a = $H->get($k, $v, R_FIRST) ;
+         $a == 0 ;
+         $a = $H->get($k, $v, R_NEXT) )
+
+</XMP>
+<p>
+<LI>Notice that both times the <CODE>put</CODE> method was used the record index was
+specified using a variable, <CODE><STRONG>$i</STRONG></CODE>, rather than the literal value
+itself. This is because <CODE>put</CODE> will return the record number of the
+inserted line via that parameter.
+<p>
+</OL>
+.
 <p><p><hr>
 
 <H1> 
@@ -742,13 +979,19 @@ DB documentation for the precise meaning of the flags values.
 <A NAME="DB_File.pm_status_0">
 
 <A HREF="DB.html#DB_File.pm_status_5">$status</A>
- = <STRONG>$X</STRONG>-&gt;get(<STRONG>$key</STRONG>, <STRONG>$value</STRONG> [, <STRONG>$flags</STRONG>]) ;</A>
+ = <STRONG>$X</STRONG>-&gt;get(<STRONG>$key</STRONG>, 
+<A HREF="DB.html#DB_File.pm_value_0">$value</A>
+ [, <STRONG>$flags</STRONG>]) ;</A>
 
 </STRONG>
 <DD>
 Given a key (<CODE><STRONG>$key</STRONG></CODE>) this method reads the value associated with it
 from the database. The value read from the database is returned in the
-<CODE><STRONG>$value</STRONG></CODE> parameter.
+
+<A HREF="DB.html#DB_File.pm_value_0">
+<A HREF="DB.html#DB_File.pm_value_0">$value</A>
+</A>
+ parameter.
 <p>If the key does not exist the method returns 1.
 <p>No flags are currently defined for this method.
 <p>
@@ -757,7 +1000,9 @@ from the database. The value read from the database is returned in the
 <A NAME="DB_File.pm_status_1">
 
 <A HREF="DB.html#DB_File.pm_status_5">$status</A>
- = <STRONG>$X</STRONG>-&gt;put(<STRONG>$key</STRONG>, <STRONG>$value</STRONG> [, <STRONG>$flags</STRONG>]) ;</A>
+ = <STRONG>$X</STRONG>-&gt;put(<STRONG>$key</STRONG>, 
+<A HREF="DB.html#DB_File.pm_value_0">$value</A>
+ [, <STRONG>$flags</STRONG>]) ;</A>
 
 </STRONG>
 <DD>
@@ -801,14 +1046,20 @@ Returns the file descriptor for the underlying database.
 <A NAME="DB_File.pm_status_4">
 
 <A HREF="DB.html#DB_File.pm_status_5">$status</A>
- = <STRONG>$X</STRONG>-&gt;seq(<STRONG>$key</STRONG>, <STRONG>$value</STRONG>, <STRONG>$flags</STRONG>) ;</A>
+ = <STRONG>$X</STRONG>-&gt;seq(<STRONG>$key</STRONG>, 
+<A HREF="DB.html#DB_File.pm_value_0">$value</A>
+, <STRONG>$flags</STRONG>) ;</A>
 
 </STRONG>
 <DD>
 This interface allows sequential retrieval from the database. See
 the <EM>dbopen</EM>  manpage
  for full details.
-<p>Both the <CODE><STRONG>$key</STRONG></CODE> and <CODE><STRONG>$value</STRONG></CODE> parameters will be set to the key/value
+<p>Both the <CODE><STRONG>$key</STRONG></CODE> and 
+<A HREF="DB.html#DB_File.pm_value_0">
+<A HREF="DB.html#DB_File.pm_value_0">$value</A>
+</A>
+ parameters will be set to the key/value
 pair read from the database.
 <p>The flags parameter is mandatory. The valid flag values are R_CURSOR,
 R_FIRST, R_LAST, R_NEXT and R_PREV.
@@ -878,7 +1129,7 @@ it:
 </XMP>
 <p>Although the error message above refers to the second tie statement in
 the script, the source of the problem is really with the untie
-statement that preceeds it.
+statement that precedes it.
 <p>To understand why there is a problem at all with the untie statement,
 consider what the tie does for a moment. 
 <p>Whenever the tie is executed, it creates a logical link between a Perl
@@ -988,39 +1239,54 @@ in the background to watch the locks granted in proper order.
 </XMP>
 <p>
 <H2> 
-<A NAME="DB_File.pm_interoperating_0">
-Interoperating with C applications</A>
+<A NAME="DB_File.pm_sharing_0">
+Sharing databases with C applications</A>
 </H2>
 There is no technical reason why a Berkeley DB database cannot be
-shared by both a Perl and a C application as long as you remember one
-thing - C terminates strings with a NULL character, Perl does not. 
-<p>This means that if you have used the standard string functions provided
-with C when writing to the database, then the key and/or the value are
-likely to be NULL terminated.
-<p>Of course if you are storing binary data in the database, rather than
-strings, then the database will work fine in both applications.
-<p>There are a couple of approaches you can take if you are faced with
-this situation.
-<p>
-<OL>
-<LI>Don't assume that strings are NULL terminated in the C application.
-This means that most of the C string functions will be useless.
-<p>
-<LI>Explicitly terminate the key/values pairs with a NULL in Perl when
-writing.
+shared by both a Perl and a C application.
+<p>The vast majority of problems that are reported in this area boil down
+to the fact that C strings are NULL terminated, whilst Perl strings are
+not. 
+<p>Here is a real example. Netscape 2.0 keeps a record of the locations you
+visit along with the time you last visited them in a DB_HASH database.
+This is usually stored in the file <EM>~/.netscape/history.db</EM>. The key
+field in the database is the location string and the value field is the
+time the location was last visited stored as a 4 byte binary value.
+<p>If you haven't already guessed, the location string is stored with a
+terminating NULL. This means you need to be careful when accessing the
+database.
+<p>Here is a snippet of code that is loosely based on Tom Christiansen's
+<EM>ggh</EM> script (available from your nearest CPAN archive in
+<EM>authors/id/TOMC/scripts/nshist.gz</EM>).
 <p>
 <XMP>
-    $X{"$key\0"} = "abcd\0" ;
-    print "Green is there\n" if defined $X{"Green\0"} ;
+    use DB_File ;
+    use Fcntl ;
+    use strict 'untie' ;
+    $dotdir = $ENV{HOME} || $ENV{LOGNAME};
+    $HISTORY = "$dotdir/.netscape/history.db";
+    tie %hist_db, 'DB_File', $HISTORY
+        or die "Cannot open $HISTORY: $!\n" ;;
+    # Dump the complete database
+    while ( ($href, $binary_time) = each %hist_db ) {
+        # remove the terminating NULL
+        $href =~ s/\x00$// ;
+        # convert the binary time into a user friendly string
+        $date = localtime unpack("V", $binary_time);
+        print "$date $href\n" ;
+    }
+    # check for the existence of a specific key
+    # remember to add the NULL
+    if ( $binary_time = $hist_db{"http://mox.perl.com/\x00"} ) {
+        $date = localtime unpack("V", $binary_time) ;
+        print "Last visited mox.perl.com on $date\n" ;
+    }
+    else {
+        print "Never visited mox.perl.com\n"
+    }
+    untie %hist_db ;
 
 </XMP>
-<p>Explicitly remove the NULL when reading.
-<p>
-</OL>
-If you run Netscape 2.0.
-The file <EM>history.db</EM> (<EM>~/.netscape/history.db</EM>) that Netscape 2.x
-writes is an example of a C application that includes the terminating
-NULL. Check out Tom Christiansen's <EM>ggh</EM> script.
 <p><p><hr>
 
 <H1> 
@@ -1029,32 +1295,7 @@ COMMON QUESTIONS</A>
 </H1>
 <p>
 <H2> 
-<A NAME="DB_File.pm_what_0">
-What is a DBM file?</A>
-</H2>
-<p>
-<H2> 
 <A NAME="DB_File.pm_why_0">
-Why is my database file so large?</A>
-</H2>
-<p>
-<H2> 
-<A NAME="DB_File.pm_what_1">
-What is the latest version of Berkeley DB?</A>
-</H2>
-<p>
-<H2> 
-<A NAME="DB_File.pm_what_2">
-What is the latest version of DB_File?</A>
-</H2>
-<p>
-<H2> 
-<A NAME="DB_File.pm_how_1">
-How do I build/install DB_File after Perl itself?</A>
-</H2>
-
-<H2> 
-<A NAME="DB_File.pm_why_1">
 Why is there Perl source in my database?</A>
 </H2>
 If you look at the contents of a database file created by DB_File,
@@ -1068,18 +1309,33 @@ where a Perl script gets written to the database, the random junk will
 correspond to an area of dynamic memory that happened to be used during
 the compilation of the script.
 <p>Unless you don't like the possibility of there being part of your Perl
-scripts embedded in a database file, this is nothing to wory about.
+scripts embedded in a database file, this is nothing to worry about.
 <p>
 <H2> 
-<A NAME="DB_File.pm_how_2">
+<A NAME="DB_File.pm_how_1">
 How do I store complex data structures with DB_File?</A>
 </H2>
-<p>
-<H2> What does ``Can't locate DB_File.pm in <STRONG>@INC</STRONG>'' mean?</H2>
-<p>
-<H2> What does ``Can't find loadable object for module DB_File in <STRONG>@INC</STRONG>'' mean ?</H2>
+Although <STRONG>DB_File</STRONG> cannot do this directly, there is a module which
+can layer transparently over <STRONG>DB_File</STRONG> to accomplish this feat.
+<p>Check out the MLDBM module, available on CPAN in the directory
+<EM>modules/by-module/MLDBM</EM>.
 <p>
 <H2> <EM>What does ``Invalid Argument'' mean?</EM></H2>
+You will get this error message when one of the parameters in the
+<CODE>tie</CODE> call is wrong. Unfortunately there are quite a few parameters to
+get wrong, so it can be difficult to figure out which one it is.
+<p>Here are a couple of possibilities:
+<p>
+<OL>
+<LI>Attempting to reopen a database without closing it. See 
+
+<A HREF="DB.html#DB_File.pm_the_2"><EM>The strict untie pragma</EM></A>
+ for an example.
+<p>
+<LI>Using the O_WRONLY flag.
+<p>
+</OL>
+.
 <p>
 <H2> <EM>What does ``Bareword 'DB_File' not allowed'' mean? </EM></H2>
 You will encounter this particular error message when you have the
@@ -1108,12 +1364,6 @@ double quotes, like this:
 </XMP>
 <p>Although it might seem like a real pain, it is really worth the effort
 of having a <CODE>use strict</CODE> in all your scripts.
-<p>
-<H2> 
-<A NAME="DB_File.pm_caching_0">
-Caching</A>
-</H2>
-<DB_File&gt; does not cache. Berkeley DB does.
 <p><p><hr>
 
 <H1> 
@@ -1181,9 +1431,17 @@ Merged OS/2 specific code into DB_File.xs
 Documentation update.
 <p><STRONG>DB_File</STRONG> now imports the constants (O_RDWR, O_CREAT etc.) from Fcntl
 automatically.
-<p>The sandard hash function <CODE>exists</CODE> is now supported.
-<p>Modified the behaviour of get_dup. When it returns an associative
+<p>The standard hash function <CODE>exists</CODE> is now supported.
+<p>Modified the behavior of get_dup. When it returns an associative
 array, the value is the count of the number of matching BTREE values.
+<p>
+<DT><STRONG>
+<EM>1.04</EM>
+</STRONG>
+<DD>
+<p>
+</DL>
+.
 <p><p><hr>
 
 <H1> 
@@ -1204,7 +1462,7 @@ AVAILABILITY</A>
 <STRONG>DB_File</STRONG> comes with the standard Perl source distribution. Look in
 the directory <EM>ext/DB_File</EM>.
 <p>Berkeley DB is available at your nearest CPAN archive (see
-<EM>CPAN</EM> for a list) in <EM>src/misc/db.1.85.tar.gz</EM>, or via the
+<EM>``CPAN''</EM> for a list) in <EM>src/misc/db.1.85.tar.gz</EM>, or via the
 host <EM>ftp.cs.berkeley.edu</EM> in <EM>/ucb/4bsd/db.tar.gz</EM>.  It is <EM>not</EM> under
 the GPL.
 <p>If you are running IRIX, then get Berkeley DB from
@@ -1228,7 +1486,5 @@ The DB_File interface was written by Paul Marquess
 Questions about the DB system itself may be addressed to Keith Bostic
 &lt;<A HREF="MAILTO:bostic@cs.berkeley.edu">bostic@cs.berkeley.edu</A>&gt;.
 <p>
-</DL>
-
 </BODY>
 </HTML>

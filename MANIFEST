@@ -1,5 +1,8 @@
 Makefile.PL         
 DB_File.pm          
 DB_File.xs          
+README
 typemap
-
+t/db-btree.t
+t/db-hash.t
+t/db-recno.t

@@ -28,25 +28,25 @@ $module  = "DB_File" ;
 
 $dist = new Dist ;
 
-# Check if DB_File is already installed
-foreach (@INC) {
-    last if $_ eq "$dist->{installprivlib}/site_perl" ;
-    next if(/site_perl/);
-    push (@conflict, $_) if -e "$_/$module.pm" ;
-}
-
-	warn <<"MSG_EOF" if @conflict ;
-*** WARNING ***
-An installed copy of the $module module found in the following directorie(s)
-   @conflict
-This can cause a version conflict as this version installs in
-   $dist->{installprivlib}/site_perl
-which comes later in Perl $]'s include directory list.
-
-You may need to manually remove these older $module directories if
-this version of $module does not run correctly.
-
-MSG_EOF
+# # Check if DB_File is already installed
+# foreach (@INC) {
+#     last if $_ eq "$dist->{installprivlib}/site_perl" ;
+#     next if(/site_perl/);
+#     push (@conflict, $_) if -e "$_/$module.pm" ;
+# }
+# 
+# 	warn <<"MSG_EOF" if @conflict ;
+# *** WARNING ***
+# An installed copy of the $module module found in the following directorie(s)
+#    @conflict
+# This can cause a version conflict as this version installs in
+#    $dist->{installprivlib}/site_perl
+# which comes later in Perl $]'s include directory list.
+# 
+# You may need to manually remove these older $module directories if
+# this version of $module does not run correctly.
+# 
+# MSG_EOF
 
 
 

@@ -1,13 +1,13 @@
 #!./perl -w
 
-#BEGIN {
-#    @INC = '../lib';
-#    require Config; import Config;
-#    if ($Config{'extensions'} !~ /\bDB_File\b/) {
-#	print "1..0\n";
-#	exit 0;
-#    }
-#}
+BEGIN {
+    @INC = '../lib' if -d '../lib' ;
+    require Config; import Config;
+    if ($Config{'extensions'} !~ /\bDB_File\b/) {
+	print "1..0\n";
+	exit 0;
+    }
+}
 
 use DB_File; 
 use Fcntl;
@@ -33,15 +33,13 @@ umask(0);
 # Check the interface to RECNOINFO
 
 my $dbh = new DB_File::RECNOINFO ;
-$^W = 0 ;
-ok(1, $dbh->{bval} == undef ) ;
-ok(2, $dbh->{cachesize} == undef) ;
-ok(3, $dbh->{psize} == undef) ;
-ok(4, $dbh->{flags} == undef) ;
-ok(5, $dbh->{lorder} == undef);
-ok(6, $dbh->{reclen} == undef);
-ok(7, $dbh->{bfname} eq undef);
-$^W = 0 ;
+ok(1, $dbh->{bval} == 0 ) ;
+ok(2, $dbh->{cachesize} == 0) ;
+ok(3, $dbh->{psize} == 0) ;
+ok(4, $dbh->{flags} == 0) ;
+ok(5, $dbh->{lorder} == 0);
+ok(6, $dbh->{reclen} == 0);
+ok(7, $dbh->{bfname} eq "");
 
 $dbh->{bval} = 3000 ;
 ok(8, $dbh->{bval} == 3000 );
@@ -77,7 +75,7 @@ my $X  ;
 my @h ;
 ok(17, $X = tie @h, 'DB_File', $Dfile, O_RDWR|O_CREAT, 0640, $DB_RECNO ) ;
 
-ok(18, ( (stat($Dfile))[2] & 0777) == 0640) ;
+ok(18, ( (stat($Dfile))[2] & 0777) == ($^O eq 'os2' ? 0666 : 0640)) ;
 
 #my $l = @h ;
 my $l = $X->length ;
