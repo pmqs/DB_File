@@ -1,7 +1,7 @@
 # http://module-build.sourceforge.net/META-spec.html
 #XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
 name:         DB_File
-version:      1.811
+version:      1.812
 version_from: DB_File.pm
 installdirs:  site
 requires:

@@ -1,8 +1,8 @@
 # DB_File.pm -- Perl 5 interface to Berkeley DB 
 #
 # written by Paul Marquess (pmqs@cpan.org)
-# last modified 12th March 2005
-# version 1.811
+# last modified 9th October 2005
+# version 1.812
 #
 #     Copyright (c) 1995-2005 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
@@ -165,7 +165,7 @@ our ($db_version, $use_XSLoader, $splice_end_array);
 use Carp;
 
 
-$VERSION = "1.811" ;
+$VERSION = "1.812" ;
 
 {
     local $SIG{__WARN__} = sub {$splice_end_array = "@_";};
@@ -1851,7 +1851,7 @@ Here is another real-life example. By default, whenever Perl writes to
 a DBM database it always writes the key and value as strings. So when
 you use this:
 
-    $hash{12345} = "soemthing" ;
+    $hash{12345} = "something" ;
 
 the key 12345 will get stored in the DBM database as the 5 byte string
 "12345". If you actually want the key to be stored in the DBM database
