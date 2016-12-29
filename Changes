@@ -1,4 +1,8 @@
 
+1.840 29 Dec 2016
+
+   * #119569: Failed to install DB_File-1.839 into Linux
+
 1.839 29 Dec 2016
 
    * #119557: DB_File.xs: unused-parameter warnings
