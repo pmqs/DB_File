@@ -1,4 +1,50 @@
 
+1.839 29 Dec 2016
+
+   * #119557: DB_File.xs: unused-parameter warnings
+   * #107642: unused arg
+
+1.838 15 May 2016
+
+   * #101342: R_SETCURSOR compiler warning
+     #111726: Coverity finding: flagSet() test always false
+
+1.837 9 Jan 2016
+
+   * DB_File: database UTF-8 documentation
+     RT #110248
+
+   * Coverity finding: status variable ignored multiple times
+     RT #111725
+
+1.836 6 Jan 2016
+
+   * Confirm build with BDB 6.2
+
+1.835 23 Dec 2014
+
+   * Silence more compiler warnings
+
+1.834 11 Dec 2014
+
+   * Makefile.PL: version check is missing a zero
+     RT #100844
+
+1.833 9 Dec 2014
+
+   * More Silence compiler warnings
+
+   * 1.832 breaks bleadperl C89 build
+     RT #100812
+
+1.832 8 Dec 2014
+
+   * Silence compiler warnings
+
+   * #96126: build failure in blead
+
+   * C++ change from blead
+
 1.831 15 November 2013
 
    * C99 comment is a nogo

@@ -1,10 +1,10 @@
                                   DB_File
 
-                               Version 1.831
+                               Version 1.838
 
-                             15 November 2013
+                                29 Dec 2016
 
-     Copyright (c) 1995-2013 Paul Marquess. All rights reserved. This
+     Copyright (c) 1995-2016 Paul Marquess. All rights reserved. This
       program is free software; you can redistribute it and/or modify
                   it under the same terms as Perl itself.
 
@@ -42,7 +42,7 @@ PREREQUISITES
 Before you can build DB_File you must have the following installed on
 your system:
 
-    * Perl 5.004_05 or greater.
+    * Perl 5.8.3 or greater.
 
     * Berkeley DB.
 
