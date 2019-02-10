@@ -1,7 +1,6 @@
 language: perl
 os:
   - linux
-  - osx
 addons:
   apt:
     packages:
