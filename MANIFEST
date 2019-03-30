@@ -32,6 +32,8 @@ t/db-hash.t
 t/db-recno.t
 t/db-threads.t
 t/pod.t
+t/meta-json.t 
+t/meta-yaml.t
 typemap
 version.c
 META.yml                                 Module meta-data (added by MakeMaker)
