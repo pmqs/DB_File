@@ -462,6 +462,14 @@ typedef DBT DBTKEY ;
       }                                                               \
     }
 
+/* Macro croak_and_free only for use in ParseOpenInfo */
+#define croak_and_free(x)											  \
+	do 																  \
+	{																  \
+		Safefree(RETVAL);											  \
+		croak(x);													  \
+	} while (0)
+
 #define my_SvUV32(sv) ((u_int32_t)SvUV(sv))
 
 #ifdef CAN_PROTOTYPE
@@ -1025,19 +1033,19 @@ SV *   sv ;
     if (sv)
     {
         if (! SvROK(sv) )
-            croak ("type parameter is not a reference") ;
+            croak_and_free("type parameter is not a reference") ;
 
         svp  = hv_fetch( (HV*)SvRV(sv), "GOT", 3, FALSE) ;
         if (svp && SvOK(*svp))
             action  = (HV*) SvRV(*svp) ;
         else
-            croak("internal error") ;
+            croak_and_free("internal error") ;
 
         if (sv_isa(sv, "DB_File::HASHINFO"))
         {
 
             if (!isHASH)
-                croak("DB_File can only tie an associative array to a DB_HASH database") ;
+                croak_and_free("DB_File can only tie an associative array to a DB_HASH database") ;
 
             RETVAL->type = DB_HASH ;
             openinfo = (void*)info ;
@@ -1072,7 +1080,7 @@ SV *   sv ;
         else if (sv_isa(sv, "DB_File::BTREEINFO"))
         {
             if (!isHASH)
-                croak("DB_File can only tie an associative array to a DB_BTREE database");
+                croak_and_free("DB_File can only tie an associative array to a DB_BTREE database");
 
             RETVAL->type = DB_BTREE ;
             openinfo = (void*)info ;
@@ -1121,7 +1129,7 @@ SV *   sv ;
         else if (sv_isa(sv, "DB_File::RECNOINFO"))
         {
             if (isHASH)
-                croak("DB_File can only tie an array to a DB_RECNO database");
+                croak_and_free("DB_File can only tie an array to a DB_RECNO database");
 
             RETVAL->type = DB_RECNO ;
             openinfo = (void *)info ;
@@ -1210,7 +1218,7 @@ SV *   sv ;
             PrintRecno(info) ;
         }
         else
-            croak("type is not of type DB_File::HASHINFO, DB_File::BTREEINFO or DB_File::RECNOINFO");
+            croak_and_free("type is not of type DB_File::HASHINFO, DB_File::BTREEINFO or DB_File::RECNOINFO");
     }
 
 
@@ -1306,19 +1314,19 @@ SV *   sv ;
     if (sv)
     {
         if (! SvROK(sv) )
-            croak ("type parameter is not a reference") ;
+            croak_and_free("type parameter is not a reference") ;
 
         svp  = hv_fetch( (HV*)SvRV(sv), "GOT", 3, FALSE) ;
         if (svp && SvOK(*svp))
             action  = (HV*) SvRV(*svp) ;
         else
-            croak("internal error") ;
+            croak_and_free("internal error") ;
 
         if (sv_isa(sv, "DB_File::HASHINFO"))
         {
 
             if (!isHASH)
-                croak("DB_File can only tie an associative array to a DB_HASH database") ;
+                croak_and_free("DB_File can only tie an associative array to a DB_HASH database") ;
 
             RETVAL->type = DB_HASH ;
 
@@ -1355,7 +1363,7 @@ SV *   sv ;
         else if (sv_isa(sv, "DB_File::BTREEINFO"))
         {
             if (!isHASH)
-                croak("DB_File can only tie an associative array to a DB_BTREE database");
+                croak_and_free("DB_File can only tie an associative array to a DB_BTREE database");
 
             RETVAL->type = DB_BTREE ;
 
@@ -1397,7 +1405,7 @@ SV *   sv ;
             int fixed = FALSE ;
 
             if (isHASH)
-                croak("DB_File can only tie an array to a DB_RECNO database");
+                croak_and_free("DB_File can only tie an array to a DB_RECNO database");
 
             RETVAL->type = DB_RECNO ;
 
@@ -1474,7 +1482,7 @@ SV *   sv ;
             PrintRecno(info) ;
         }
         else
-            croak("type is not of type DB_File::HASHINFO, DB_File::BTREEINFO or DB_File::RECNOINFO");
+            croak_and_free("type is not of type DB_File::HASHINFO, DB_File::BTREEINFO or DB_File::RECNOINFO");
     }
 
     {
