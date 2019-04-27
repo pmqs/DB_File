@@ -3,7 +3,7 @@
 # Name:         dbinfo -- identify berkeley DB version used to create 
 #                         a database file
 #
-# Author:       Paul Marquess  <Paul.Marquess@btinternet.com>
+# Author:       Paul Marquess  <pmqs@cpan.org>
 # Version:      1.06 
 # Date          27th March 2008
 #
