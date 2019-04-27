@@ -998,7 +998,7 @@ EOM
     # iterate through the associative array
     # and print each key/value pair.
     foreach (keys %h)
-      { print "$_       -> $h{$_}\n" }
+      { print "$_ -> $h{$_}\n" }
 
     untie %h ;
 
@@ -1006,17 +1006,17 @@ EOM
   }  
 
   ok(148, docat_del($file) eq ($db185mode ? <<'EOM' : <<'EOM') ) ;
-Smith   -> John
-Wall    -> Brick
-Wall    -> Brick
-Wall    -> Brick
-mouse   -> mickey
+Smith -> John
+Wall -> Brick
+Wall -> Brick
+Wall -> Brick
+mouse -> mickey
 EOM
-Smith   -> John
-Wall    -> Larry
-Wall    -> Larry
-Wall    -> Larry
-mouse   -> mickey
+Smith -> John
+Wall -> Larry
+Wall -> Larry
+Wall -> Larry
+mouse -> mickey
 EOM
 
   {
@@ -1053,7 +1053,7 @@ EOM
     for ($status = $x->seq($key, $value, R_FIRST) ;
          $status == 0 ;
          $status = $x->seq($key, $value, R_NEXT) )
-      {  print "$key    -> $value\n" }
+      {  print "$key -> $value\n" }
  
  
     undef $x ;
@@ -1061,17 +1061,17 @@ EOM
   }
 
   ok(149, docat_del($file) eq ($db185mode == 1 ? <<'EOM' : <<'EOM') ) ;
-Smith   -> John
-Wall    -> Brick
-Wall    -> Brick
-Wall    -> Larry
-mouse   -> mickey
+Smith -> John
+Wall -> Brick
+Wall -> Brick
+Wall -> Larry
+mouse -> mickey
 EOM
-Smith   -> John
-Wall    -> Larry
-Wall    -> Brick
-Wall    -> Brick
-mouse   -> mickey
+Smith -> John
+Wall -> Larry
+Wall -> Brick
+Wall -> Brick
+mouse -> mickey
 EOM
 
 
@@ -1103,13 +1103,13 @@ EOM
     print "There are $hash{'Brick'} Brick Walls\n" ;
 
     my @list = sort $x->get_dup("Wall") ;
-    print "Wall =>      [@list]\n" ;
+    print "Wall => [@list]\n" ;
 
     @list = $x->get_dup("Smith") ;
-    print "Smith =>     [@list]\n" ;
+    print "Smith => [@list]\n" ;
  
     @list = $x->get_dup("Dog") ;
-    print "Dog =>       [@list]\n" ; 
+    print "Dog => [@list]\n" ; 
  
     undef $x ;
     untie %h ;
@@ -1120,8 +1120,8 @@ Wall occurred 3 times
 Larry is there
 There are 2 Brick Walls
 Wall => [Brick Brick Larry]
-Smith =>        [John]
-Dog =>  []
+Smith => [John]
+Dog => []
 EOM
 
   {
@@ -1213,7 +1213,7 @@ EOM
         my $value = 0;
         my $orig_key = $key ;
         $x->seq($key, $value, R_CURSOR) ;
-        print "$orig_key\t-> $key\t-> $value\n" ;
+        print "$orig_key -> $key -> $value\n" ;
     }
 
     $filename = "tree" ;
@@ -1235,7 +1235,7 @@ EOM
          $st == 0 ;
          $st = $x->seq($key, $value, R_NEXT) )
         
-      {  print "$key    -> $value\n" }
+      {  print "$key -> $value\n" }
  
     print "\nPARTIAL MATCH\n" ;
 
@@ -1252,15 +1252,15 @@ EOM
 
   ok(153, docat_del($file) eq <<'EOM') ;
 IN ORDER
-Smith   -> John
-Wall    -> Larry
-Walls   -> Brick
-mouse   -> mickey
+Smith -> John
+Wall -> Larry
+Walls -> Brick
+mouse -> mickey
 
 PARTIAL MATCH
-Wa      -> Wall -> Larry
-A       -> Smith        -> John
-a       -> mouse        -> mickey
+Wa -> Wall -> Larry
+A -> Smith -> John
+a -> mouse -> mickey
 EOM
 
 }
