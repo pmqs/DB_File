@@ -4,10 +4,10 @@
 #                         a database file
 #
 # Author:       Paul Marquess  <pmqs@cpan.org>
-# Version:      1.06 
-# Date          27th March 2008
+# Version:      1.07 
+# Date          2nd April 2011
 #
-#     Copyright (c) 1998-2012 Paul Marquess. All rights reserved.
+#     Copyright (c) 1998-2019 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
 #     modify it under the same terms as Perl itself.
 
@@ -61,6 +61,14 @@ my %Data =
                                   4     => [1, "4.1.x or greater"],
                                 }
                         },
+        0x074582 => 	# DB_HEAPMAGIC
+            {
+                  		  Type     => "Heap",
+                  		  Versions => # DB_HEAPVERSION
+                  			  {
+                  			    1	      => [1, "5.2.x"],
+                  			  }
+                  		},
         ) ;
 
 die "Usage: dbinfo file\n" unless @ARGV == 1 ;
