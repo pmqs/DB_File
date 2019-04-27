@@ -463,12 +463,12 @@ typedef DBT DBTKEY ;
     }
 
 /* Macro croak_and_free only for use in ParseOpenInfo */
-#define croak_and_free(x)											  \
-	do 																  \
-	{																  \
-		Safefree(RETVAL);											  \
-		croak(x);													  \
-	} while (0)
+#define croak_and_free(x)                                             \
+    do                                                                \
+    {                                                                 \
+        Safefree(RETVAL);                                             \
+        croak(x);                                                     \
+    } while (0)
 
 #define my_SvUV32(sv) ((u_int32_t)SvUV(sv))
 

@@ -31,14 +31,14 @@ sub TIEHASH
     my $pkg = shift ;
 
     bless { VALID => { 
-		       	bsize	  => 1,
-			ffactor	  => 1,
-			nelem	  => 1,
-			cachesize => 1,
-			hash	  => 2,
-			lorder	  => 1,
-		     }, 
-	    GOT   => {}
+                        bsize     => 1,
+                        ffactor   => 1,
+                        nelem     => 1,
+                        cachesize => 1,
+                        hash      => 2,
+                        lorder    => 1,
+                     }, 
+            GOT   => {}
           }, $pkg ;
 }
 
@@ -65,8 +65,8 @@ sub STORE
 
     if ( $type )
     {
-    	croak "Key '$key' not associated with a code reference" 
-	    if $type == 2 && !ref $value && ref $value ne 'CODE';
+        croak "Key '$key' not associated with a code reference" 
+            if $type == 2 && !ref $value && ref $value ne 'CODE';
         $self->{GOT}{$key} = $value ;
         return ;
     }
@@ -122,9 +122,9 @@ sub TIEHASH
     my $pkg = shift ;
 
     bless { VALID => { map {$_, 1} 
-		       qw( bval cachesize psize flags lorder reclen bfname )
-		     },
-	    GOT   => {},
+                       qw( bval cachesize psize flags lorder reclen bfname )
+                     },
+            GOT   => {},
           }, $pkg ;
 }
 
@@ -140,16 +140,16 @@ sub TIEHASH
     my $pkg = shift ;
 
     bless { VALID => { 
-		      	flags	   => 1,
-			cachesize  => 1,
-			maxkeypage => 1,
-			minkeypage => 1,
-			psize	   => 1,
-			compare	   => 2,
-			prefix	   => 2,
-			lorder	   => 1,
-	    	     },
-	    GOT   => {},
+                        flags      => 1,
+                        cachesize  => 1,
+                        maxkeypage => 1,
+                        minkeypage => 1,
+                        psize      => 1,
+                        compare    => 2,
+                        prefix     => 2,
+                        lorder     => 1,
+                     },
+            GOT   => {},
           }, $pkg ;
 }
 
@@ -203,34 +203,34 @@ push @ISA, qw(Tie::Hash Exporter);
 @EXPORT = qw(
         $DB_BTREE $DB_HASH $DB_RECNO 
 
-	BTREEMAGIC
-	BTREEVERSION
-	DB_LOCK
-	DB_SHMEM
-	DB_TXN
-	HASHMAGIC
-	HASHVERSION
-	MAX_PAGE_NUMBER
-	MAX_PAGE_OFFSET
-	MAX_REC_NUMBER
-	RET_ERROR
-	RET_SPECIAL
-	RET_SUCCESS
-	R_CURSOR
-	R_DUP
-	R_FIRST
-	R_FIXEDLEN
-	R_IAFTER
-	R_IBEFORE
-	R_LAST
-	R_NEXT
-	R_NOKEY
-	R_NOOVERWRITE
-	R_PREV
-	R_RECNOSYNC
-	R_SETCURSOR
-	R_SNAPSHOT
-	__R_UNUSED
+        BTREEMAGIC
+        BTREEVERSION
+        DB_LOCK
+        DB_SHMEM
+        DB_TXN
+        HASHMAGIC
+        HASHVERSION
+        MAX_PAGE_NUMBER
+        MAX_PAGE_OFFSET
+        MAX_REC_NUMBER
+        RET_ERROR
+        RET_SPECIAL
+        RET_SUCCESS
+        R_CURSOR
+        R_DUP
+        R_FIRST
+        R_FIXEDLEN
+        R_IAFTER
+        R_IBEFORE
+        R_LAST
+        R_NEXT
+        R_NOKEY
+        R_NOOVERWRITE
+        R_PREV
+        R_RECNOSYNC
+        R_SETCURSOR
+        R_SNAPSHOT
+        __R_UNUSED
 
 );
 
@@ -268,7 +268,7 @@ sub tie_hash_or_array
         if defined $arg[1] ;
 
     $arg[4] = tied %{ $arg[4] } 
-	if @arg >= 5 && ref $arg[4] && $arg[4] =~ /=HASH/ && tied %{ $arg[4] } ;
+        if @arg >= 5 && ref $arg[4] && $arg[4] =~ /=HASH/ && tied %{ $arg[4] } ;
 
     $arg[2] = O_CREAT()|O_RDWR() if @arg >=3 && ! defined $arg[2];
     $arg[3] = 0666               if @arg >=4 && ! defined $arg[3];
@@ -280,10 +280,10 @@ sub tie_hash_or_array
     }
 
     if ($db_version > 1 and defined $arg[4] and $arg[4] =~ /RECNO/ and 
-	$arg[1] and ! -e $arg[1]) {
-	open(FH, ">$arg[1]") or return undef ;
-	close FH ;
-	chmod $arg[3] ? $arg[3] : 0666 , $arg[1] ;
+        $arg[1] and ! -e $arg[1]) {
+        open(FH, ">$arg[1]") or return undef ;
+        close FH ;
+        chmod $arg[3] ? $arg[3] : 0666 , $arg[1] ;
     }
 
     DoTie_($tieHASH, @arg) ;
@@ -325,9 +325,9 @@ sub STORESIZE
     my $current_length = $self->length() ;
 
     if ($length < $current_length) {
-	my $key ;
+        my $key ;
         for ($key = $current_length - 1 ; $key >= $length ; -- $key)
-	  { $self->del($key) }
+          { $self->del($key) }
     }
     elsif ($length > $current_length) {
         $self->put($length-1, "") ;
@@ -340,8 +340,8 @@ sub SPLICE
     my $self = shift;
     my $offset = shift;
     if (not defined $offset) {
-	warnings::warnif('uninitialized', 'Use of uninitialized value in splice');
-	$offset = 0;
+        warnings::warnif('uninitialized', 'Use of uninitialized value in splice');
+        $offset = 0;
     }
 
     my $has_length = @_;
@@ -358,47 +358,47 @@ sub SPLICE
     # the array.'
     # 
     if ($offset < 0) {
-	my $new_offset = $size + $offset;
-	if ($new_offset < 0) {
-	    die "Modification of non-creatable array value attempted, "
-	      . "subscript $offset";
-	}
-	$offset = $new_offset;
+        my $new_offset = $size + $offset;
+        if ($new_offset < 0) {
+            die "Modification of non-creatable array value attempted, "
+              . "subscript $offset";
+        }
+        $offset = $new_offset;
     }
 
     if (not defined $length) {
-	warnings::warnif('uninitialized', 'Use of uninitialized value in splice');
-	$length = 0;
+        warnings::warnif('uninitialized', 'Use of uninitialized value in splice');
+        $length = 0;
     }
 
     if ($offset > $size) {
- 	$offset = $size;
-	warnings::warnif('misc', 'splice() offset past end of array')
+        $offset = $size;
+        warnings::warnif('misc', 'splice() offset past end of array')
             if $has_length ? $splice_end_array : $splice_end_array_no_length;
     }
 
     # 'If LENGTH is omitted, removes everything from OFFSET onward.'
     if (not defined $length) {
-	$length = $size - $offset;
+        $length = $size - $offset;
     }
 
     # 'If LENGTH is negative, leave that many elements off the end of
     # the array.'
     # 
     if ($length < 0) {
-	$length = $size - $offset + $length;
+        $length = $size - $offset + $length;
 
-	if ($length < 0) {
-	    # The user must have specified a length bigger than the
-	    # length of the array passed in.  But perl's splice()
-	    # doesn't catch this, it just behaves as for length=0.
-	    # 
-	    $length = 0;
-	}
+        if ($length < 0) {
+            # The user must have specified a length bigger than the
+            # length of the array passed in.  But perl's splice()
+            # doesn't catch this, it just behaves as for length=0.
+            # 
+            $length = 0;
+        }
     }
 
     if ($length > $size - $offset) {
-	$length = $size - $offset;
+        $length = $size - $offset;
     }
 
     # $num_elems holds the current number of elements in the database.
@@ -409,94 +409,94 @@ sub SPLICE
     # 
     my @removed = ();
     foreach (0 .. $length - 1) {
-	my $old;
-	my $status = $self->get($offset, $old);
-	if ($status != 0) {
-	    my $msg = "error from Berkeley DB on get($offset, \$old)";
-	    if ($status == 1) {
-		$msg .= ' (no such element?)';
-	    }
-	    else {
-		$msg .= ": error status $status";
-		if (defined $! and $! ne '') {
-		    $msg .= ", message $!";
-		}
-	    }
-	    die $msg;
-	}
-	push @removed, $old;
+        my $old;
+        my $status = $self->get($offset, $old);
+        if ($status != 0) {
+            my $msg = "error from Berkeley DB on get($offset, \$old)";
+            if ($status == 1) {
+                $msg .= ' (no such element?)';
+            }
+            else {
+                $msg .= ": error status $status";
+                if (defined $! and $! ne '') {
+                    $msg .= ", message $!";
+                }
+            }
+            die $msg;
+        }
+        push @removed, $old;
 
-	$status = $self->del($offset);
-	if ($status != 0) {
-	    my $msg = "error from Berkeley DB on del($offset)";
-	    if ($status == 1) {
-		$msg .= ' (no such element?)';
-	    }
-	    else {
-		$msg .= ": error status $status";
-		if (defined $! and $! ne '') {
-		    $msg .= ", message $!";
-		}
-	    }
-	    die $msg;
-	}
+        $status = $self->del($offset);
+        if ($status != 0) {
+            my $msg = "error from Berkeley DB on del($offset)";
+            if ($status == 1) {
+                $msg .= ' (no such element?)';
+            }
+            else {
+                $msg .= ": error status $status";
+                if (defined $! and $! ne '') {
+                    $msg .= ", message $!";
+                }
+            }
+            die $msg;
+        }
 
-	-- $num_elems;
+        -- $num_elems;
     }
 
     # ...'and replaces them with the elements of LIST, if any.'
     my $pos = $offset;
     while (defined (my $elem = shift @list)) {
-	my $old_pos = $pos;
-	my $status;
-	if ($pos >= $num_elems) {
-	    $status = $self->put($pos, $elem);
-	}
-	else {
-	    $status = $self->put($pos, $elem, $self->R_IBEFORE);
-	}
+        my $old_pos = $pos;
+        my $status;
+        if ($pos >= $num_elems) {
+            $status = $self->put($pos, $elem);
+        }
+        else {
+            $status = $self->put($pos, $elem, $self->R_IBEFORE);
+        }
 
-	if ($status != 0) {
-	    my $msg = "error from Berkeley DB on put($pos, $elem, ...)";
-	    if ($status == 1) {
-		$msg .= ' (no such element?)';
-	    }
-	    else {
-		$msg .= ", error status $status";
-		if (defined $! and $! ne '') {
-		    $msg .= ", message $!";
-		}
-	    }
-	    die $msg;
-	}
+        if ($status != 0) {
+            my $msg = "error from Berkeley DB on put($pos, $elem, ...)";
+            if ($status == 1) {
+                $msg .= ' (no such element?)';
+            }
+            else {
+                $msg .= ", error status $status";
+                if (defined $! and $! ne '') {
+                    $msg .= ", message $!";
+                }
+            }
+            die $msg;
+        }
 
-	die "pos unexpectedly changed from $old_pos to $pos with R_IBEFORE"
-	  if $old_pos != $pos;
+        die "pos unexpectedly changed from $old_pos to $pos with R_IBEFORE"
+          if $old_pos != $pos;
 
-	++ $pos;
-	++ $num_elems;
+        ++ $pos;
+        ++ $num_elems;
     }
 
     if (wantarray) {
-	# 'In list context, returns the elements removed from the
-	# array.'
-	# 
-	return @removed;
+        # 'In list context, returns the elements removed from the
+        # array.'
+        # 
+        return @removed;
     }
     elsif (defined wantarray and not wantarray) {
-	# 'In scalar context, returns the last element removed, or
-	# undef if no elements are removed.'
-	# 
-	if (@removed) {
-	    my $last = pop @removed;
-	    return "$last";
-	}
-	else {
-	    return undef;
-	}
+        # 'In scalar context, returns the last element removed, or
+        # undef if no elements are removed.'
+        # 
+        if (@removed) {
+            my $last = pop @removed;
+            return "$last";
+        }
+        else {
+            return undef;
+        }
     }
     elsif (not defined wantarray) {
-	# Void context
+        # Void context
     }
     else { die }
 }
@@ -543,11 +543,11 @@ sub get_dup
  
     my $db        = shift ;
     my $key       = shift ;
-    my $flag	  = shift ;
-    my $value 	  = 0 ;
+    my $flag      = shift ;
+    my $value     = 0 ;
     my $origkey   = $key ;
     my $wantarray = wantarray ;
-    my %values	  = () ;
+    my %values    = () ;
     my @values    = () ;
     my $counter   = 0 ;
     my $status    = 0 ;
@@ -555,16 +555,16 @@ sub get_dup
     # iterate through the database until either EOF ($status == 0)
     # or a different key is encountered ($key ne $origkey).
     for ($status = $db->seq($key, $value, R_CURSOR()) ;
-	 $status == 0 and $key eq $origkey ;
+         $status == 0 and $key eq $origkey ;
          $status = $db->seq($key, $value, R_NEXT()) ) {
  
         # save the value or count number of matches
         if ($wantarray) {
-	    if ($flag)
+            if ($flag)
                 { ++ $values{$value} }
-	    else
+            else
                 { push (@values, $value) }
-	}
+        }
         else
             { ++ $counter }
      
@@ -753,7 +753,7 @@ C<ffactor>, C<hash>, C<lorder> and C<nelem>.
 
 To change one of these elements, just assign to it like this:
 
-	$DB_HASH->{'cachesize'} = 10000 ;
+        $DB_HASH->{'cachesize'} = 10000 ;
 
 The three predefined variables $DB_HASH, $DB_BTREE and $DB_RECNO are
 usually adequate for most applications.  If you do need to create extra
@@ -809,12 +809,12 @@ to Perl subs. Below are templates for each of the subs:
         my ($data) = @_ ;
         ...
         # return the hash value for $data
-	return $hash ;
+        return $hash ;
     }
 
     sub compare
     {
-	my ($key, $key2) = @_ ;
+        my ($key, $key2) = @_ ;
         ...
         # return  0 if $key1 eq $key2
         #        -1 if $key1 lt $key2
@@ -824,7 +824,7 @@ to Perl subs. Below are templates for each of the subs:
 
     sub prefix
     {
-	my ($key, $key2) = @_ ;
+        my ($key, $key2) = @_ ;
         ...
         # return number of bytes of $key2 which are 
         # necessary to determine that it is greater than $key1
@@ -1041,7 +1041,7 @@ code:
     $DB_BTREE->{'flags'} = R_DUP ;
 
     tie %h, "DB_File", $filename, O_RDWR|O_CREAT, 0666, $DB_BTREE 
-	or die "Cannot open $filename: $!\n";
+        or die "Cannot open $filename: $!\n";
 
     # Add some key/value pairs to the file
     $h{'Wall'} = 'Larry' ;
@@ -1096,7 +1096,7 @@ Here is the script above rewritten using the C<seq> API method.
     $DB_BTREE->{'flags'} = R_DUP ;
 
     $x = tie %h, "DB_File", $filename, O_RDWR|O_CREAT, 0666, $DB_BTREE 
-	or die "Cannot open $filename: $!\n";
+        or die "Cannot open $filename: $!\n";
 
     # Add some key/value pairs to the file
     $h{'Wall'} = 'Larry' ;
@@ -1167,7 +1167,7 @@ this:
     $DB_BTREE->{'flags'} = R_DUP ;
 
     $x = tie %h, "DB_File", $filename, O_RDWR|O_CREAT, 0666, $DB_BTREE 
-	or die "Cannot open $filename: $!\n";
+        or die "Cannot open $filename: $!\n";
 
     my $cnt  = $x->get_dup("Wall") ;
     print "Wall occurred $cnt times\n" ;
@@ -1177,13 +1177,13 @@ this:
     print "There are $hash{'Brick'} Brick Walls\n" ;
 
     my @list = sort $x->get_dup("Wall") ;
-    print "Wall =>	[@list]\n" ;
+    print "Wall =>      [@list]\n" ;
 
     @list = $x->get_dup("Smith") ;
-    print "Smith =>	[@list]\n" ;
+    print "Smith =>     [@list]\n" ;
 
     @list = $x->get_dup("Dog") ;
-    print "Dog =>	[@list]\n" ;
+    print "Dog =>       [@list]\n" ;
 
 
 and it will print:
@@ -1191,9 +1191,9 @@ and it will print:
     Wall occurred 3 times
     Larry is there
     There are 2 Brick Walls
-    Wall =>	[Brick Brick Larry]
-    Smith =>	[John]
-    Dog =>	[]
+    Wall =>     [Brick Brick Larry]
+    Smith =>    [John]
+    Dog =>      []
 
 =head2 The find_dup() Method
 
@@ -1217,7 +1217,7 @@ Assuming the database from the previous example:
     $DB_BTREE->{'flags'} = R_DUP ;
 
     $x = tie %h, "DB_File", $filename, O_RDWR|O_CREAT, 0666, $DB_BTREE 
-	or die "Cannot open $filename: $!\n";
+        or die "Cannot open $filename: $!\n";
 
     $found = ( $x->find_dup("Wall", "Larry") == 0 ? "" : "not") ; 
     print "Larry Wall is $found there\n" ;
@@ -1256,7 +1256,7 @@ Again assuming the existence of the C<tree> database
     $DB_BTREE->{'flags'} = R_DUP ;
 
     $x = tie %h, "DB_File", $filename, O_RDWR|O_CREAT, 0666, $DB_BTREE 
-	or die "Cannot open $filename: $!\n";
+        or die "Cannot open $filename: $!\n";
 
     $x->del_dup("Wall", "Larry") ;
 
@@ -1321,10 +1321,10 @@ and print the first matching key/value pair given a partial key.
     $key = $value = 0 ;
     print "IN ORDER\n" ;
     for ($st = $x->seq($key, $value, R_FIRST) ;
-	 $st == 0 ;
+         $st == 0 ;
          $st = $x->seq($key, $value, R_NEXT) )
 
-      {  print "$key	-> $value\n" }
+      {  print "$key    -> $value\n" }
 
     print "\nPARTIAL MATCH\n" ;
 
@@ -1625,12 +1625,12 @@ Berkeley DB documentation.
 
 To do this you need to store a copy of the object returned from the tie.
 
-	$db = tie %hash, "DB_File", "filename" ;
+        $db = tie %hash, "DB_File", "filename" ;
 
 Once you have done that, you can access the Berkeley DB API functions
 as B<DB_File> methods directly like this:
 
-	$db->put($key, $value, R_NOOVERWRITE) ;
+        $db->put($key, $value, R_NOOVERWRITE) ;
 
 B<Important:> If you have saved a copy of the object returned from
 C<tie>, the underlying database file will I<not> be closed until both
