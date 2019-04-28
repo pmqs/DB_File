@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
 # Name:         dbinfo -- identify berkeley DB version used to create 
 #                         a database file
@@ -61,14 +61,14 @@ my %Data =
                                   4     => [1, "4.1.x or greater"],
                                 }
                         },
-        0x074582 => 	# DB_HEAPMAGIC
+        0x074582 => 	  # DB_HEAPMAGIC
             {
-                  		  Type     => "Heap",
-                  		  Versions => # DB_HEAPVERSION
-                  			  {
-                  			    1	      => [1, "5.2.x"],
-                  			  }
-                  		},
+                          Type     => "Heap",
+                          Versions => # DB_HEAPVERSION
+                                {
+                                  1	    => [1, "5.2.x"],
+                                }
+                        },
         ) ;
 
 die "Usage: dbinfo file\n" unless @ARGV == 1 ;
