@@ -1,4 +1,10 @@
 
+{{$NEXT}} 
+
+   * #125853 - RT links in Changes file are wrong
+     Changes entry for 1.842 has both CPAN & Perl RT links.
+     Use the full URL to avoid ambiguity.
+
 1.852 21 April Feb 2019
 
    * ParseOpenInfo() leaks if it croaks
@@ -34,9 +40,9 @@
 1.842 14 July 2018
 
    * Document the MaocOS build failures & how MacPort can work around the issue.
-     # 125238
-     # 125585
-     # RT 133280
+     https://rt.cpan.org/Public/Bug/Display.html?id=125238
+     https://rt.cpan.org/Public/Bug/Display.html?id=125585
+     https://rt.perl.org/Public/Bug/Display.html?id=133280
 
    * Write all test db files into a directory created by File::Temp
      Protects against any possible races if running a parallel build.
