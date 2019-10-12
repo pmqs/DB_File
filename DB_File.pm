@@ -692,7 +692,7 @@ like version 1. This feature allows B<DB_File> scripts that were built
 with version 1 to be migrated to version 2 or greater without any changes.
 
 If you want to make use of the new features available in Berkeley DB
-2.x or greater, use the Perl module B<BerkeleyDB> instead.
+2.x or greater, use the Perl module L<BerkeleyDB|https://metacpan.org/pod/BerkeleyDB> instead.
 
 B<Note:> The database file format has changed multiple times in Berkeley
 DB version 2, 3 and 4. If you cannot recreate your databases, you
@@ -2012,11 +2012,11 @@ not be used.
 =head2 Safe ways to lock a database
 
 Starting with version 2.x, Berkeley DB  has internal support for locking.
-The companion module to this one, B<BerkeleyDB>, provides an interface
+The companion module to this one, L<BerkeleyDB|https://metacpan.org/pod/BerkeleyDB>, provides an interface
 to this locking functionality. If you are serious about locking
-Berkeley DB databases, I strongly recommend using B<BerkeleyDB>.
+Berkeley DB databases, I strongly recommend using L<BerkeleyDB|https://metacpan.org/pod/BerkeleyDB>.
 
-If using B<BerkeleyDB> isn't an option, there are a number of modules
+If using L<BerkeleyDB|https://metacpan.org/pod/BerkeleyDB> isn't an option, there are a number of modules
 available on CPAN that can be used to implement locking. Each one
 implements locking differently and has different goals in mind. It is
 therefore worth knowing the difference, so that you can pick the right
@@ -2298,6 +2298,12 @@ version 1.85 of Berkeley DB.
 I am sure there are bugs in the code. If you do find any, or can
 suggest any enhancements, I would welcome your comments.
 
+=head1 SUPPORT
+
+General feedback/questions/bug reports should be sent to 
+L<https://github.com/pmqs/DB_File/issues> (preferred) or
+L<https://rt.cpan.org/Public/Dist/Display.html?Name=DB_File>.
+
 =head1 AVAILABILITY
 
 B<DB_File> comes with the standard Perl source distribution. Look in
@@ -2307,11 +2313,11 @@ date, so the most recent version can always be found on CPAN (see
 L<perlmodlib/CPAN> for details), in the directory
 F<modules/by-module/DB_File>.
 
-This version of B<DB_File> will work with either version 1.x, 2.x or
-3.x of Berkeley DB, but is limited to the functionality provided by
-version 1.
+B<DB_File> is designed to work with any version of Berkeley DB, but is limited to the functionality provided by
+version 1. If you want to make use of the new features available in Berkeley DB
+2.x, or greater, use the Perl module L<BerkeleyDB|https://metacpan.org/pod/BerkeleyDB> instead.
 
-The official web site for Berkeley DB is F<http://www.oracle.com/technology/products/berkeley-db/db/index.html>.
+The official web site for Berkeley DB is L<http://www.oracle.com/technology/products/berkeley-db/db/index.html>.
 All versions of Berkeley DB are available there.
 
 Alternatively, Berkeley DB version 1 is available at your nearest CPAN
@@ -2319,7 +2325,7 @@ archive in F<src/misc/db.1.85.tar.gz>.
 
 =head1 COPYRIGHT
 
-Copyright (c) 1995-2016 Paul Marquess. All rights reserved. This program
+Copyright (c) 1995-2019 Paul Marquess. All rights reserved. This program
 is free software; you can redistribute it and/or modify it under the
 same terms as Perl itself.
 
@@ -2328,7 +2334,7 @@ makes use of, namely Berkeley DB, is not. Berkeley DB has its own
 copyright and its own license. Please take the time to read it.
 
 Here are a few words taken from the Berkeley DB FAQ (at
-F<http://www.oracle.com/technology/products/berkeley-db/db/index.html>) regarding the license:
+L<http://www.oracle.com/technology/products/berkeley-db/db/index.html>) regarding the license:
 
     Do I have to license DB to use it in Perl scripts? 
 
