@@ -40,7 +40,7 @@ jobs:
       run: perl -V
     - name: Install dependencies
       run: cpanm --quiet --installdeps --notest .
-    - name Install Berkeley DB
+    - name: Install Berkeley DB
       run: brew install berkeley-db
     - name: Build
       run: perl Makefile.PL && make
