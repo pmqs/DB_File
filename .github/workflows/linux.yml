@@ -1,12 +1,6 @@
 name: Linux build
 
-on:
-  push:
-    branches:
-      - '*'
-    tags-ignore:
-      - '*'
-  pull_request:
+on: [push, pull_request]
 
 jobs:
   build:
