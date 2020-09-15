@@ -33,8 +33,9 @@ jobs:
         perl-version: ${{ matrix.perl }}
     - name: Perl version
       run: perl -V
-   # - name: Install DB
-   #   run: sudo apt-get install libdb-dev
+   - name: Install DB
+      run: |
+        vcpkg install berkeleydb
     - name: Install Perl dependencies
       run: cpanm --quiet --installdeps --notest .
     - name: Build
