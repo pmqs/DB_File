@@ -24,7 +24,13 @@ jobs:
           #- '5.10'
           #- '5.8'
 
+    env:
+      DB_FILE_INCLUDE: C:\vcpkg\packages\berkeleydb_x86-windows\include
+      DB_FILE_LIB: C:\vcpkg\packages\berkeleydb_x86-windows\lib
+      DB_FILE_NAME: libdb48
+        
     name: Perl ${{ matrix.perl }}
+    
     steps:
     - uses: actions/checkout@v1
     - name: Setup perl
