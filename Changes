@@ -1,4 +1,15 @@
 
+1.854 16 September 2020
+
+   * Prefer direct notation over indirect (#4)
+     fae7c3898579fab1a45b52d2c1d9c19370b21c84
+
+   * Make hint/BS snippets strict compliant.
+     fb503ef27fae2cdce84d1c341e4991917da3bea6
+
+   * trim whitespace
+     6d8428d6f038992e3abbc5a2c7cf17b6d4a75382
+
 1.853 5 January 2020
 
    * Memory leak if ParseOpenInfo calls croak_and_free
