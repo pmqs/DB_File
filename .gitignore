@@ -3,6 +3,7 @@
 *.bak
 *.o
 *.swp
+*.tar
 *.tar.gz
 *.tmp
 
