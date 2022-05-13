@@ -21,4 +21,4 @@ resources:
   bugtracker: https://github.com/pmqs/DB_File/issues
   homepage: https://github.com/pmqs/DB_File
   repository: git://github.com/pmqs/DB_File.git
-version: '1.857'
+version: '1.858'
