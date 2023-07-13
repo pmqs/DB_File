@@ -52,7 +52,7 @@ jobs:
         set
       shell: cmd
     - name: Install Berkeley DB
-      run: vcpkg install liberkeleydb:x64-windows
+      run: vcpkg install berkeleydb
 
     - name: Show ${{ env.zlib-install }}
       run: |
