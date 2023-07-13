@@ -1,6 +1,6 @@
 name: Macos build
 
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
@@ -10,6 +10,7 @@ jobs:
     strategy:
       matrix:
         perl:
+          - '5.38'
           - '5.36'
           - '5.34'
           - '5.32'
