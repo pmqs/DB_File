@@ -13,6 +13,7 @@ jobs:
     env:
       DB_FILE_INCLUDE: C:\vcpkg\installed\x64-windows\include
       DB_FILE_LIB: C:\vcpkg\installed\x64-windows\lib
+      VCPKG_DEFAULT_TRIPLET: x64-windows
 
     strategy:
       matrix:
@@ -54,7 +55,7 @@ jobs:
     - name: Install Berkeley DB
       run: vcpkg install berkeleydb
 
-    - name: Show ${{ env.zlib-install }}
+    - name: Show vcpkg/installed
       run: |
         find /c/vcpkg/installed
       shell: bash
