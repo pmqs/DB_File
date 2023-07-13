@@ -13,7 +13,7 @@ jobs:
     env:
       VCPKG_DEFAULT_TRIPLET: x64-windows
 
-     name: Build and Cache Berkeley DB
+    name: Build and Cache Berkeley DB
     steps:
 
     - uses: actions/checkout@v1
