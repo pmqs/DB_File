@@ -1,4 +1,4 @@
-name: Windows -- Build & Cache Berkeley DB
+name: Windows Build and Cache Berkeley DB
 
 on:
   workflow_dispatch:
@@ -11,7 +11,7 @@ jobs:
     env:
       VCPKG_DEFAULT_TRIPLET: x64-windows
 
-     name: Build & Cache Berkeley DB
+     name: Build and Cache Berkeley DB
     steps:
 
     - uses: actions/checkout@v1
