@@ -8,7 +8,7 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     env:
       DB_FILE_INCLUDE: C:\vcpkg\installed\x64-windows\include
@@ -53,6 +53,12 @@ jobs:
       shell: cmd
     - name: Install Berkeley DB
       run: vcpkg install liberkeleydb:x64-windows
+
+    - name: Show ${{ env.zlib-install }}
+      run: |
+        find /c/vcpkg/installed
+      shell: bash
+
     - name: Install Perl dependencies
       run: cpanm --quiet --installdeps --notest .
     - name: Build
