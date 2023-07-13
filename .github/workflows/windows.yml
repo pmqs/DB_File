@@ -12,7 +12,8 @@ jobs:
 
     env:
       DB_FILE_INCLUDE: C:\vcpkg\installed\x64-windows\include
-      DB_FILE_LIB: C:\vcpkg\installed\x64-windows\lib
+      DB_FILE_LIB: C:\vcpkg\installed\x64-windows\bin
+      DB_FILE_NAME: libdb48.dll
       VCPKG_DEFAULT_TRIPLET: x64-windows
 
     strategy:
