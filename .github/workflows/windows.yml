@@ -13,39 +13,39 @@ jobs:
     env:
       DB_FILE_INCLUDE: C:\vcpkg\installed\x64-windows\include
       DB_FILE_LIB: C:\vcpkg\installed\x64-windows\bin
-      DB_FILE_NAME: libdb48.dll
+      DB_FILE_NAME: libdb48
       DB_FILE_COMPAT185: 1
       VCPKG_DEFAULT_TRIPLET: x64-windows
 
-    # strategy:
-    #   matrix:
-    #     perl:
-    #       # - '5.38'
-    #       - '5.36'
-    #       # - '5.34'
-    #       # - '5.32'
-    #       # - '5.30'
-    #       # - '5.28'
-    #       # - '5.26'
-    #       # - '5.24'
-    #       # - '5.22'
-    #       # - '5.20'
-    #       # - '5.18'
-    #       # - '5.16'
-    #       # - '5.14'
-    #       # - '5.12'
-    #       # - '5.10'
-    #       # - '5.8'
+    strategy:
+      matrix:
+        perl:
+          # - '5.38'
+          - '5.36'
+          # - '5.34'
+          # - '5.32'
+          # - '5.30'
+          # - '5.28'
+          # - '5.26'
+          # - '5.24'
+          # - '5.22'
+          # - '5.20'
+          # - '5.18'
+          # - '5.16'
+          # - '5.14'
+          # - '5.12'
+          # - '5.10'
+          # - '5.8'
 
     name: Perl ${{ matrix.perl }}
     steps:
 
     - uses: actions/checkout@v1
 
-    # - name: Setup perl
-    #   uses: shogo82148/actions-setup-perl@v1
-    #   with:
-    #     perl-version: ${{ matrix.perl }}
+    - name: Setup perl
+      uses: shogo82148/actions-setup-perl@v1
+      with:
+        perl-version: ${{ matrix.perl }}
 
     - name: Perl version
       run: perl -V
