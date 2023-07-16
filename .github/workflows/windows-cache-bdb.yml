@@ -1,8 +1,8 @@
 name: Windows Build and Cache Berkeley DB
 
 on:
-  push:
-  pull_request:
+  # push:
+  # pull_request:
   workflow_dispatch:
 
 jobs:
