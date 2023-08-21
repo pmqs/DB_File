@@ -34,18 +34,24 @@ jobs:
 
     name: Perl ${{ matrix.perl }}
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
+
     - name: Setup perl
       uses: shogo82148/actions-setup-perl@v1
       with:
         perl-version: ${{ matrix.perl }}
+
     - name: Perl version
       run: perl -V
+
     - name: Install dependencies
       run: cpanm --quiet --installdeps --notest .
+
     - name: Install Berkeley DB
       run: brew install berkeley-db
+
     - name: Build
       run: perl Makefile.PL && make
+      
     - name: Test
       run: make test
