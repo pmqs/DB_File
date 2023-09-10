@@ -1,0 +1,1 @@
+perl -e while(<>){ next if 1 .. /^__END__/; print} DB_File.pm
