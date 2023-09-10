@@ -240,7 +240,8 @@ EOM
 READMEmd: .github/DB_File.pod
 
 .github/DB_File.pod: DB_File.pm
-	perl -e 'while(<>){ next if 1 .. /^__END__/; print}' DB_File.pm >.github/DB_File.pod
+	\@echo Creating .github/DB_File.pod from DB_File.pm
+	\$(NOECHO) perl -e 'while(<>){ next if 1 .. /^__END__/; print}' DB_File.pm >.github/DB_File.pod
 
 EOM
     }
@@ -248,7 +249,7 @@ EOM
     {
         $postamble .= <<EOM;
 
-READMEmd: 
+READMEmd:
 
 EOM
     }
