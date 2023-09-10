@@ -240,7 +240,7 @@ EOM
 READMEmd: .github/DB_File.pod
 
 .github/DB_File.pod: DB_File.pm
-	\@echo perl -e 'while(<>){ next if 1 .. /^__END__/; print}' DB_File.pm >.github/DB_File.pod
+	perl -e 'while(<>){ next if 1 .. /^__END__/; print}' DB_File.pm >.github/DB_File.pod
 
 EOM
     }
