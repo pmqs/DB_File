@@ -593,7 +593,7 @@ __END__
 
 =head1 NAME
 
-DB_File - Perl5 access to Berkeley DB version 1.x
+DB_File - Perl access to Berkeley DB 1.x
 
 =head1 SYNOPSIS
 
