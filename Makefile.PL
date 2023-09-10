@@ -244,6 +244,14 @@ READMEmd: .github/DB_File.pod
 
 EOM
     }
+    else
+    {
+        $postamble .= <<EOM;
+
+READMEmd: 
+
+EOM
+    }
 
     return $postamble;
 }
