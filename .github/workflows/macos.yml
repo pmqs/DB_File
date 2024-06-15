@@ -52,7 +52,9 @@ jobs:
       run: brew install berkeley-db
 
     - name: Build
-      run: perl Makefile.PL && make
+      run: |
+        flags=$( perl -MConfig -e 'print $Config::Config{ccflags}' )
+        perl Makefile.PL CCFLAGS="$flags -Werror" && make
 
     - name: Test
       run: make test
@@ -87,7 +89,9 @@ jobs:
       run: cpanm --quiet --installdeps --notest .
 
     - name: Build
-      run: perl Makefile.PL CC=g++ && make
+      run: |
+        flags=$( perl -MConfig -e 'print $Config::Config{ccflags}' )
+        perl Makefile.PL CCFLAGS="$flags -Werror" CC=clang++ && make
 
     - name: Test
       run: make test
