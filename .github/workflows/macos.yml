@@ -52,15 +52,13 @@ jobs:
       run: brew install berkeley-db
 
     - name: Build
-      run: |
-        flags=$( perl -MConfig -e 'print $Config::Config{ccflags}' )
-        perl Makefile.PL CCFLAGS="$flags -Werror" && make
+      run: perl Makefile.PL && make
 
     - name: Test
       run: make test
 
 
-  c-plus-plus:
+  werror:
 
     runs-on: ubuntu-latest
 
@@ -69,6 +67,12 @@ jobs:
         perl:
           - latest
 
+        compiler:
+          - name: clang
+            werror: -Werror -Wno-error=deprecated
+
+          - name: clang++
+            werror: -Werror -Wno-error=deprecated
 
     name: Perl ${{ matrix.perl }}
     steps:
@@ -88,10 +92,14 @@ jobs:
     - name: Install Perl dependencies
       run: cpanm --quiet --installdeps --notest .
 
+    # Need the -Wno-error=deprecated below to stop this terminating the workflow
+    #
+    # clang: error: treating 'c' input as 'c++' when in C++ mode, this behavior is deprecated [-Werror,-Wdeprecated]
+
     - name: Build
       run: |
         flags=$( perl -MConfig -e 'print $Config::Config{ccflags}' )
-        perl Makefile.PL CCFLAGS="$flags -Werror" CC=clang++ && make
+        perl Makefile.PL CCFLAGS="$flags ${{ matrix.compiler.wname }}" CC=${{ matrix.compiler.name }} && make
 
     - name: Test
       run: make test
