@@ -69,12 +69,12 @@ jobs:
 
         compiler:
           - name: clang
-            werror: -Werror -Wno-error=deprecated
+            werror: -Werror
 
           - name: clang++
             werror: -Werror -Wno-error=deprecated
 
-    name: Perl ${{ matrix.perl }} with {{ matrix.compiler.name }}
+    name: Perl ${{ matrix.perl }} with ${{ matrix.compiler.name }}
     steps:
     - uses: actions/checkout@v4
 
