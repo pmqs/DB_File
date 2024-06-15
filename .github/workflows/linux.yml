@@ -90,7 +90,7 @@ jobs:
     - name: Build
       run: |
         flags=$( perl -MConfig -e 'print $Config::Config{ccflags}' )
-        perl Makefile.PL CCFLAGS="$flags -Werror" CC=clang++ && make
+        perl Makefile.PL CCFLAGS="$flags -Werror" CC=g++ && make
 
     - name: Test
       run: make test
