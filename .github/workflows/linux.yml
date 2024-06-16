@@ -59,7 +59,7 @@ jobs:
     - name: Test
       run: make test
 
-  c-plus-plus:
+  werror:
 
     runs-on: ubuntu-latest
 
@@ -68,6 +68,9 @@ jobs:
         perl:
           - latest
 
+        compiler:
+          - gcc
+          - g++
 
     name: Perl ${{ matrix.perl }}
     steps:
@@ -90,7 +93,7 @@ jobs:
     - name: Build
       run: |
         flags=$( perl -MConfig -e 'print $Config::Config{ccflags}' )
-        perl Makefile.PL CCFLAGS="$flags -Werror" CC=g++ && make
+        perl Makefile.PL CCFLAGS="$flags -Werror" CC=${{ matrix.compiler }} && make
 
     - name: Test
       run: make test
