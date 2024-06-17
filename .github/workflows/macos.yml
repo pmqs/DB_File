@@ -69,10 +69,10 @@ jobs:
 
         compiler:
           - name: clang
-            werror: -Werror
+            ccflags: -Werror
 
           - name: clang++
-            werror: -Werror -Wno-error=deprecated
+            ccflags: -Werror -xc++
 
     name: Perl ${{ matrix.perl }} with ${{ matrix.compiler.name }}
     steps:
@@ -92,14 +92,10 @@ jobs:
     - name: Install Perl dependencies
       run: cpanm --quiet --installdeps --notest .
 
-    # Need the -Wno-error=deprecated below to stop this terminating the workflow
-    #
-    # clang: error: treating 'c' input as 'c++' when in C++ mode, this behavior is deprecated [-Werror,-Wdeprecated]
-
     - name: Build
       run: |
         flags=$( perl -MConfig -e 'print $Config::Config{ccflags}' )
-        perl Makefile.PL CCFLAGS="$flags ${{ matrix.compiler.werror }}" CC=${{ matrix.compiler.name }} && make
+        perl Makefile.PL CCFLAGS="$flags ${{ matrix.compiler.ccflags }}" CC=${{ matrix.compiler.name }} && make
 
     - name: Test
       run: make test

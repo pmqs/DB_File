@@ -69,10 +69,13 @@ jobs:
           - latest
 
         compiler:
-          - gcc
-          - g++
+          - name: gcc
+            ccflags: -Werror
 
-    name: Perl ${{ matrix.perl }}
+          - name: g++
+            ccflags: -Werror -xc++
+
+    name: Perl ${{ matrix.perl }} + ${{ matrix.compiler.name }}
     steps:
     - uses: actions/checkout@v4
 
@@ -93,7 +96,7 @@ jobs:
     - name: Build
       run: |
         flags=$( perl -MConfig -e 'print $Config::Config{ccflags}' )
-        perl Makefile.PL CCFLAGS="$flags -Werror" CC=${{ matrix.compiler }} && make
+        perl Makefile.PL CCFLAGS="$flags ${{ matrix.compiler.ccflags }}" CC=${{ matrix.compiler.name }} && make
 
     - name: Test
       run: make test
