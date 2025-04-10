@@ -1646,7 +1646,7 @@ destroyed.
 
 See L<The untie() Gotcha> for more details.
 
-All the functions defined in L<dbopen> are available except for
+All the functions defined in L<dbopen(3)> are available except for
 close() and dbopen() itself. The B<DB_File> method interface to the
 supported functions have been implemented to mirror the way Berkeley DB
 works whenever possible. In particular note that:
@@ -1708,7 +1708,7 @@ The code above can be rearranged to get around the problem, like this:
 
 =back
 
-All the constants defined in L<dbopen> for use in the flags parameters
+All the constants defined in L<dbopen(3)> for use in the flags parameters
 in the methods defined below are also available. Refer to the Berkeley
 DB documentation for the precise meaning of the flags values.
 
@@ -1755,7 +1755,7 @@ not use C<fd> to lock your database.
 =item B<$status = $X-E<gt>seq($key, $value, $flags) ;>
 
 This interface allows sequential retrieval from the database. See
-L<dbopen> for full details.
+L<dbopen(3)> for full details.
 
 Both the C<$key> and C<$value> parameters will be set to the key/value
 pair read from the database.
