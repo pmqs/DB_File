@@ -2,7 +2,7 @@
 #
 # Written by Paul Marquess (pmqs@cpan.org)
 #
-#     Copyright (c) 1995-2023 Paul Marquess. All rights reserved.
+#     Copyright (c) 1995-2026 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
 #     modify it under the same terms as Perl itself.
 
@@ -2325,7 +2325,7 @@ archive in F<src/misc/db.1.85.tar.gz>.
 
 =head1 COPYRIGHT
 
-Copyright (c) 1995-2023 Paul Marquess. All rights reserved. This program
+Copyright (c) 1995-2026 Paul Marquess. All rights reserved. This program
 is free software; you can redistribute it and/or modify it under the
 same terms as Perl itself.
 
