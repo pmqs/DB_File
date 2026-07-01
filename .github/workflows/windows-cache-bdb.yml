@@ -16,7 +16,7 @@ jobs:
     name: Build and Cache Berkeley DB
     steps:
 
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - name: Output Env (bash)
       run: |
