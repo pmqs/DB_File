@@ -1751,6 +1751,6 @@ L<perldbmfilter>, L<DBM_Filter>
 =head1 AUTHOR
 
 The DB_File interface was written by Paul Marquess
-E<lt>pmqs@cpan.orgE<gt>.
+E<lt>pmqs@outlook.comE<gt>.
 
 =cut
